@@ -1,10 +1,9 @@
 [
-  "obsidian-excalidraw-plugin",
-  "templater-obsidian",
   "table-editor-obsidian",
   "auto-note-mover",
-  "dataview",
   "better-word-count",
+  "dataview",
+  "obsidian-excalidraw-plugin",
   "obsidian-git",
   "obsidian-hider",
   "obsidian-icon-folder",
@@ -15,5 +14,6 @@
   "obsidian-style-settings",
   "tags-routes",
   "obsidian-tasks-plugin",
+  "templater-obsidian",
   "obsidian-thumbnails"
 ]
