@@ -1,0 +1,29 @@
+Requete de controle - oracle de comportement pour /image?filename=
+
+1) Requete valide (fichier existant):
+GET /image?filename=53.jpg
+-> HTTP/2 200
+   content-type: image/jpeg
+   content-length: 301305 (image binaire retournee)
+
+2) Requete de controle (fichier inexistant, sans sequence de traversal):
+GET /image?filename=doesnotexist.jpg
+-> HTTP/2 400
+   content-type: application/json; charset=utf-8
+   content-length: 14
+   body: "No such file"
+
+Interet : ce contraste 200/image vs 400/JSON "No such file" constitue l'oracle
+attendu pour discriminer, lors des tests de traversal :
+- un chemin qui remonte hors du repertoire mais cible un fichier inexistant
+  (probablement encore "No such file")
+- un chemin qui remonte hors du repertoire et atteint un fichier existant
+  (contenu du fichier retourne, HTTP 200, content-type generique ou
+  application/octet-stream selon l'extension)
+- un filtrage actif de la sequence de traversal (message d'erreur different,
+  ex. "Invalid filename" ou code 400 avant meme la tentative de lecture)
+
+Commandes utilisees (reproductibilite) :
+curl -sk -D - -o image_baseline.jpg "https://0a7400fb036c87db800efd7300b4005f.web-security-academy.net/image?filename=53.jpg" -A "Mozilla/5.0"
+curl -sk -D - -o /dev/null "https://0a7400fb036c87db800efd7300b4005f.web-security-academy.net/image?filename=doesnotexist.jpg" -A "Mozilla/5.0"
+curl -sk "https://0a7400fb036c87db800efd7300b4005f.web-security-academy.net/image?filename=doesnotexist.jpg" -A "Mozilla/5.0"

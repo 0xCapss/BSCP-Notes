@@ -28,6 +28,9 @@ statut: à faire
 - [ ] Practitioner
 - [ ] Expert
 
+## Journal des labs
+- 
+
 ## Mes notes
 - 
 

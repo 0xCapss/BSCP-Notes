@@ -11,14 +11,12 @@
             "id": "000d4285c2a48119",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "image",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/Path-traversal.md",
-                "mode": "source",
-                "source": false
+                "file": "evidence/image_baseline_20260914_232752.jpg"
               },
-              "icon": "lucide-file",
-              "title": "Path-traversal"
+              "icon": "lucide-image",
+              "title": "image_baseline_20260914_232752"
             }
           }
         ]
@@ -99,7 +97,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/Path-traversal.md",
+                "file": "evidence/image_baseline_20260914_232752.jpg",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -118,6 +116,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
+                "file": "evidence/image_baseline_20260914_232752.jpg",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -160,6 +159,7 @@
             "state": {
               "type": "outline",
               "state": {
+                "file": "evidence/image_baseline_20260914_232752.jpg",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -203,11 +203,24 @@
       "templater-obsidian:Templater": false
     }
   },
-  "active": "fc85ef2d9b98b31b",
+  "active": "000d4285c2a48119",
   "lastOpenFiles": [
+    "BSCP-Vault/01-Server-side/Path-traversal.md",
+    "BSCP-Vault/01-Server-side/Path-traversal.md.tmp.47729.2f6d7fa63ba6",
+    "BSCP-Vault/00-Index.md",
     "README.md",
-    "BSCP-Vault/01-Server-side/Path-traversal.md.tmp.47729.d1499add60f2",
-    "BSCP-Vault/01-Server-side/File-upload.md",
-    "BSCP"
+    "BSCP-Vault/01-Server-side/Path-traversal.md.tmp.47729.c132d38bcdab",
+    "evidence/image_baseline_20260914_232752.jpg",
+    "BSCP-Vault/01-Server-side/Path-traversal.md.tmp.47729.9afc764c88ef",
+    "findings/path-traversal-image-filename.md",
+    "findings/path-traversal-image-filename.md.tmp.47729.d884d964928b",
+    "findings/2026-09-14_recon-surface-path-traversal.md",
+    "findings/2026-09-14_recon-surface-path-traversal.md.tmp.47729.12f0cdc7d451",
+    "evidence/20260914_232817_path-traversal-image-filename.txt",
+    "evidence/20260914_232817_path-traversal-image-filename.txt.tmp.47729.19f30663a273",
+    "evidence/control_oracle_20260914_232808.txt",
+    "evidence/image_headers_20260914_232752.txt",
+    "evidence/product1_20260914_232738.html",
+    "BSCP-Vault/01-Server-side/File-upload.md"
   ]
 }

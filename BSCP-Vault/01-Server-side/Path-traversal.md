@@ -23,11 +23,11 @@ statut: en cours
 ### Lecture de fichier arbitraire
 - Imaginons que l'on souhaite charger une image avec ce code HTML:
 `<img src="/loadImage?filename=218.png">`
-- l'URL  `loadImage` prend en paramètre  un`filename` et retourne le contenu exact de ce fichier. Les images sont stockés dans le disque à la localisation suivante :  `/var/www/images/`. Ainsi l'application lit le fichier avec le chemin suivant: `/var/www/images/218.png`
-- Ainsi il n'y a pas de défense contre l'attaque path transversal. Un attaquand peut ainsi faire la requete suivante pour retrouver le fichier `/etc/passwd` dans les fichiers du serveur:
+- L'URL `loadImage` prend en paramètre un `filename` et retourne le contenu exact de ce fichier. Les images sont stockées sur le disque à la localisation suivante : `/var/www/images/`. Ainsi l'application lit le fichier avec le chemin suivant : `/var/www/images/218.png`
+- Si l'application ne fait aucune validation sur ce paramètre, un attaquant peut faire la requête suivante pour retrouver le fichier `/etc/passwd` dans les fichiers du serveur :
 	- `https://insecure-website.com/loadImage?filename=../../../etc/passwd`
-- La séquence `../` est valide lors d'un chemin d'accès car elle permet de remonter d'un niveau dans la hiérarchie des répertoire.
-- Sur WIndows `../` et `..\` sont des séquences valides. Un exemple sur Windows peut être:
+- La séquence `../` est valide dans un chemin d'accès car elle permet de remonter d'un niveau dans la hiérarchie des répertoires.
+- Sur Windows `../` et `..\` sont des séquences valides. Un exemple sur Windows peut être :
 	- `https://insecure-website.com/loadImage?filename=..\..\..\windows\win.ini`
 
 ## Pièges et points d'attention BSCP
@@ -49,9 +49,16 @@ statut: en cours
 - Journaliser et alerter sur les tentatives contenant des séquences de traversal ou des caractères suspects dans les paramètres de fichier.
 
 ## Labs PortSwigger
-- [ ] Apprentice
+- [x] Apprentice
 - [ ] Practitioner
 - [ ] Expert
+
+## Journal des labs
+- Lab "File path traversal, simple case" resolu (cible : `0a7400fb036c87db800efd7300b4005f.web-security-academy.net`).
+- Endpoint vulnerable : `GET /image?filename=`, utilise normalement pour servir les images produit (`filename=53.jpg`).
+- Payload qui a fonctionne directement, sans aucun contournement : `../../../../etc/passwd`. Aucun filtre sur `../`, aucune canonicalisation, aucune restriction d'extension appliquee au contenu retourne (reponse en `Content-Type: image/jpeg` alors que le corps est le texte de `/etc/passwd`).
+- Oracle de comportement utile releve avant l'exploitation : fichier existant -> HTTP 200 ; fichier inexistant (`filename=doesnotexist.jpg`) -> HTTP 400 avec corps JSON `"No such file"`. Utile pour confirmer une lecture reussie meme quand le contenu n'est pas directement lisible.
+- Confirme en pratique le cas le plus simple de la theorie ci-dessus (aucune des techniques de contournement n'a ete necessaire ici).
 
 ## Mes notes
 - 

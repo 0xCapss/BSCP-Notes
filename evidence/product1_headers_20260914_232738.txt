@@ -1,0 +1,6 @@
+HTTP/2 200 
+content-type: text/html; charset=utf-8
+set-cookie: session=XckziGUbtBqNggXe2FXfvUgy5YU2CmWo; Secure; HttpOnly; SameSite=None
+x-frame-options: SAMEORIGIN
+content-length: 6998
+
