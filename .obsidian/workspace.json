@@ -99,6 +99,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "BSCP-Vault/01-Server-side/Path-traversal.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -202,7 +203,7 @@
       "templater-obsidian:Templater": false
     }
   },
-  "active": "000d4285c2a48119",
+  "active": "fc85ef2d9b98b31b",
   "lastOpenFiles": [
     "README.md",
     "BSCP-Vault/01-Server-side/Path-traversal.md.tmp.47729.d1499add60f2",
