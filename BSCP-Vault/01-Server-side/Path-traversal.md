@@ -21,7 +21,14 @@ statut: en cours
 
 ## Comment exploiter (principe)
 ### Lecture de fichier arbitraire
-
+- Imaginons que l'on souhaite charger une image avec ce code HTML:
+`<img src="/loadImage?filename=218.png">`
+- l'URL  `loadImage` prend en paramètre  un`filename` et retourne le contenu exact de ce fichier. Les images sont stockés dans le disque à la localisation suivante :  `/var/www/images/`. Ainsi l'application lit le fichier avec le chemin suivant: `/var/www/images/218.png`
+- Ainsi il n'y a pas de défense contre l'attaque path transversal. Un attaquand peut ainsi faire la requete suivante pour retrouver le fichier `/etc/passwd` dans les fichiers du serveur:
+	- `https://insecure-website.com/loadImage?filename=../../../etc/passwd`
+- La séquence `../` est valide lors d'un chemin d'accès car elle permet de remonter d'un niveau dans la hiérarchie des répertoire.
+- Sur WIndows `../` et `..\` sont des séquences valides. Un exemple sur Windows peut être:
+	- `https://insecure-website.com/loadImage?filename=..\..\..\windows\win.ini`
 
 ## Pièges et points d'attention BSCP
 - Bien distinguer un simple filtrage de la sous-chaîne `../` (contournable par doubled characters) d'une validation par canonicalisation robuste (résolution du chemin absolu puis vérification qu'il reste dans le répertoire autorisé), beaucoup plus difficile à contourner.
