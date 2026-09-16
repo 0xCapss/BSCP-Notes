@@ -29,6 +29,8 @@ statut: en cours
 - La séquence `../` est valide dans un chemin d'accès car elle permet de remonter d'un niveau dans la hiérarchie des répertoires.
 - Sur Windows `../` et `..\` sont des séquences valides. Un exemple sur Windows peut être :
 	- `https://insecure-website.com/loadImage?filename=..\..\..\windows\win.ini`
+- On peut également utiliser des séquences imbriquées tel que `...// ou ....\/` 
+- Dans certains cas, dans le chemin d'URL ou dans le paramètre `filename` d'une requête`multipart/form-data` , les serveurs web peuvent supprimer cette séquence. On peut contourner ce filtrage de plusieurs
 
 ## Pièges et points d'attention BSCP
 - Bien distinguer un simple filtrage de la sous-chaîne `../` (contournable par doubled characters) d'une validation par canonicalisation robuste (résolution du chemin absolu puis vérification qu'il reste dans le répertoire autorisé), beaucoup plus difficile à contourner.
