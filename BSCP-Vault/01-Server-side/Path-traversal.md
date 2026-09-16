@@ -8,14 +8,12 @@ statut: en cours
 ## En bref
 - L'attaque path transversal est une vulnérabilité web qui permet à un attaquant de lire un fichier arbitraire sur le serveur web qui héberge l'application web.
 
-## Types et variantes
-- 
-
 ## Comment détecter
 - Repérer les paramètres ou fonctionnalités qui manipulent un nom de fichier ou un chemin (paramètres nommés filename, file, path, doc, template, page, image, download, include, ou valeurs contenant une extension de fichier).
 - Injecter une séquence de traversal simple visant un fichier connu et observable (`../../../etc/passwd` sur Linux, `..\..\..\windows\win.ini` sur Windows) et vérifier si le contenu du fichier apparaît dans la réponse.
 - Si le retour n'est pas directement visible, chercher des signaux indirects : différence de code de statut, de message d'erreur, de taille de réponse ou de temps de réponse entre un chemin existant et un chemin inexistant.
-- Si la séquence simple est filtrée, tester méthodiquement chaque technique de contournement (encodage simple, double encodage, doubled characters, chemin absolu, null byte) pour identifier précisément le filtre en place.
+- Si la séquence simple est filtrée, tester méthodiquement chaque technique de contournement (encodage simple, double encodage, doubled characters￼￼Types et variantes
+- , chemin absolu, null byte) pour identifier précisément le filtre en place.
 - Automatiser les tests avec Burp Intruder et une liste de payloads de traversal sur les paramètres suspects.
 - Ne pas se limiter aux fonctionnalités de lecture : vérifier aussi les fonctionnalités d'upload, d'export ou de sauvegarde de configuration qui pourraient permettre une écriture de fichier arbitraire.
 
@@ -50,13 +48,20 @@ statut: en cours
 
 ## Prévention
 - Éviter de transmettre des entrées utilisateur directement à une API de système de fichiers ; privilégier un mapping indirect (identifiant ou clé associé côté serveur à un chemin fixe, sans jamais exposer le chemin réel à l'utilisateur).
-- Si un nom de fichier doit être accepté depuis l'utilisateur, le valider strictement par liste blanche (extension autorisée, absence de séparateurs de chemin, correspondance à un pattern ancré).
+- Si un nom de fichier doit être accepté depuis l'utilisateur, le valider strictement par liste blanche (extension autorisée, absence de séparateurs de chemin, correspondance à un pattern ancré). Si cela n'est pas possible, vérifiez que les données ne contiennent que du contenu autorisé.
+- Après avoir validé les données fournies, ajoutez-les au répertoire de base et utilisez une API du système de fichiers de la plateforme pour canoniser le chemin d’accès.
+- Vérifiez que le chemin canonisé commence bien par le répertoire de base attendu.
 - Après toute normalisation ou décodage, vérifier que le chemin canonique résultant est bien un sous-chemin du répertoire autorisé avant tout accès au fichier.
 - Ne jamais se fier à un simple retrait de la sous-chaîne `../` (vulnérable aux doubled characters) ; utiliser les fonctions de canonicalisation fournies par le langage ou le framework plutôt qu'une logique maison.
 - Appliquer le principe de moindre privilège sur le compte du processus serveur (accès en lecture/écriture restreint aux seuls répertoires nécessaires) en défense en profondeur.
 - Journaliser et alerter sur les tentatives contenant des séquences de traversal ou des caractères suspects dans les paramètres de fichier.
-- 
-
+- Voici un exemple de code Java simple permettant de valider le chemin d'un fichier en fonction des données saisies par l'utilisateur :
+- ```java
+- File file = new File(BASE_DIRECTORY, userInput); 
+  if (file.getCanonicalPath().startsWith(BASE_DIRECTORY)) { 
+  // process file 
+  }`
+  ```
 ## Labs PortSwigger
 - [x] Apprentice ✅ 2026-09-14
 - [x] Practitioner ✅ 2026-09-16
@@ -68,9 +73,6 @@ statut: en cours
 - Payload qui a fonctionne directement, sans aucun contournement : `../../../../etc/passwd`. Aucun filtre sur `../`, aucune canonicalisation, aucune restriction d'extension appliquee au contenu retourne (reponse en `Content-Type: image/jpeg` alors que le corps est le texte de `/etc/passwd`).
 - Oracle de comportement utile releve avant l'exploitation : fichier existant -> HTTP 200 ; fichier inexistant (`filename=doesnotexist.jpg`) -> HTTP 400 avec corps JSON `"No such file"`. Utile pour confirmer une lecture reussie meme quand le contenu n'est pas directement lisible.
 - Confirme en pratique le cas le plus simple de la theorie ci-dessus (aucune des techniques de contournement n'a ete necessaire ici).
-
-## Mes notes
-- 
 
 ## Liens
 - [[File-upload]]
