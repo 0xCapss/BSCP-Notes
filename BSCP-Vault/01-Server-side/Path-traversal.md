@@ -35,6 +35,8 @@ statut: en cours
 	- Double encodage: `../` devient `%252e%252e%252f`
 	- Encodage non-standard: `../` devient `%c0%af ou ..%ef%bc%8f,`
 - Burp Intruder est capable de définir ces différents payloads avec la liste **Fuzzing - path traversal**
+- Egalement, une application peut exiger que le nom de fichier soit fourni par l'utilisateur comme `/var/www/images.` avec ajout d'un répertoire de base comme par exemple `filename=/var/www/images/../../../etc/passwd`.
+- Enfin, une applicatin peut sugg
 
 ## Pièges et points d'attention BSCP
 - Bien distinguer un simple filtrage de la sous-chaîne `../` (contournable par doubled characters) d'une validation par canonicalisation robuste (résolution du chemin absolu puis vérification qu'il reste dans le répertoire autorisé), beaucoup plus difficile à contourner.
