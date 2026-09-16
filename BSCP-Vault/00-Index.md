@@ -44,6 +44,7 @@ de vulnérabilité et savoir l'exploiter avec Burp, du repérage au rapport.
 ## Compétences essentielles
 - [[Using-Burp-Suite]]
 - [[Obfuscation-encoding]]
+- [[Payloads-cheatsheet]]
 
 ## Suivi et méthode
 - [[00-Methodologie-BSCP]]
