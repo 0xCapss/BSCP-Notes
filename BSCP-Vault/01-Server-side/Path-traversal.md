@@ -36,7 +36,7 @@ statut: en cours
 	- Encodage non-standard: `../` devient `%c0%af ou ..%ef%bc%8f,`
 - Burp Intruder est capable de définir ces différents payloads avec la liste **Fuzzing - path traversal**
 - Egalement, une application peut exiger que le nom de fichier soit fourni par l'utilisateur comme `/var/www/images.` avec ajout d'un répertoire de base comme par exemple `filename=/var/www/images/../../../etc/passwd`.
-- Enfin, une applicatin peut sugg
+	- Enfin, une applicatin peut suggérer que l'on ajoute une extension de fichier. Dans ce cas, on injectte un octet nul pour forcer la fin du chemin d'accès au fichier avant l'extension. Par exemple : `filename=../../../etc/passwd%00.png`.
 
 ## Pièges et points d'attention BSCP
 - Bien distinguer un simple filtrage de la sous-chaîne `../` (contournable par doubled characters) d'une validation par canonicalisation robuste (résolution du chemin absolu puis vérification qu'il reste dans le répertoire autorisé), beaucoup plus difficile à contourner.
@@ -55,11 +55,12 @@ statut: en cours
 - Ne jamais se fier à un simple retrait de la sous-chaîne `../` (vulnérable aux doubled characters) ; utiliser les fonctions de canonicalisation fournies par le langage ou le framework plutôt qu'une logique maison.
 - Appliquer le principe de moindre privilège sur le compte du processus serveur (accès en lecture/écriture restreint aux seuls répertoires nécessaires) en défense en profondeur.
 - Journaliser et alerter sur les tentatives contenant des séquences de traversal ou des caractères suspects dans les paramètres de fichier.
+- 
 
 ## Labs PortSwigger
-- [x] Apprentice
-- [ ] Practitioner
-- [ ] Expert
+- [x] Apprentice ✅ 2026-09-14
+- [x] Practitioner ✅ 2026-09-16
+
 
 ## Journal des labs
 - Lab "File path traversal, simple case" resolu (cible : `0a7400fb036c87db800efd7300b4005f.web-security-academy.net`).
