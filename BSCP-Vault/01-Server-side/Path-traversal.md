@@ -30,7 +30,11 @@ statut: en cours
 - Sur Windows `../` et `..\` sont des séquences valides. Un exemple sur Windows peut être :
 	- `https://insecure-website.com/loadImage?filename=..\..\..\windows\win.ini`
 - On peut également utiliser des séquences imbriquées tel que `...// ou ....\/` 
-- Dans certains cas, dans le chemin d'URL ou dans le paramètre `filename` d'une requête`multipart/form-data` , les serveurs web peuvent supprimer cette séquence. On peut contourner ce filtrage de plusieurs
+- Dans certains cas, dans le chemin d'URL ou dans le paramètre `filename` d'une requête`multipart/form-data` , les serveurs web peuvent supprimer cette séquence. On peut contourner ce filtrage de plusieurs façons:
+	- Simple encodage: `../` devient `%2e%2e%2f`
+	- Double encodage: `../` devient `%252e%252e%252f`
+	- Encodage non-standard: `../` devient `%c0%af ou ..%ef%bc%8f,`
+- Burp Intruder est capable de définir ces différents payloads avec la liste **Fuzzing - path traversal**
 
 ## Pièges et points d'attention BSCP
 - Bien distinguer un simple filtrage de la sous-chaîne `../` (contournable par doubled characters) d'une validation par canonicalisation robuste (résolution du chemin absolu puis vérification qu'il reste dans le répertoire autorisé), beaucoup plus difficile à contourner.
