@@ -201,17 +201,21 @@
       "obsidian-git:Open Git source control": false,
       "omnisearch:Omnisearch": false,
       "templater-obsidian:Templater": false,
-      "periodic-notes:Open today": false
+      "periodic-notes:Open today": false,
+      "tags-routes:Open tags routes": false
     }
   },
   "active": "000d4285c2a48119",
   "lastOpenFiles": [
-    "BSCP-Vault/01-Server-side/Access-control.md",
-    "evidence/image_baseline_20260914_232752.jpg",
+    "BSCP-Vault/01-Server-side/Information-disclosure.md",
+    "BSCP-Vault/01-Server-side/File-upload.md",
+    "BSCP-Vault/01-Server-side/SQL-injection.md",
+    "README.md",
     "BSCP-Vault/01-Server-side/Path-traversal.md",
+    "evidence/image_baseline_20260914_232752.jpg",
+    "BSCP-Vault/01-Server-side/Access-control.md",
     "BSCP-Vault/01-Server-side/Path-traversal.md.tmp.47729.2f6d7fa63ba6",
     "BSCP-Vault/00-Index.md",
-    "README.md",
     "BSCP-Vault/01-Server-side/Path-traversal.md.tmp.47729.c132d38bcdab",
     "BSCP-Vault/01-Server-side/Path-traversal.md.tmp.47729.9afc764c88ef",
     "findings/path-traversal-image-filename.md",
@@ -222,7 +226,6 @@
     "evidence/20260914_232817_path-traversal-image-filename.txt.tmp.47729.19f30663a273",
     "evidence/control_oracle_20260914_232808.txt",
     "evidence/image_headers_20260914_232752.txt",
-    "evidence/product1_20260914_232738.html",
-    "BSCP-Vault/01-Server-side/File-upload.md"
+    "evidence/product1_20260914_232738.html"
   ]
 }
