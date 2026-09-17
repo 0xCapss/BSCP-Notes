@@ -14,3 +14,10 @@ statut: en cours
 - Contournement validation de préfixe (chemin absolu) : `filename=/var/www/images/../../../etc/passwd`
 - Contournement validation d'extension (null byte) : `filename=../../../etc/passwd%00.png`
 - Liste Burp Intruder dédiée : **Fuzzing - path traversal**
+
+### Access control ([[Access-control]])
+- Accès direct à une fonction non liée dans l'UI : deviner/forcer l'URL, ex. `/admin`, `/administrator-panel-<suffixe>`
+- Emplacements où chercher une URL sensible divulguée : `/robots.txt`, `sitemap.xml`, code JavaScript de l'interface
+- Contournement par paramètre de rôle contrôlable côté client : `?admin=true`, `?role=1`
+- Escalade horizontale / IDOR par manipulation d'identifiant : `?id=123` à tester avec d'autres valeurs (`?id=124`, `?id=1`, etc.) sous un compte différent
+- Ne pas se limiter au verbe HTTP utilisé par l'UI : rejouer la même requête en GET/POST/PUT/DELETE sur l'endpoint sensible

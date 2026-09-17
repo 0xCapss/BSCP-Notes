@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/Access-control.md",
+                "file": "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Access-control"
+              "title": "Payloads-cheatsheet"
             }
           }
         ]
@@ -207,9 +207,11 @@
   },
   "active": "000d4285c2a48119",
   "lastOpenFiles": [
+    "BSCP-Vault/01-Server-side/Access-control.md",
+    "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md.tmp.1497.7efbbb2addca",
+    "BSCP-Vault/01-Server-side/Access-control.md.tmp.1497.91030e2a0009",
     "BSCP-Vault/01-Server-side/Authentication.md",
     "BSCP-Vault/01-Server-side/Path-traversal.md",
-    "BSCP-Vault/01-Server-side/Access-control.md",
     "BSCP-Vault/01-Server-side/assets/Access-control.png",
     "BSCP-Vault/01-Server-side/assets/Pasted image 20260917222135.png",
     "BSCP-Vault/01-Server-side/assets",
@@ -223,13 +225,11 @@
     "BSCP-Vault/01-Server-side/Path-traversal.md.tmp.1897.32271759744b",
     "BSCP-Vault/01-Server-side/Path-traversal.md.tmp.1897.61fb1b129a1b",
     "BSCP-Vault/01-Server-side/Path-traversal.md.tmp.1897.0b94c72cc070",
-    "BSCP-Vault/01-Server-side/Path-traversal.md.tmp.1897.088fbba2dd1c",
     "BSCP-Vault/01-Server-side/Information-disclosure.md",
     "BSCP-Vault/01-Server-side/File-upload.md",
     "BSCP-Vault/01-Server-side/SQL-injection.md",
     "lessons/README.md",
     "evidence/image_baseline_20260914_232752.jpg",
-    "BSCP-Vault/01-Server-side/Path-traversal.md.tmp.47729.2f6d7fa63ba6",
     "BSCP-Vault/00-Index.md",
     "findings/path-traversal-image-filename.md",
     "findings/2026-09-14_recon-surface-path-traversal.md"
