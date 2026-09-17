@@ -1,5 +1,8 @@
 ---
-tags: [bscp, server-side, path-traversal]
+tags:
+  - bscp
+  - server-side
+  - path-traversal
 niveau: apprentice
 statut: en cours
 ---

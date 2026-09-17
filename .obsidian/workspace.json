@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
+                "file": "BSCP-Vault/01-Server-side/Access-control.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Payloads-cheatsheet"
+              "title": "Access-control"
             }
           }
         ]
@@ -207,11 +207,16 @@
   },
   "active": "000d4285c2a48119",
   "lastOpenFiles": [
+    "BSCP-Vault/01-Server-side/Authentication.md",
+    "BSCP-Vault/01-Server-side/Path-traversal.md",
+    "BSCP-Vault/01-Server-side/Access-control.md",
+    "BSCP-Vault/01-Server-side/assets/Access-control.png",
+    "BSCP-Vault/01-Server-side/assets/Pasted image 20260917222135.png",
+    "BSCP-Vault/01-Server-side/assets",
+    "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md.tmp.1897.0f7db053aeb1",
     "BSCP-Vault/04-Essential-skills/Obfuscation-encoding.md",
-    "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
     "BSCP-Vault/04-Essential-skills/Using-Burp-Suite.md",
-    "BSCP-Vault/01-Server-side/Path-traversal.md",
     "BSCP-Vault/01-Server-side/Path-traversal.md.tmp.1897.fce838710e3c",
     "BSCP-Vault/00-Index.md.tmp.1897.1b0a0858abcf",
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md.tmp.1897.0f22fc1ead22",
@@ -222,13 +227,10 @@
     "BSCP-Vault/01-Server-side/Information-disclosure.md",
     "BSCP-Vault/01-Server-side/File-upload.md",
     "BSCP-Vault/01-Server-side/SQL-injection.md",
-    "README.md",
+    "lessons/README.md",
     "evidence/image_baseline_20260914_232752.jpg",
-    "BSCP-Vault/01-Server-side/Access-control.md",
     "BSCP-Vault/01-Server-side/Path-traversal.md.tmp.47729.2f6d7fa63ba6",
     "BSCP-Vault/00-Index.md",
-    "BSCP-Vault/01-Server-side/Path-traversal.md.tmp.47729.c132d38bcdab",
-    "BSCP-Vault/01-Server-side/Path-traversal.md.tmp.47729.9afc764c88ef",
     "findings/path-traversal-image-filename.md",
     "findings/2026-09-14_recon-surface-path-traversal.md"
   ]
