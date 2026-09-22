@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/Path-traversal.md",
+                "file": "BSCP-Vault/01-Server-side/Authentication.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Path-traversal"
+              "title": "Authentication"
             }
           }
         ]
@@ -201,17 +201,18 @@
       "obsidian-git:Open Git source control": false,
       "omnisearch:Omnisearch": false,
       "templater-obsidian:Templater": false,
-      "periodic-notes:Open today": false
+      "periodic-notes:Open today": false,
+      "tags-routes:Open tags routes": false
     }
   },
   "active": "000d4285c2a48119",
   "lastOpenFiles": [
+    "BSCP-Vault/01-Server-side/Path-traversal.md",
     "BSCP-Vault/01-Server-side/Access-control.md",
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md.tmp.1497.7efbbb2addca",
     "BSCP-Vault/01-Server-side/Access-control.md.tmp.1497.91030e2a0009",
     "BSCP-Vault/01-Server-side/Authentication.md",
-    "BSCP-Vault/01-Server-side/Path-traversal.md",
     "BSCP-Vault/01-Server-side/assets/Access-control.png",
     "BSCP-Vault/01-Server-side/assets/Pasted image 20260917222135.png",
     "BSCP-Vault/01-Server-side/assets",
