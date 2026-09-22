@@ -207,10 +207,10 @@
   },
   "active": "000d4285c2a48119",
   "lastOpenFiles": [
-    "BSCP-Vault/01-Server-side/Path-traversal.md",
-    "BSCP-Vault/01-Server-side/Authentication.md",
-    "BSCP-Vault/01-Server-side/Information-disclosure.md",
     "BSCP-Vault/01-Server-side/Access-control.md",
+    "BSCP-Vault/01-Server-side/Authentication.md",
+    "BSCP-Vault/01-Server-side/Path-traversal.md",
+    "BSCP-Vault/01-Server-side/Information-disclosure.md",
     "BSCP-Vault/01-Server-side/Business-logic.md",
     "BSCP-Vault/01-Server-side/Command-injection.md",
     "BSCP-Vault/01-Server-side/File-upload.md",

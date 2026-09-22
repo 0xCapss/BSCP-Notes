@@ -63,14 +63,15 @@ statut: à faire
 	- Cette méthode consiste à un attaquant d'observer les changements de comportement d'un site web afin de savoir si un username est valide ou non.
 	- L'énumération se produit sur une page de connexion, par exemple lorsque on saisit un nom d'utilisateur valide et un mot de passe incorrect. Cela réduit le temps nécessaire pour forcer une connexion par bruit de force.
 	- Lorsque vous tentez une attaque par bruit de force sur une page de connexion, vous devez prêter une attention particulière aux différences concernant :
-		- Les codes d'état: Si une tentative renvoie un code d'état différent, cela indique que le username était correct
-		- Les messages d'erreur: Le message d'erreur peut différer selon que le username et le password sont incorrects/
+		- **Les codes d'état**: Si une tentative renvoie un code d'état différent, cela indique que le username était correct
+		- **Les messages d'erreur**: Le message d'erreur peut différer selon que le username et le password sont incorrects
+		- **Temps de réponse**:  Toute requête s’écartant de cette norme suggère qu’un événement inhabituel s’est produit en arrière-plan. C’est un autre indice laissant penser que le nom d’utilisateur deviné pourrait être correct.
 ## Pièges et points d'attention BSCP
 - 
 
 ## Prévention
 - Toujours renvoyer le même code d'état quelque soit le résultat pour empêcher les attaques par bruit de force.
-- 
+- Pour les messages d'erreur: utiliser des messages identiques et génériques dans les deux cas.
 
 ## Labs PortSwigger
 - [ ] Apprentice
