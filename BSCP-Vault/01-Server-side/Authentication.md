@@ -44,7 +44,15 @@ statut: à faire
 	- Autorisation: Consiste à vérifier si un utilisateur est autorisé à effectuer une action.
 - Attaque par bruit de force:
 	- Méthode d'essai et d'erreurs pour deviner les identifiants valides d'un utilisateur. 
-	- Ces attaques sont automatisées à l'aide de listes de nom d'utilisateur et de mot de passe potentiels 
+	- Ces attaques sont automatisées à l'aide de listes de nom d'utilisateur et de mot de passe potentiels
+	- S'appuie sur une logique élémentaire ou des informations récupérées lors de la phase passive. Ainsi les attaquants peuvent considérablement augmentées l'efficacité de leur attaque.
+- Bruit de force des noms d'utilisateur
+	- Particulièrement facile à deviner car ils suivent un schéma reconnaissable, comme une adresse mail. Les identifiants professionnels ont souvent le format prenom.nom@compagny.com.
+	- il arrive même que des comptes à privilège élevées soient crées avec des noms prévisible comme "admin" ou "Administrator".
+	- Lors d'un audit, toujours vérifier si le site web divulgue publiquement des noms d'utilisateur potentiels. 
+	- Même si le contenu réel des profils est masqué, le nom utilisé dans le profil est parfois identique au nom d’utilisateur de connexion.
+	- Vérifier les réponses HTTP pour voir si des adresses e-mail sont divulguées.
+	- Les réponses peuvent co
 
 ## Liens
 - [[Access-control]]
