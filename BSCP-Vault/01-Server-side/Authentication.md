@@ -27,8 +27,16 @@ statut: à faire
 - 
 
 ## Comment exploiter (principe)
-- 
+- La plupart des failles dans les mécanismes d'authentification proviennent des 2 manières suivantes:
+	- Les mécanismes d'authentification sont faibles car ils ne protègent pas contre les attaques par bruit de force.
+	- Des failles logiques ou un code mal écrit lors de la mise en oeuvre permettent à un attaquant de contourner pleinement les mécanismes d'authentification.
+## Impact d'une authentification vulnérable
+- Accès à toutes les données et fonctionnalités associés au compte compromis. D'autant plus s'il s'agit d'un compte avec des privilèges élevées comme celui d'un admin système, il pourrait prendre le contrôle de application.
+- Même si s'agit d'un compte à bas privilège, un attaquant peut accéder à des données qui n'aurait pas normalement pas accès.
+- L'attaquant peut ainsi accéder à d'autre pages, ce qui élargit la surface d'attaque.
 
+## Vulnérabilités liées à la connexion par mot de passe
+- 
 ## Pièges et points d'attention BSCP
 - 
 
