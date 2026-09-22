@@ -8,11 +8,11 @@ Mets à jour au fil de l'eau. Statuts : à faire / en cours / maîtrisé.
 ## Server-side
 - [ ] SQL injection
 - [ ] Authentication
-- [ ] Path traversal
+- [x] Path traversal ✅ 2026-09-16
 - [ ] Command injection
 - [ ] Business logic
 - [ ] Information disclosure
-- [ ] Access control
+- [x] Access control ✅ 2026-09-19
 - [ ] File upload
 - [ ] SSRF
 - [ ] XXE injection
@@ -44,3 +44,11 @@ Mets à jour au fil de l'eau. Statuts : à faire / en cours / maîtrisé.
 - [ ] Quelques labs Expert
 - [ ] Compromission complète à blanc en temps limité
 - [ ] Examen réservé
+
+
+
+## Soutenance (capture)
+
+![](dashboard.png)
+
+![](learning-path.png)
