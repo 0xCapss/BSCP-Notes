@@ -52,7 +52,7 @@ statut: à faire
 	- Lors d'un audit, toujours vérifier si le site web divulgue publiquement des noms d'utilisateur potentiels. 
 	- Même si le contenu réel des profils est masqué, le nom utilisé dans le profil est parfois identique au nom d’utilisateur de connexion.
 	- Vérifier les réponses HTTP pour voir si des adresses e-mail sont divulguées.
-	- Les réponses peuvent co
+	- Les réponses peuvent contenir les adresses mails d'utilisateurs de privilèges élevées.
 
 ## Liens
 - [[Access-control]]
