@@ -53,6 +53,21 @@ statut: à faire
 	- Même si le contenu réel des profils est masqué, le nom utilisé dans le profil est parfois identique au nom d’utilisateur de connexion.
 	- Vérifier les réponses HTTP pour voir si des adresses e-mail sont divulguées.
 	- Les réponses peuvent contenir les adresses mails d'utilisateurs de privilèges élevées.
+- Bruit de force des mots de passe:
+	- Beaucoup de sites adopte une stratégie de mot de passe qui obligent les users à créer des mots de passe à forte entropie.
+	- Cela implique d'imposer des mots de passe respectant:
+		- Un n ombre minimal de caractère
+		- Une combinaison de minuscule/majuscule
+		- Des caractères spéciaux
+	- Bien que les mots de passe fort soient complexes à casser, le comportement humain introduit involontairement des failles dans ce système.  En effet, les utilisateur choisissent souvent un mot de passe qu'ils tentent de mémoriser et l'adapte pour qu'il respecte la politique de mot de passe.
+	- Exemple: si « mypassword » n’est pas autorisé, les utilisateurs peuvent essayer quelque chose comme « Mypassword1! » ou « Myp4w0rd » à la place.
+	- Lorsqu'il s'agit de changer de mot de passe, il est courant d'apporter des modification mineurs à leur mot de passe préférés. Par exemple, « Mypassword1! » devient « Mypassword1? » ou « Mypassword2! ».
+	- Cette connaissance des identifiants probables et des schémas prévisibles signifie que les attaques par force brute peuvent souvent être bien plus sophistiquées.
+- Enumeration des usernames:
+	- Cette méthode consiste à un attaquant d'observer les changements de comportement d'un site web afin de savoir si un username est valide ou non.
+	- 
+	
+
 
 ## Liens
 - [[Access-control]]
