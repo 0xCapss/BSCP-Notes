@@ -12,11 +12,16 @@ statut: à faire
 ![](Authentication.png)
 
 ## Types et variantes
-- Dans ce chapitre, on va aborder les points suivants:
+ on va aborder les points suivants:
 - Les mécanismes d'authentification les plus utilisés dans les sites web.
 - Les vulnérabilités potentielles de ces mécanismes.
 - Les vulnérabilités inhérentes aux différents mécanismes d'authentification.
 - Les vulnérabilités typiques résultant d'une mise en oeuvre incorrecte.
+- Il existe 3 types d'authentification:
+	- Quelque chose que l'on connait, comme un mot de passe, réponse à une question de sécurité. C'est le "facteur de connaissance"
+	- Quelque chose que l'on possède, comme un objet physique, on parle de "facteur de possession"
+	- Quelque chose qui nous est propre comme les données biométriques. On parle de "facteurs inhérents"
+- Ces mécanismes d’authentification s’appuient sur toute une gamme de technologies pour vérifier un ou plusieurs de ces facteurs.
 
 ## Comment détecter
 - 
@@ -65,8 +70,10 @@ statut: à faire
 	- Cette connaissance des identifiants probables et des schémas prévisibles signifie que les attaques par force brute peuvent souvent être bien plus sophistiquées.
 - Enumeration des usernames:
 	- Cette méthode consiste à un attaquant d'observer les changements de comportement d'un site web afin de savoir si un username est valide ou non.
-	- 
-	
+	- L'énumération se produit sur une page de connexion, par exemple lorsque on saisit un nom d'utilisateur valide et un mot de passe incorrect. Cela réduit le temps nécessaire pour forcer une connexion par bruit de force.
+### Bypass l'authentification 2 facteurs
+- Il est possible que l'utilisateur soit invité à entrer un code de vérification sur une page distincte après avoir saisit sont mot de passe. Il se trouve en réalité dans un état "connecté" avant même d'avoir saisis son mot de passe.
+- Arrive parfois qu'uns site web ne vérifie pas su on a bien effectué la 2ème étape avant d'afficher la page.
 
 
 ## Liens
