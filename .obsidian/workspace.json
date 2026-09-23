@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
+                "file": "BSCP-Vault/01-Server-side/Authentication.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Payloads-cheatsheet"
+              "title": "Authentication"
             }
           }
         ]
@@ -207,6 +207,7 @@
   },
   "active": "000d4285c2a48119",
   "lastOpenFiles": [
+    "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
     "BSCP-Vault/01-Server-side/Access-control.md",
     "BSCP-Vault/01-Server-side/Authentication.md",
     "BSCP-Vault/00-Suivi.md",
@@ -220,7 +221,6 @@
     "BSCP-Vault/01-Server-side/File-upload.md",
     "passwords.txt",
     "usernames.txt",
-    "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
     "BSCP-Vault/01-Server-side/assets/Authentication.png",
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md.tmp.1497.7efbbb2addca",
     "BSCP-Vault/01-Server-side/Access-control.md.tmp.1497.91030e2a0009",

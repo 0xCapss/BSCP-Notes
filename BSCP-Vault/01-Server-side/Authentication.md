@@ -72,6 +72,9 @@ statut: à faire
 ## Prévention
 - Toujours renvoyer le même code d'état quelque soit le résultat pour empêcher les attaques par bruit de force.
 - Pour les messages d'erreur: utiliser des messages identiques et génériques dans les deux cas.
+- Verrouiller le compte auquel l'utilisateur tente d’accéder s'il effectue un nombre élevé de tentatives de connexion sans succès.
+- Bloquer l'adresse IP de l'utilisateur distant s'il effectue un nombre élevé de tentatives de connexion rapide.
+- Dans ce cas, le simple fait d’inclure vos propres identifiants de connexion à intervalles réguliers dans la liste de mots suffit à rendre cette défense pratiquement inutile.
 
 ## Labs PortSwigger
 - [ ] Apprentice
