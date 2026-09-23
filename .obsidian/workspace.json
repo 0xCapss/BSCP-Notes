@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "BSCP-Vault/00-Suivi.md",
+                "file": "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "00-Suivi"
+              "title": "Payloads-cheatsheet"
             }
           }
         ]
@@ -201,16 +201,18 @@
       "obsidian-git:Open Git source control": false,
       "omnisearch:Omnisearch": false,
       "templater-obsidian:Templater": false,
-      "periodic-notes:Open today": false
+      "periodic-notes:Open today": false,
+      "tags-routes:Open tags routes": false
     }
   },
   "active": "000d4285c2a48119",
   "lastOpenFiles": [
+    "BSCP-Vault/01-Server-side/Access-control.md",
+    "BSCP-Vault/01-Server-side/Authentication.md",
+    "BSCP-Vault/00-Suivi.md",
     "BSCP-Vault/assets/learning-path.png",
     "BSCP-Vault/assets/dashboard.png",
     "BSCP-Vault/assets",
-    "BSCP-Vault/01-Server-side/Authentication.md",
-    "BSCP-Vault/01-Server-side/Access-control.md",
     "BSCP-Vault/01-Server-side/Path-traversal.md",
     "BSCP-Vault/01-Server-side/Information-disclosure.md",
     "BSCP-Vault/01-Server-side/Business-logic.md",
