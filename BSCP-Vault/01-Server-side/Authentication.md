@@ -66,7 +66,12 @@ statut: à faire
 		- **Les codes d'état**: Si une tentative renvoie un code d'état différent, cela indique que le username était correct
 		- **Les messages d'erreur**: Le message d'erreur peut différer selon que le username et le password sont incorrects
 		- **Temps de réponse**:  Toute requête s’écartant de cette norme suggère qu’un événement inhabituel s’est produit en arrière-plan. C’est un autre indice laissant penser que le nom d’utilisateur deviné pourrait être correct.
-## Méthode pour contourner
+## Méthode pour contourner un verrouillage de compte
+- Etablir une liste de noms d'utilisateurs susceptible d'être valide.
+- Définir une liste treès restreinte de mot de passe qu'au moins des user est susceptible d'utiliser.
+- A l'aide de Burp Intruder, tester chacun des mots de passe sélectionnés avec chacun des noms d’utilisateur potentiels. Il suffit qu’un seul utilisateur utilise l’un des trois mots de passe pour compromettre un compte.
+- Le verrouillage ne protègent pas non plus contre le "credential stuffing". Ces attaques consistent à utiliser un immense dictionnaire de paires nom d’utilisateur/mot de passe.
+- Le « credential stuffing » tire parti du fait que de nombreuses personnes réutilisent le même nom d’utilisateur et le même mot de passe sur plusieurs sites web.
 ## Pièges et points d'attention BSCP
 - 
 
