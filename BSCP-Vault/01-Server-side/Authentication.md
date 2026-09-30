@@ -73,7 +73,11 @@ statut: à faire
 - Le verrouillage ne protègent pas non plus contre le "credential stuffing". Ces attaques consistent à utiliser un immense dictionnaire de paires nom d’utilisateur/mot de passe.
 - Le « credential stuffing » tire parti du fait que de nombreuses personnes réutilisent le même nom d’utilisateur et le même mot de passe sur plusieurs sites web.
 ## Limitation de débit
-- Lorsque l'on effectue trop de tentatives de mot de passe, on peut bloquer l'adresse IP. Cependant, elle peut être débloquée
+- Lorsque l'on effectue trop de tentatives de mot de passe, on peut bloquer l'adresse IP. Cependant, elle peut être débloquée des manières suivantes:
+	- Automatiquement après un certain délai
+	- Manuellement par un administrateur.
+	- Manuellement par l'utilisateur lui même après avoir réussi un CAPTCHA.
+- Toutefois, on a vu qu'un attaquant peut manipuler son adresse IP afin de contourner le blocage.
 
 ## Pièges et points d'attention BSCP
 - 
@@ -85,6 +89,14 @@ statut: à faire
 - Bloquer l'adresse IP de l'utilisateur distant s'il effectue un nombre élevé de tentatives de connexion rapide.
 - Dans ce cas, le simple fait d’inclure vos propres identifiants de connexion à intervalles réguliers dans la liste de mots suffit à rendre cette défense pratiquement inutile.
 - On peut également tout simplement verrouiller le compte si l'on subit trop de connexion infructueuses.
+
+## HTTP Authentification
+- Dans le cadre de cette authentification, le client reçoit du serveur un token d'authentification.
+- Ce token est la concaténation de son username et de son password encodé en base64. 
+- Le token est géré par le navigateur et est ajouté à l'en-tête "Authorization" et est définit comme suit:
+- `Authorization: Basic base64(username:password)`
+- Cette ùméthode est pas séc
+
 
 ## Labs PortSwigger
 - [ ] Apprentice
