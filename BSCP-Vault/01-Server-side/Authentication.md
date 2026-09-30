@@ -83,8 +83,8 @@ statut: en cours
 - Ne jamais utiliser l'authentification HTTP Basic seule pour protéger des ressources sensibles ; si utilisée, l'associer systématiquement à HSTS et à une protection anti-brute-force dédiée.
 
 ## Labs PortSwigger
-- [ ] Apprentice
-- [ ] Practitioner
+- [x] Apprentice ✅ 2026-09-30
+- [x] Practitioner ✅ 2026-09-30
 - [ ] Expert
 
 ## Journal des labs
