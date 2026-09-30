@@ -1,102 +1,86 @@
 ---
 tags: [bscp, server-side, authentication]
 niveau: apprentice
-statut: à faire
+statut: en cours
 ---
 # Authentication
 
 ## En bref
-- Processus qui consiste à vérifier qu'un utilisateur est bien celui qu'il prétend être.
-- Cela peut être un formulaire de connexion où l'on saisit son nom d'utilisateur et son mdp.
-- Permet à des attaquants d'accéder à des données ou à des fonctionnalités sensibles.
+- Processus qui consiste à vérifier qu'un utilisateur est bien celui qu'il prétend être (souvent via un formulaire nom d'utilisateur/mot de passe).
+- Une authentification vulnérable permet à un attaquant d'accéder à des données ou fonctionnalités sensibles : compromission totale de l'application si le compte visé a des privilèges élevés (ex: admin système), accès à des données normalement hors de portée même via un compte à bas privilège, et élargissement de la surface d'attaque via l'accès à de nouvelles pages/fonctions.
+
 ![](Authentication.png)
 
 ## Types et variantes
- on va aborder les points suivants:
-- Les mécanismes d'authentification les plus utilisés dans les sites web.
-- Les vulnérabilités potentielles de ces mécanismes.
-- Les vulnérabilités inhérentes aux différents mécanismes d'authentification.
-- Les vulnérabilités typiques résultant d'une mise en oeuvre incorrecte.
-- Il existe 3 types d'authentification:
-	- Quelque chose que l'on connait, comme un mot de passe, réponse à une question de sécurité. C'est le "facteur de connaissance"
-	- Quelque chose que l'on possède, comme un objet physique, on parle de "facteur de possession"
-	- Quelque chose qui nous est propre comme les données biométriques. On parle de "facteurs inhérents"
-- Ces mécanismes d’authentification s’appuient sur toute une gamme de technologies pour vérifier un ou plusieurs de ces facteurs.
+- Authentification par mot de passe (formulaire de connexion) : l'utilisateur prouve son identité par la connaissance d'un secret.
+- Authentification HTTP (Basic Auth) : le navigateur envoie un token `base64(username:password)` dans l'en-tête `Authorization` à chaque requête.
+- Authentification multi-facteurs (voir [[Multi-factor-authentication]]) : combine plusieurs des facteurs ci-dessous.
+- Les 3 facteurs d'authentification possibles :
+	- Facteur de connaissance : quelque chose que l'on connaît (mot de passe, réponse à une question de sécurité).
+	- Facteur de possession : quelque chose que l'on possède (objet physique, token, téléphone).
+	- Facteur inhérent : quelque chose qui nous est propre (données biométriques).
+- Deux origines de vulnérabilité à distinguer : faiblesse inhérente au mécanisme lui-même (pas de protection contre le brute force) contre faille logique ou erreur d'implémentation qui permet de contourner totalement le mécanisme.
 
 ## Comment détecter
-- 
+- Vérifier si l'application divulgue des noms d'utilisateur valides : pages de profil publiques, adresses e-mail visibles dans les réponses HTTP, schéma prévisible type `prenom.nom@entreprise.com`, comptes à privilèges élevés avec des noms devinables (`admin`, `administrator`).
+- Sur le formulaire de connexion, comparer les réponses entre un couple username/password totalement invalide et un username valide avec un password invalide : code de statut, message d'erreur, longueur de réponse, temps de réponse. Toute différence signale une énumération de username possible.
+- Tester si un verrouillage de compte existe, et si oui, quel est son déclencheur exact (nombre de tentatives par compte, par IP, ou par la combinaison des deux).
+- Repérer les mécanismes d'authentification en plusieurs étapes (2FA) pour vérifier si l'état de session est déjà "connecté" avant la validation complète de la deuxième étape.
+- Vérifier le format des en-têtes de la requête si le site utilise l'authentification HTTP Basic (`Authorization: Basic ...`) et si le protocole HSTS est en place.
 
 ## Comment exploiter (principe)
-- La plupart des failles dans les mécanismes d'authentification proviennent des 2 manières suivantes:
-	- Les mécanismes d'authentification sont faibles car ils ne protègent pas contre les attaques par bruit de force.
-	- Des failles logiques ou un code mal écrit lors de la mise en oeuvre permettent à un attaquant de contourner pleinement les mécanismes d'authentification.
-## Impact d'une authentification vulnérable
-- Accès à toutes les données et fonctionnalités associés au compte compromis. D'autant plus s'il s'agit d'un compte avec des privilèges élevées comme celui d'un admin système, il pourrait prendre le contrôle de application.
-- Même si s'agit d'un compte à bas privilège, un attaquant peut accéder à des données qui n'aurait pas normalement pas accès.
-- L'attaquant peut ainsi accéder à d'autre pages, ce qui élargit la surface d'attaque.
+### Brute force des identifiants
+- Méthode d'essai/erreur automatisée avec des listes de noms d'utilisateur et de mots de passe potentiels, à l'aide d'un outil comme Burp Intruder.
+- S'appuie sur une logique élémentaire ou des informations récupérées lors de la reconnaissance pour augmenter l'efficacité de l'attaque, plutôt que sur des listes génériques.
 
-## Vulnérabilités liées à la connexion par mot de passe
-- Sur les sites web un processus de connexion par mot de passe, les utilisateurs créent eux-même un compte ou se voient attribuer un mot de passe attribué par un admin. Ce compte est associé à un identifiant unique et un mot de passe secret.
-- Dans ce cas, le fait de connaitre le mot de passe est une preuve suffisante de l'identité du user. Cela peut se faire de plusieurs manières:
-	- Attaque par bruit de force:
-	- Méthode d'essai et d'erreurs pour deviner les identifiants valides d'un utilisateur. 
-	- Ces attaques sont automatisées à l'aide de listes de nom d'utilisateur et de mot de passe potentiels
-	- S'appuie sur une logique élémentaire ou des informations récupérées lors de la phase passive. Ainsi les attaquants peuvent considérablement augmentées l'efficacité de leur attaque.
-- Bruit de force des noms d'utilisateur
-	- Particulièrement facile à deviner car ils suivent un schéma reconnaissable, comme une adresse mail. Les identifiants professionnels ont souvent le format prenom.nom@compagny.com.
-	- il arrive même que des comptes à privilège élevées soient crées avec des noms prévisible comme "admin" ou "Administrator".
-	- Lors d'un audit, toujours vérifier si le site web divulgue publiquement des noms d'utilisateur potentiels. 
-	- Même si le contenu réel des profils est masqué, le nom utilisé dans le profil est parfois identique au nom d’utilisateur de connexion.
-	- Vérifier les réponses HTTP pour voir si des adresses e-mail sont divulguées.
-	- Les réponses peuvent contenir les adresses mails d'utilisateurs de privilèges élevées.
--  Bruit de force des mots de passe:
-	- Beaucoup de sites adopte une stratégie de mot de passe qui obligent les users à créer des mots de passe à forte entropie.
-	- Cela implique d'imposer des mots de passe respectant:
-		- Un n ombre minimal de caractère
-		- Une combinaison de minuscule/majuscule
-		- Des caractères spéciaux
-	- Bien que les mots de passe fort soient complexes à casser, le comportement humain introduit involontairement des failles dans ce système.  En effet, les utilisateur choisissent souvent un mot de passe qu'ils tentent de mémoriser et l'adapte pour qu'il respecte la politique de mot de passe.
-	- Exemple: si « mypassword » n’est pas autorisé, les utilisateurs peuvent essayer quelque chose comme « Mypassword1! » ou « Myp4w0rd » à la place.
-	- Lorsqu'il s'agit de changer de mot de passe, il est courant d'apporter des modification mineurs à leur mot de passe préférés. Par exemple, « Mypassword1! » devient « Mypassword1? » ou « Mypassword2! ».
-	- Cette connaissance des identifiants probables et des schémas prévisibles signifie que les attaques par force brute peuvent souvent être bien plus sophistiquées.
-- Enumeration des usernames:
-	- Cette méthode consiste à un attaquant d'observer les changements de comportement d'un site web afin de savoir si un username est valide ou non.
-	- L'énumération se produit sur une page de connexion, par exemple lorsque on saisit un nom d'utilisateur valide et un mot de passe incorrect. Cela réduit le temps nécessaire pour forcer une connexion par bruit de force.
-	- Lorsque vous tentez une attaque par bruit de force sur une page de connexion, vous devez prêter une attention particulière aux différences concernant :
-		- **Les codes d'état**: Si une tentative renvoie un code d'état différent, cela indique que le username était correct
-		- **Les messages d'erreur**: Le message d'erreur peut différer selon que le username et le password sont incorrects
-		- **Temps de réponse**:  Toute requête s’écartant de cette norme suggère qu’un événement inhabituel s’est produit en arrière-plan. C’est un autre indice laissant penser que le nom d’utilisateur deviné pourrait être correct.
-## Méthode pour contourner un verrouillage de compte
-- Etablir une liste de noms d'utilisateurs susceptible d'être valide.
-- Définir une liste très restreinte de mot de passe qu'au moins des user est susceptible d'utiliser.
-- A l'aide de Burp Intruder, tester chacun des mots de passe sélectionnés avec chacun des noms d’utilisateur potentiels. Il suffit qu’un seul utilisateur utilise l’un des trois mots de passe pour compromettre un compte.
-- Le verrouillage ne protègent pas non plus contre le "credential stuffing". Ces attaques consistent à utiliser un immense dictionnaire de paires nom d’utilisateur/mot de passe.
-- Le « credential stuffing » tire parti du fait que de nombreuses personnes réutilisent le même nom d’utilisateur et le même mot de passe sur plusieurs sites web.
-## Limitation de débit
-- Lorsque l'on effectue trop de tentatives de mot de passe, on peut bloquer l'adresse IP. Cependant, elle peut être débloquée des manières suivantes:
-	- Automatiquement après un certain délai
-	- Manuellement par un administrateur.
-	- Manuellement par l'utilisateur lui même après avoir réussi un CAPTCHA.
-- Toutefois, on a vu qu'un attaquant peut manipuler son adresse IP afin de contourner le blocage.
+### Brute force des noms d'utilisateur
+- Les identifiants professionnels suivent souvent un schéma reconnaissable (`prenom.nom@compagnie.com`).
+- Des comptes à privilèges élevés sont parfois créés avec des noms prévisibles comme `admin` ou `Administrator`.
+- Toujours vérifier si le site divulgue publiquement des noms d'utilisateur potentiels : profils publics (même avec un contenu masqué, le nom affiché est parfois identique à l'identifiant de connexion), adresses e-mail visibles dans les réponses HTTP, y compris celles de comptes à privilèges élevés.
+
+### Brute force des mots de passe
+- De nombreux sites imposent une politique de mot de passe à forte entropie (longueur minimale, combinaison majuscule/minuscule, caractères spéciaux).
+- Le comportement humain introduit des failles malgré cela : les utilisateurs adaptent un mot de passe mémorisable pour respecter la politique plutôt que d'en choisir un vraiment aléatoire.
+	- Exemple : si `mypassword` est refusé, l'utilisateur essaiera `Mypassword1!` ou `Myp4ssw0rd`.
+	- Lors d'un changement de mot de passe imposé, les utilisateurs appliquent souvent une modification mineure : `Mypassword1!` devient `Mypassword1?` ou `Mypassword2!`.
+- Cette prévisibilité permet de construire des listes de mots de passe candidats bien plus efficaces qu'une liste générique.
+
+### Énumération des noms d'utilisateur par différence de comportement
+- Consiste à observer les changements de comportement du site pour déterminer si un username est valide, généralement sur la page de connexion (username valide + password invalide, comparé aux deux invalides).
+- Réduit fortement le temps nécessaire pour un brute force complet : plus besoin de deviner username et password en même temps.
+- Signaux à surveiller : code de statut différent, message d'erreur différent, temps de réponse anormal (un écart par rapport à la norme suggère un traitement différent en arrière-plan, par exemple un hachage du mot de passe qui ne s'exécute que si le username existe).
+
+### Contournement d'un verrouillage de compte (password spraying)
+- Établir une liste de noms d'utilisateur potentiellement valides et une liste très restreinte de mots de passe probables.
+- Avec Burp Intruder, tester chaque mot de passe contre chaque username (attaque en grille) : il suffit qu'un seul utilisateur ait choisi l'un des mots de passe testés pour compromettre un compte, sans jamais dépasser le seuil de verrouillage par compte.
+- Le verrouillage par compte ne protège pas non plus contre le credential stuffing (test d'un grand nombre de paires username/password déjà connues, issues de fuites d'autres sites), qui exploite la réutilisation de mots de passe entre sites.
+
+### Contournement d'un blocage par IP
+- Une IP peut être bloquée après un nombre trop élevé de tentatives, avec déblocage automatique après un délai, manuel par un administrateur, ou via un CAPTCHA résolu par l'utilisateur.
+- Un attaquant peut manipuler son IP apparente (en-têtes `X-Forwarded-For`, `X-Real-IP`, etc.) pour contourner ce blocage si l'application fait confiance à un en-tête fourni par le client plutôt qu'à la connexion réelle (voir [[Payloads-cheatsheet]]).
+
+### Authentification HTTP Basic
+- Le client reçoit du serveur un token d'authentification qui est la concaténation `username:password` encodée en base64.
+- Ce token est géré par le navigateur et ajouté à chaque requête dans l'en-tête `Authorization` :
+`Authorization: Basic base64(username:password)`
+- Cette méthode est peu sécurisée car :
+	- Elle implique l'envoi répété des identifiants à chaque requête.
+	- Sans HSTS, les identifiants risquent d'être interceptés lors d'une attaque man-in-the-middle.
+	- Les implémentations ne prennent souvent pas en charge de protection contre le brute force.
+	- Elle est particulièrement vulnérable aux exploits liés à la session, notamment le CSRF.
 
 ## Pièges et points d'attention BSCP
-- 
+- Le verrouillage de compte ou d'IP n'est pas une protection absolue : inclure ses propres identifiants valides à intervalles réguliers dans la liste testée suffit souvent à passer sous le radar, ou révèle que le compteur se réinitialise après un login réussi.
+- Toujours vérifier si le seuil de blocage est scopé par IP, par compte, ou par la combinaison des deux : ça change complètement la stratégie (rotation d'IP vs répartition sur plusieurs comptes).
+- Une différence de temps de réponse peut être un signal d'énumération même quand les codes de statut et les messages sont identiques : ne pas se fier à un seul type de signal.
+- Sur un mécanisme 2FA, vérifier si l'état de session est déjà "connecté" avant validation complète de la deuxième étape, et si le serveur revérifie bien cette étape avant d'afficher les pages protégées.
 
 ## Prévention
-- Toujours renvoyer le même code d'état quelque soit le résultat pour empêcher les attaques par bruit de force.
-- Pour les messages d'erreur: utiliser des messages identiques et génériques dans les deux cas.
-- Verrouiller le compte auquel l'utilisateur tente d’accéder s'il effectue un nombre élevé de tentatives de connexion sans succès.
-- Bloquer l'adresse IP de l'utilisateur distant s'il effectue un nombre élevé de tentatives de connexion rapide.
-- Dans ce cas, le simple fait d’inclure vos propres identifiants de connexion à intervalles réguliers dans la liste de mots suffit à rendre cette défense pratiquement inutile.
-- On peut également tout simplement verrouiller le compte si l'on subit trop de connexion infructueuses.
-
-## HTTP Authentification
-- Dans le cadre de cette authentification, le client reçoit du serveur un token d'authentification.
-- Ce token est la concaténation de son username et de son password encodé en base64. 
-- Le token est géré par le navigateur et est ajouté à l'en-tête "Authorization" et est définit comme suit:
-- `Authorization: Basic base64(username:password)`
-- Cette ùméthode est pas séc
-
+- Toujours renvoyer le même code de statut et le même message d'erreur générique, que le username ou le password soit invalide.
+- Uniformiser le temps de réponse entre les cas valides et invalides (éviter qu'un traitement conditionnel, comme le hachage du mot de passe, ne s'exécute que si le username existe).
+- Verrouiller le compte ciblé après un nombre élevé de tentatives infructueuses, et/ou bloquer l'IP distante en cas de fréquence de connexion anormale.
+- Ne pas se reposer uniquement sur le blocage par IP pour la protection anti-brute-force : il est contournable par manipulation d'en-têtes si l'IP du client n'est pas déterminée de façon fiable côté serveur.
+- Ne jamais utiliser l'authentification HTTP Basic seule pour protéger des ressources sensibles ; si utilisée, l'associer systématiquement à HSTS et à une protection anti-brute-force dédiée.
 
 ## Labs PortSwigger
 - [ ] Apprentice
@@ -107,16 +91,14 @@ statut: à faire
 - 
 
 ## Mes notes
-- Différence entre authentification et autorisation:
-	- Authentification: Processus qui consiste à vérifier qu'un utilisateur est bien celui qui prétend être.
-	- Autorisation: Consiste à vérifier si un utilisateur est autorisé à effectuer une action.
-### Bypass l'authentification 2 facteurs
-- Il est possible que l'utilisateur soit invité à entrer un code de vérification sur une page distincte après avoir saisit sont mot de passe. Il se trouve en réalité dans un état "connecté" avant même d'avoir saisis son mot de passe.
-- Arrive parfois qu'uns site web ne vérifie pas su on a bien effectué la 2ème étape avant d'afficher la page.
-
+- Différence entre authentification et autorisation :
+	- Authentification : processus qui consiste à vérifier qu'un utilisateur est bien celui qu'il prétend être.
+	- Autorisation : consiste à vérifier si un utilisateur est autorisé à effectuer une action.
 
 ## Liens
 - [[Access-control]]
 - [[JWT-attacks]]
 - [[OAuth]]
 - [[Business-logic]]
+- [[Multi-factor-authentication]]
+- [[Payloads-cheatsheet]]
