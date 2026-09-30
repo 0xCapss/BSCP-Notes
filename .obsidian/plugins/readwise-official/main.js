@@ -9879,6 +9879,25 @@ function getErrorDetailsFromResponse(response) {
     });
 }
 
+/** The name of the Readwise Sync history file, without the extension.
+ * This is described as "Sync notification" in the Obsidian export settings
+ * on the Readwise website. */
+const READWISE_SYNC_FILENAME = "Readwise Syncs";
+/**
+ * The expected vault path of the "Readwise Syncs.md" file for a given base
+ * folder. Unlike every other export entry it is plain markdown, not JSON, so
+ * it must be detected by path and skipped from `JSON.parse`.
+ *
+ * The result is run through `normalizePath` because the caller compares it
+ * against an already-normalized `processedFileName`. Without normalizing here,
+ * a vault-root base folder (`"/"` or `""`) leaves a stray leading slash on this
+ * side only, the comparison fails, and the markdown sync file is misparsed as
+ * JSON ("No number after minus sign in JSON at position 1").
+ */
+function readwiseSyncFilePath(readwiseDir, normalizePath) {
+    return normalizePath(`${readwiseDir}/${READWISE_SYNC_FILENAME}.md`);
+}
+
 // Inspired by
 // https://github.com/renehernandez/obsidian-readwise/blob/eee5676524962ebfa7eaf1084e018dafe3c2f394/src/status.ts
 class StatusBar {
@@ -9943,10 +9962,6 @@ const DEFAULT_SETTINGS = {
     "booksIDsMap": {},
     "reimportShowConfirmation": true
 };
-/** The name of the Readwise Sync history file, without the extension.
- * This is described as "Sync notification" in the Obsidian export settings
- * on the Readwise website. */
-const READWISE_SYNC_FILENAME = "Readwise Syncs";
 class ReadwisePlugin extends obsidian.Plugin {
     constructor() {
         super(...arguments);
@@ -10127,11 +10142,6 @@ class ReadwisePlugin extends obsidian.Plugin {
         if (!this.app.isMobile) {
             this.statusBar.displayMessage(msg.toLowerCase(), timeout, forcing);
         }
-        else {
-            if (!show) {
-                new obsidian.Notice(msg);
-            }
-        }
     }
     showInfoStatus(container, msg, className = "") {
         let info = container.find('.rw-info-container');
@@ -10200,7 +10210,7 @@ class ReadwisePlugin extends obsidian.Plugin {
                     const processedFileName = obsidian.normalizePath(entry.filename
                         .replace(/^Readwise/, this.settings.readwiseDir)
                         .replace(/\.json$/, ".md"));
-                    const isReadwiseSyncFile = processedFileName === `${this.settings.readwiseDir}/${READWISE_SYNC_FILENAME}.md`;
+                    const isReadwiseSyncFile = processedFileName === readwiseSyncFilePath(this.settings.readwiseDir, obsidian.normalizePath);
                     try {
                         const fileContent = yield entry.getData(new TextWriter());
                         if (isReadwiseSyncFile) {
