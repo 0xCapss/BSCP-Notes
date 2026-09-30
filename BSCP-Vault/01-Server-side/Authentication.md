@@ -68,10 +68,13 @@ statut: à faire
 		- **Temps de réponse**:  Toute requête s’écartant de cette norme suggère qu’un événement inhabituel s’est produit en arrière-plan. C’est un autre indice laissant penser que le nom d’utilisateur deviné pourrait être correct.
 ## Méthode pour contourner un verrouillage de compte
 - Etablir une liste de noms d'utilisateurs susceptible d'être valide.
-- Définir une liste treès restreinte de mot de passe qu'au moins des user est susceptible d'utiliser.
+- Définir une liste très restreinte de mot de passe qu'au moins des user est susceptible d'utiliser.
 - A l'aide de Burp Intruder, tester chacun des mots de passe sélectionnés avec chacun des noms d’utilisateur potentiels. Il suffit qu’un seul utilisateur utilise l’un des trois mots de passe pour compromettre un compte.
 - Le verrouillage ne protègent pas non plus contre le "credential stuffing". Ces attaques consistent à utiliser un immense dictionnaire de paires nom d’utilisateur/mot de passe.
 - Le « credential stuffing » tire parti du fait que de nombreuses personnes réutilisent le même nom d’utilisateur et le même mot de passe sur plusieurs sites web.
+## Limitation de débit
+- Lorsque l'on effectue trop de tentatives de mot de passe, on peut bloquer l'adresse IP. Cependant, elle peut être débloquée
+
 ## Pièges et points d'attention BSCP
 - 
 
