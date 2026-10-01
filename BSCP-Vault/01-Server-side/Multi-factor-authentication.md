@@ -56,7 +56,7 @@ verification-code=123456
 - 
 
 ## Labs PortSwigger
-- [ ] Apprentice
+- [x] Apprentice ✅ 2026-10-01
 - [ ] Practitioner
 - [ ] Expert
 
