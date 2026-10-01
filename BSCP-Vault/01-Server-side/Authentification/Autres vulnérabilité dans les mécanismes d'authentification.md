@@ -17,7 +17,15 @@
 ### Reset le mot de passe utilisateur
 - La réinitialisation d'un mot de passe est une fonctionnalité risqué. Elle doit authentifier un utilisateur par un autre moyen que le mot de passe, ce qui crée une surface d'attaque en plus.
 - Elle se doit impérativement d'être implémentée de façon sécurisée, sous peine de permettre un attaquant de prendre le contrôle d'un compte sans nécessairement connaitre le mot de passe initial. 
-- Plusieurs méthodes d'implément
+- Plusieurs méthodes d'implémentation existent, avec des niveaux de vulnérabilité différents selon la conception retenue.
+- Si un site web gère correctement ses mots de passe, il ne devrait jamais être capable d'envoyer le mot de passe actuel par e-mail (cela signifie qu'il le stocke en clair ou de façon réversible).
+- Certains sites contournent cela en générant un nouveau mot de passe temporaire envoyé par e-mail à la place.
+- Envoyer un mot de passe permanent via un canal non sécurisé est à éviter car si ce mot de passe n'expire pas vite ou si le'utilisateur le ne change pas immédiatement, cette approche devient vulnérable aux attaques man-in-the-middle.
+- L'e-mail n'est pas considéré comme un canal sécurisé: les boîtes de réception sont permanentes, très mal adaptées au stockage d'information confidentielles, et sont très souvent synchroniser sur d'autres appareils.
+- L'envoi d'une URL unique vers une page de réinitialisation est une méthode plus sûre que l'envoi de mot de passe.
+- Exemple d'une implémentation faible car elle utilise un paramètre prévisible:
+`http://vulnerable-website.com/reset-password?user=victim-user`
+- Si ce paramètre est modifiable, un attaquant peut le remplacer par n'importe quel nom d'utilisateur 
 ## Comment détecter
 - 
 
