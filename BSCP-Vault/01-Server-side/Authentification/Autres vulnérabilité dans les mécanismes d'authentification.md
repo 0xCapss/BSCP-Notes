@@ -8,7 +8,11 @@
 	- Le réinitialiser quand ils l'ont oublié.
 - Ces différents mécanismes sont des grandes sources de vulnérabilités car on oublie facilement qu'il faut prendre des mesures sur ces fonctionnalités afin qu'elles soient robustes.
 ## Maintenir la connexion des utilisateurs
-- Fonctionnalité qui consiste à permettre aux utilisateurs de rester connectés après avoir
+- Fonctionnalité qui consiste à permettre aux utilisateurs de rester connectés après avoir fermé leur session dans le navigateur.
+- Token qui est stocké dans un cookie persistant.
+- Ce cookie peut être gérer par le site web lui-même et peut être générer par des valeurs statique comme le nom d'utilisateur suivi d'un horodatage. Ainsi, un attaquant peut analyser son cookie et en déduire comment ils sont générés.
+- Le cookie peut être également chiffré mais le fait d'utilisé un code bidirectionnel comme la base64 n'offre aucune protection.
+- A l'aide de technique comme la XSS, un attaquant peut dérober le cookie "Se souvenir de moi" d'un autre user et en déduire la structure. 
 ## Comment détecter
 - 
 
