@@ -9,7 +9,7 @@
 - 
 
 ## Comment exploiter (principe)
-- 
+- Utilisation de bruit de force pour les codes qui sont souvent un simple nombre à chiffres.
 
 ## Pièges et points d'attention BSCP
 - Si l’utilisateur est d’abord invité à saisir un mot de passe, puis à entrer un code de vérification sur une page distincte, il se trouve en réalité dans un état « connecté » avant même d’avoir saisi ce code.
