@@ -12,6 +12,7 @@
 - Token qui est stocké dans un cookie persistant.
 - Ce cookie peut être gérer par le site web lui-même et peut être générer par des valeurs statique comme le nom d'utilisateur suivi d'un horodatage. Ainsi, un attaquant peut analyser son cookie et en déduire comment ils sont générés.
 - Le cookie peut être également chiffré mais le fait d'utilisé un code bidirectionnel comme la base64 n'offre aucune protection.
+- Il se peut que le mot de passe soit haché. Mais il existe une liste de mot de passes bien connu en ligne qui permettent de casser ces mots de passes. Cela montre l'importance du "salt" dans un mot de passe.
 - A l'aide de technique comme la XSS, un attaquant peut dérober le cookie "Se souvenir de moi" d'un autre user et en déduire la structure. 
 ## Comment détecter
 - 
