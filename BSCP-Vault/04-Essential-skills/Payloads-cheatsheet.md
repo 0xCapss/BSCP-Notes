@@ -47,3 +47,9 @@ statut: en cours
   def handleResponse(req, interesting):
       table.add(req)
   ```
+
+### Multi-factor authentication ([[Multi-factor-authentication]])
+- Cookie de liaison d'identité entre étapes à manipuler : `Cookie: account=carlos` → `Cookie: account=victim-user`
+- Brute force du code de vérification (4-6 chiffres) : Burp Intruder, attaque Sniper, payload type Numbers, plage `0000`-`9999` (ou `000000`-`999999`)
+- Réponse de vérification à surveiller/manipuler si la décision est côté client : `"verified":false` → `"verified":true`
+- Accès direct après étape 1 : forcer la navigation vers une URL post-connexion sans jamais soumettre le code (ex: `/my-account`)
