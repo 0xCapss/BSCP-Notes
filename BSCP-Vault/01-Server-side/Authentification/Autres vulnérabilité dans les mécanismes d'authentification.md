@@ -25,7 +25,11 @@
 - L'envoi d'une URL unique vers une page de réinitialisation est une méthode plus sûre que l'envoi de mot de passe.
 - Exemple d'une implémentation faible car elle utilise un paramètre prévisible:
 `http://vulnerable-website.com/reset-password?user=victim-user`
-- Si ce paramètre est modifiable, un attaquant peut le remplacer par n'importe quel nom d'utilisateur 
+- Si ce paramètre est modifiable, un attaquant peut le remplacer par n'importe quel nom d'utilisateur identifié et accéder légitimement à la page de réinitialisation du compte sans jamais avoir reçu le lien.
+- Une meilleur implémentation est d'utiliser un token à forte entropie pour construire un URL de réinitialisation.
+- L'URL ne doit communiquer aucun indice sur l'identité de l'utilisateur ciblé par la réinitialisation.
+- Le serveur doit vérifier l'existence de ce token en back-end pour retrouver l'utilisateur associé, le faire expirer rapidement et le détruire une fois le mot de passe changé.
+- Certains sites ne revalident pas le jeton au moment de la soumission du formulaire. Ainsi, un attaquant peut alors accéder au formulaire avec son propre jeton, le supprimer de sa requête et alors réinitialiser un mot de passe utilisateur.
 ## Comment détecter
 - 
 
