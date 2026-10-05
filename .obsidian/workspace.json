@@ -205,9 +205,9 @@
   "left-ribbon": {
     "hiddenItems": {
       "switcher:Ouvrir le sélecteur rapide": false,
-      "graph:Ouvrir la vue graphique": false,
       "canvas:Créer une nouvelle toile": false,
       "daily-notes:Ouvrir la note quotidienne": false,
+      "graph:Ouvrir la vue graphique": false,
       "templates:Insérer le modèle": false,
       "command-palette:Ouvrir la palette de commandes": false,
       "bases:Créer une nouvelle base": false,
@@ -216,11 +216,13 @@
       "obsidian-git:Open Git source control": false,
       "omnisearch:Omnisearch": false,
       "templater-obsidian:Templater": false,
-      "periodic-notes:Open today": false
+      "periodic-notes:Open today": false,
+      "tags-routes:Open tags routes": false
     }
   },
   "active": "2930941a1f1a4f2e",
   "lastOpenFiles": [
+    "BSCP-Vault/01-Server-side/Authentification/Autres vulnérabilité dans les mécanismes d'authentification.md.tmp.48412.5f8920036682",
     "BSCP-Vault/01-Server-side/Authentification/Multi-factor-authentication.md",
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
     "BSCP-Vault/01-Server-side/Authentification/Autres vulnérabilité dans les mécanismes d'authentification.md",

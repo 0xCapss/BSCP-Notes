@@ -1,119 +1,73 @@
 
 ## En bref
-- 
+- Les fonctionnalités annexes d'authentification (cookie "Se souvenir de moi", réinitialisation et modification du mot de passe) forment une surface d'attaque aussi importante que la page de connexion, mais elles sont souvent moins bien protégées.
+- Une faille dans l'une d'elles permet de prendre le contrôle d'un compte sans connaître son mot de passe, ou de contourner les protections de la page de connexion (limitation de tentatives, verrouillage de compte).
 
 ## Types et variantes
-- La plupart des sites web propose des fonctionnalités supplémentaires pour gérer leur compte comme:
-	- La modification de leur mot de passe
-	- Le réinitialiser quand ils l'ont oublié.
-- Ces différents mécanismes sont des grandes sources de vulnérabilités car on oublie facilement qu'il faut prendre des mesures sur ces fonctionnalités afin qu'elles soient robustes.
+- La plupart des sites proposent des fonctionnalités supplémentaires pour gérer un compte :
+	- Modifier son mot de passe.
+	- Le réinitialiser en cas d'oubli.
+	- Rester connecté d'une session à l'autre.
+- Ces mécanismes sont une grande source de vulnérabilités, car on oublie facilement de les durcir autant que la connexion principale.
+
 ### Maintenir la connexion des utilisateurs
-- Fonctionnalité qui consiste à permettre aux utilisateurs de rester connectés après avoir fermé leur session dans le navigateur.
-- Token qui est stocké dans un cookie persistant.
-- Ce cookie peut être gérer par le site web lui-même et peut être générer par des valeurs statique comme le nom d'utilisateur suivi d'un horodatage. Ainsi, un attaquant peut analyser son cookie et en déduire comment ils sont générés.
-- Le cookie peut être également chiffré mais le fait d'utilisé un code bidirectionnel comme la base64 n'offre aucune protection.
-- Il se peut que le mot de passe soit haché. Mais il existe une liste de mot de passes bien connu en ligne qui permettent de casser ces mots de passes. Cela montre l'importance du "salt" dans un mot de passe.
-- A l'aide de technique comme la XSS, un attaquant peut dérober le cookie "Se souvenir de moi" d'un autre user et en déduire la structure.
-### Reset le mot de passe utilisateur
-- La réinitialisation d'un mot de passe est une fonctionnalité risqué. Elle doit authentifier un utilisateur par un autre moyen que le mot de passe, ce qui crée une surface d'attaque en plus.
-- Elle se doit impérativement d'être implémentée de façon sécurisée, sous peine de permettre un attaquant de prendre le contrôle d'un compte sans nécessairement connaitre le mot de passe initial. 
-- Plusieurs méthodes d'implémentation existent, avec des niveaux de vulnérabilité différents selon la conception retenue.
-- Si un site web gère correctement ses mots de passe, il ne devrait jamais être capable d'envoyer le mot de passe actuel par e-mail (cela signifie qu'il le stocke en clair ou de façon réversible).
-- Certains sites contournent cela en générant un nouveau mot de passe temporaire envoyé par e-mail à la place.
-- Envoyer un mot de passe permanent via un canal non sécurisé est à éviter car si ce mot de passe n'expire pas vite ou si le'utilisateur le ne change pas immédiatement, cette approche devient vulnérable aux attaques man-in-the-middle.
-- L'e-mail n'est pas considéré comme un canal sécurisé: les boîtes de réception sont permanentes, très mal adaptées au stockage d'information confidentielles, et sont très souvent synchroniser sur d'autres appareils.
-- L'envoi d'une URL unique vers une page de réinitialisation est une méthode plus sûre que l'envoi de mot de passe.
-- Exemple d'une implémentation faible car elle utilise un paramètre prévisible:
-`http://vulnerable-website.com/reset-password?user=victim-user`
-- Si ce paramètre est modifiable, un attaquant peut le remplacer par n'importe quel nom d'utilisateur identifié et accéder légitimement à la page de réinitialisation du compte sans jamais avoir reçu le lien.
-- Une meilleur implémentation est d'utiliser un token à forte entropie pour construire un URL de réinitialisation.
-- L'URL ne doit communiquer aucun indice sur l'identité de l'utilisateur ciblé par la réinitialisation.
-- Le serveur doit vérifier l'existence de ce token en back-end pour retrouver l'utilisateur associé, le faire expirer rapidement et le détruire une fois le mot de passe changé.
-- Certains sites ne revalident pas le jeton au moment de la soumission du formulaire. Ainsi, un attaquant peut alors accéder au formulaire avec son propre jeton, le supprimer de sa requête et alors réinitialiser un mot de passe utilisateur.
-- Si l'URL figurant dans l'e-mail de réinitialisation est générée de manière dynamique, elle peut également être vulnérable à une attaque de type « password reset poisoning ». Dans ce cas, un pirate pourrait potentiellement voler le jeton d'un autre utilisateur et l'utiliser pour modifier son mot de passe.
-## Modififcation du mot de passe utilisateur
-- Le processus actuel demande généralement le mot de passe actuel puis le nouveau mot de passe 2x.
-- Ces pages reposent sur le même mécanisme de vérification qu'une page de connexion classique.
-- Elles sont donc exposées aux même techniques d'attaque que les pages de connexion.
+- Fonctionnalité qui permet de rester connecté après la fermeture du navigateur, généralement grâce à un jeton stocké dans un cookie persistant.
+- Si le cookie est généré à partir de valeurs prévisibles (nom d'utilisateur suivi d'un horodatage, par exemple), un attaquant peut analyser son propre cookie, en déduire la construction, puis forger celui d'une autre personne.
+- Un encodage réversible comme le base64 n'est pas du chiffrement et n'offre aucune protection.
+- Si le mot de passe est simplement haché dans le cookie, il peut être retrouvé grâce aux tables de hachages de mots de passe courants disponibles en ligne. Cela montre l'importance du sel (salt) : un hachage sans sel est beaucoup plus facile à casser.
+- Une faille comme la XSS permet de voler le cookie "Se souvenir de moi" d'un autre utilisateur, et donc d'en déduire la structure.
 
-- Ainsi, cette fonctionnalité devient dangereuse car un attaquant peut y accéder directement, sans être connecté à sa victime.
-- Cas typique : le nom d'utilisateur est transmis dans un champ masqué du formulaire. L'attaquant peut modifier cette valeur dans la requête pour cibler des utilisateurs arbitraires.
+### Réinitialiser le mot de passe
+- La réinitialisation est une fonctionnalité risquée : elle doit authentifier l'utilisateur autrement que par son mot de passe, ce qui crée une surface d'attaque supplémentaire.
+- Plusieurs méthodes d'implémentation existent, avec des niveaux de vulnérabilité différents :
+	- **Envoi du mot de passe actuel par e-mail** : ne devrait jamais être possible. Si c'est le cas, le site stocke les mots de passe en clair ou de façon réversible.
+	- **Envoi d'un nouveau mot de passe temporaire** : à éviter. Si ce mot de passe n'expire pas vite ou si l'utilisateur ne le change pas immédiatement, il est exposé aux attaques de l'homme du milieu. L'e-mail n'est pas un canal sûr : les boîtes de réception sont persistantes, mal adaptées au stockage d'informations confidentielles et souvent synchronisées sur plusieurs appareils.
+	- **Envoi d'une URL unique vers une page de réinitialisation** : méthode la plus sûre, à condition d'être bien implémentée.
+- Implémentation faible : l'URL contient un paramètre prévisible.
+  `http://vulnerable-website.com/reset-password?user=victim-user`
+  Si ce paramètre est modifiable, l'attaquant remplace le nom d'utilisateur et accède à la page de réinitialisation du compte visé sans jamais avoir reçu le lien.
+- Meilleure implémentation : un jeton à forte entropie dans l'URL, qui ne donne aucun indice sur l'utilisateur concerné. Le serveur doit :
+	- retrouver l'utilisateur associé au jeton côté serveur ;
+	- faire expirer le jeton rapidement ;
+	- le détruire dès que le mot de passe a été changé.
+- Certains sites ne revalident pas le jeton à la soumission du formulaire. L'attaquant ouvre alors le formulaire avec son propre jeton, le supprime de la requête, puis réinitialise le mot de passe de n'importe quel utilisateur.
+- Si l'URL de l'e-mail est générée dynamiquement (à partir de l'en-tête `Host` ou `X-Forwarded-Host`), elle peut être vulnérable au **password reset poisoning** : l'attaquant fait pointer le lien vers son propre domaine et récupère le jeton de la victime quand elle clique.
+
+### Modifier le mot de passe
+- Le formulaire demande généralement le mot de passe actuel, puis le nouveau mot de passe deux fois.
+- Il repose sur le même mécanisme de vérification qu'une page de connexion classique, et est donc exposé aux mêmes attaques (force brute, énumération).
+- Cette page devient particulièrement dangereuse quand l'attaquant peut y accéder sans être connecté en tant que sa victime.
+- Cas typique : le nom d'utilisateur est transmis dans un champ masqué du formulaire. L'attaquant modifie cette valeur dans la requête pour cibler un utilisateur arbitraire.
+
 ## Comment détecter
-
+- Cookie persistant : se connecter avec "Se souvenir de moi", puis comparer les cookies obtenus avec plusieurs comptes (ou au fil du temps) pour repérer une structure (nom d'utilisateur, horodatage, base64, hachage connu).
+- Réinitialisation : lancer la procédure avec son propre compte et observer :
+	- le contenu du lien reçu (paramètre `user` prévisible ou jeton aléatoire) ;
+	- si le jeton est encore contrôlé à la soumission du formulaire (le supprimer ou le modifier dans la requête) ;
+	- si l'en-tête `X-Forwarded-Host` ou `Host` influence le domaine du lien généré.
+- Modification du mot de passe : vérifier si le nom d'utilisateur figure dans un champ masqué, et si les messages d'erreur diffèrent selon que le mot de passe actuel est correct ou non.
 
 ## Comment exploiter (principe)
-- 
+- Cookie persistant : forger le cookie d'une victime à partir de la structure déduite, ou casser le hachage qu'il contient.
+- Réinitialisation avec paramètre prévisible : remplacer le nom d'utilisateur dans l'URL.
+- Jeton non revalidé : retirer le jeton de la requête de soumission.
+- Password reset poisoning : envoyer la demande de réinitialisation de la victime avec un en-tête `X-Forwarded-Host` pointant vers le serveur de l'attaquant, puis lire le jeton dans les journaux d'accès à la réception du clic de la victime, et l'utiliser sur le vrai lien de réinitialisation.
+- Modification du mot de passe : changer le champ `username` pour viser la victime, puis exploiter la différence de message d'erreur pour trouver son mot de passe actuel par force brute.
 
 ## Pièges et points d'attention BSCP
-- 
+- Dans la page de modification du mot de passe, le verrouillage de compte ne se déclenche que si les deux nouveaux mots de passe sont identiques. Avec deux valeurs différentes, la page répond `Current password is incorrect` ou `New passwords do not match`, ce qui permet de tester des mots de passe sans verrouiller le compte.
+- Pour le password reset poisoning, le lien à utiliser est celui reçu dans votre propre boîte e-mail (pas celui qui pointe vers le serveur d'exploit), dans lequel vous remplacez uniquement la valeur du jeton.
+- Si `X-Forwarded-Host` est ignoré, essayer `Host` ou d'autres en-têtes de redirection (`X-Forwarded-Server`, `X-Host`, `Forwarded`).
 
 ## Prévention
-- Nous avons vu plusieurs failles de sécurité auxquelles les sites web peuvent être exposés dans la manière dont ils gèrent l'authentification. Il existe plusieurs principes qui permettent de réduire ce risque:
-	- Protéger les identifiants des utilisateurs: 
-		- Ne jamais transmettre de données de connexion sur une connexion non chiffrée (HTTPS). 
-		- Vérifier qu''aucun nom d'utilisateur ni d'adresse mail n'est exposé, que ce soit par des profils publics ou par des réponses HTTP qui les reflètent.
-	- Ne pas compter sur les utilisateurs pour assurer la sécurité
-		- Une authentification stricte demande un effort aux utilisateurs et chercheront à l'éviter.
-		- Imposer les comportements sécurisés
-	- Politique de mot de passe:
-		- Les politiques traditionnelles échouent souvent : les utilisateurs font entrer de force leurs mots de passe prévisibles dans les règles imposées.
-		- Une alternative plus efficace : un vérificateur de mot de passe qui évalue la solidité en temps réel pendant la saisie.
-		- Ne n'autoriser que les mots de passe jugés sûrs par le vérificateur impose des mots de passe robustes plus efficacement que les règles classiques.
-	- Empêcher l'énumération des noms d'utilisateurs
-		- Imposer des messages d'erreurs génériques et identiques et de s'assurer qu'il soit identique.
-		- Renvoyer toujours le même code d'état HTTP
-		- Veiller à ce que les temps de réponse soient aussi difficiles à distinguer que possible selon les différents scénarios.
-	- Protection contre les bruits de force:
-		- Limiter strictement le nombre de tentatives de connexion par utilisateur en se basant sur l'adresse IP.
-		- Empêcher les attaquants de manipuler leur adresse IP apparente
-		- 
-
-## Labs PortSwigger
-- [x] Apprentice ✅ 2026-10-05
-- [x] Practitioner ✅ 2026-10-05
-
-
-
-Soluce Lab:
-### Lab: Password reset poisoning via middleware
-
-This lab is vulnerable to password reset poisoning. The user `carlos` will carelessly click on any links in emails that he receives. To solve the lab, log in to Carlos's account. You can log in to your own account using the following credentials: `wiener:peter`. Any emails sent to this account can be read via the email client on the exploit server.
-
-1. With Burp running, investigate the password reset functionality. Observe that a link containing a unique reset token is sent via email.
-2. Send the `POST /forgot-password` request to Burp Repeater. Notice that the `X-Forwarded-Host` header is supported and you can use it to point the dynamically generated reset link to an arbitrary domain.
-3. Go to the exploit server and make a note of your exploit server URL.
-4. Go back to the request in Burp Repeater and add the `X-Forwarded-Host` header with your exploit server URL:
-    
-    `X-Forwarded-Host: YOUR-EXPLOIT-SERVER-ID.exploit-server.net`
-5. Change the `username` parameter to `carlos` and send the request.
-6. Go to the exploit server and open the access log. You should see a `GET /forgot-password` request, which contains the victim's token as a query parameter. Make a note of this token.
-7. Go back to your email client and copy the valid password reset link (not the one that points to the exploit server). Paste this into the browser and change the value of the `temp-forgot-password-token` parameter to the value that you stole from the victim.
-8. Load this URL and set a new password for Carlos's account.
-9. Log in to Carlos's account using the new password to solve the lab.
-
-### Lab: Password brute-force via password change
-
-This lab's password change functionality makes it vulnerable to brute-force attacks. To solve the lab, use the list of candidate passwords to brute-force Carlos's account and access his "My account" page.
-
-- Your credentials: `wiener:peter`
-- Victim's username: `carlos`
-- [Candidate passwords](https://portswigger.net/web-security/authentication/auth-lab-passwords)
-
-1. With Burp running, log in and experiment with the password change functionality. Observe that the username is submitted as hidden input in the request.
-2. Notice the behavior when you enter the wrong current password. If the two entries for the new password match, the account is locked. However, if you enter two different new passwords, an error message simply states `Current password is incorrect`. If you enter a valid current password, but two different new passwords, the message says `New passwords do not match`. We can use this message to enumerate correct passwords.
-3. Enter your correct current password and two new passwords that do not match. Send this `POST /my-account/change-password` request to Burp Intruder.
-4. In Burp Intruder, change the `username` parameter to `carlos` and add a payload position to the `current-password` parameter. Make sure that the new password parameters are set to two different values. For example:
-    
-    `username=carlos&current-password=§incorrect-password§&new-password-1=123&new-password-2=abc`
-5. In the **Payloads** side panel, enter the list of passwords as the payload set.
-6. Click  **Settings** to open the **Settings** side panel, then add a grep match rule to flag responses containing `New passwords do not match`. Start the attack.
-7. When the attack finished, notice that one response was found that contains the `New passwords do not match` message. Make a note of this password.
-8. In the browser, log out of your own account and lock back in with the username `carlos` and the password that you just identified.
-9. Click **My account** to solve the lab.
-
-## Journal des labs
-- 
-
-## Mes notes
-- 
-
+- Plusieurs principes permettent de réduire le risque lié à la gestion de l'authentification :
+	- **Protéger les identifiants des utilisateurs**
+		- Ne jamais transmettre de données de connexion sur une connexion non chiffrée : toujours utiliser HTTPS.
+		- Vérifier qu'aucun nom d'utilisateur ni adresse e-mail n'est exposé, que ce soit par des profils publics ou par des réponses HTTP qui les reflètent.
+	- **Ne pas compter sur les utilisateurs pour assurer la sécurité**
+		- Une authentification stricte demande un effort aux utilisateurs, qui chercheront à l'éviter.
+		- Il faut donc imposer les comportements sécurisés.
+	- **Politique de mot de passe**
+		- Les politiques traditionnelles échouent souvent : les utilisateurs adaptent leurs mots de passe prévisibles aux règles imposées.
+		- Une alternative plus efficace est un vérificateur de mot de passe qui évalue la solidité en temps réel pendant la saisie.
+		- N'autoriser que les m
