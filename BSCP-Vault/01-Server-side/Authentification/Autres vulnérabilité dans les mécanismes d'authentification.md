@@ -34,7 +34,10 @@
 ## Modififcation du mot de passe utilisateur
 - Le processus actuel demande généralement le mot de passe actuel puis le nouveau mot de passe 2x.
 - Ces pages reposent sur le même mécanisme de vérification qu'une page de connexion classique.
-- Elles sont donc exposées aux m
+- Elles sont donc exposées aux même techniques d'attaque que les pages de connexion.
+
+- Ainsi, cette fonctionnalité devient dangereuse car un attaquant peut y accéder directement, sans être connecté à sa victime.
+- Cas typique : le nom d'utilisateur est transmis dans un champ masqué du formulaire. L'attaquant peut modifier cette valeur dans la requête pour cibler des utilisateurs arbitraires.
 ## Comment détecter
 
 
@@ -56,6 +59,8 @@
 Soluce Lab:
 ### Lab: Password reset poisoning via middleware
 
+This lab is vulnerable to password reset poisoning. The user `carlos` will carelessly click on any links in emails that he receives. To solve the lab, log in to Carlos's account. You can log in to your own account using the following credentials: `wiener:peter`. Any emails sent to this account can be read via the email client on the exploit server.
+
 1. With Burp running, investigate the password reset functionality. Observe that a link containing a unique reset token is sent via email.
 2. Send the `POST /forgot-password` request to Burp Repeater. Notice that the `X-Forwarded-Host` header is supported and you can use it to point the dynamically generated reset link to an arbitrary domain.
 3. Go to the exploit server and make a note of your exploit server URL.
@@ -68,6 +73,13 @@ Soluce Lab:
 8. Load this URL and set a new password for Carlos's account.
 9. Log in to Carlos's account using the new password to solve the lab.
 
+### Lab: Password brute-force via password change
+
+This lab's password change functionality makes it vulnerable to brute-force attacks. To solve the lab, use the list of candidate passwords to brute-force Carlos's account and access his "My account" page.
+
+- Your credentials: `wiener:peter`
+- Victim's username: `carlos`
+- [Candidate passwords](https://portswigger.net/web-security/authentication/auth-lab-passwords)
 
 ## Journal des labs
 - 
