@@ -48,12 +48,30 @@
 - 
 
 ## Prévention
-- 
+- Nous avons vu plusieurs failles de sécurité auxquelles les sites web peuvent être exposés dans la manière dont ils gèrent l'authentification. Il existe plusieurs principes qui permettent de réduire ce risque:
+	- Protéger les identifiants des utilisateurs: 
+		- Ne jamais transmettre de données de connexion sur une connexion non chiffrée (HTTPS). 
+		- Vérifier qu''aucun nom d'utilisateur ni d'adresse mail n'est exposé, que ce soit par des profils publics ou par des réponses HTTP qui les reflètent.
+	- Ne pas compter sur les utilisateurs pour assurer la sécurité
+		- Une authentification stricte demande un effort aux utilisateurs et chercheront à l'éviter.
+		- Imposer les comportements sécurisés
+	- Politique de mot de passe:
+		- Les politiques traditionnelles échouent souvent : les utilisateurs font entrer de force leurs mots de passe prévisibles dans les règles imposées.
+		- Une alternative plus efficace : un vérificateur de mot de passe qui évalue la solidité en temps réel pendant la saisie.
+		- Ne n'autoriser que les mots de passe jugés sûrs par le vérificateur impose des mots de passe robustes plus efficacement que les règles classiques.
+	- Empêcher l'énumération des noms d'utilisateurs
+		- Imposer des messages d'erreurs génériques et identiques et de s'assurer qu'il soit identique.
+		- Renvoyer toujours le même code d'état HTTP
+		- Veiller à ce que les temps de réponse soient aussi difficiles à distinguer que possible selon les différents scénarios.
+	- Protection contre les bruits de force:
+		- Limiter strictement le nombre de tentatives de connexion par utilisateur en se basant sur l'adresse IP.
+		- Empêcher les attaquants de manipuler leur adresse IP apparente
+		- 
 
 ## Labs PortSwigger
-- [ ] Apprentice
-- [ ] Practitioner
-- [ ] Expert
+- [x] Apprentice ✅ 2026-10-05
+- [x] Practitioner ✅ 2026-10-05
+
 
 
 Soluce Lab:
