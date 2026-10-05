@@ -30,6 +30,7 @@
 - L'URL ne doit communiquer aucun indice sur l'identité de l'utilisateur ciblé par la réinitialisation.
 - Le serveur doit vérifier l'existence de ce token en back-end pour retrouver l'utilisateur associé, le faire expirer rapidement et le détruire une fois le mot de passe changé.
 - Certains sites ne revalident pas le jeton au moment de la soumission du formulaire. Ainsi, un attaquant peut alors accéder au formulaire avec son propre jeton, le supprimer de sa requête et alors réinitialiser un mot de passe utilisateur.
+- Si l'URL figurant dans l'e-mail de réinitialisation est générée de manière dynamique, elle peut également être vulnérable à une attaque de type « password reset poisoning ». Dans ce cas, un pirate pourrait potentiellement voler le jeton d'un autre utilisateur et l'utiliser pour modifier son mot de passe.
 ## Comment détecter
 - 
 
