@@ -23,7 +23,9 @@ statut: à faire
 - Les attaques SSRF exploitent souvent des relations de confiance pour étendre l'attaque à partir de l'application vulnérable.
 - Elles permettent d'effectuer des actions non autorisées.
 - Les relations de confiance sont exploitées : 
-	- A travers le serveur lui-
+	- A travers le serveur lui-même
+	- Celles qui concernent d'autres systèmes back-end au sein de la même organisation.
+- Il est fréquent de rencontrer des applications présentant un comportement SSRF et intégrant des mesures de protection destinées à empêcher toute exploitation malveillante. Souvent, ces mesures de protection peuvent être contournées.
 
 ## Comment détecter
 - 
