@@ -11,10 +11,19 @@ statut: à faire
 - Le serveur peut être forcé à se connecter à des systèmes externes.
 - L'impact est qu'une fuite de données sensible est possible.
 ![](SSRF.png)
+## Impact
+- Une attaque SSRF réussie peut entraîner des actions non autorisée aux données au sein d'une organisation.
+- Cela peut se produire dans l'application elle même, ou sur d'autres système back-end avec lesquels elle communique.
+- Dans certains cas, la SSRF peut permettre à un attaquant d'exécuter des commandes arbitraires.
+- Ces attaques peuvent sembler provenir de l'organisation qui héberge l'application vulnérable (l'adresse IP source est celle du serveur).
 
 
 ## Types et variantes
-
+### Attaque SSRF courantes
+- Les attaques SSRF exploitent souvent des relations de confiance pour étendre l'attaque à partir de l'application vulnérable.
+- Elles permettent d'effectuer des actions non autorisées.
+- Les relations de confiance sont exploitées : 
+	- A travers le serveur lui-
 
 ## Comment détecter
 - 
