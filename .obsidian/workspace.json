@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
+                "file": "BSCP-Vault/01-Server-side/SSRF.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Payloads-cheatsheet"
+              "title": "SSRF"
             }
           }
         ],
@@ -176,7 +176,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
+                "file": "BSCP-Vault/01-Server-side/SSRF.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -215,17 +215,19 @@
       "obsidian-excalidraw-plugin:New drawing": false,
       "obsidian-git:Open Git source control": false,
       "omnisearch:Omnisearch": false,
-      "templater-obsidian:Templater": false
+      "templater-obsidian:Templater": false,
+      "periodic-notes:Open today": false,
+      "tags-routes:Open tags routes": false
     }
   },
   "active": "2930941a1f1a4f2e",
   "lastOpenFiles": [
+    "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
     "BSCP-Vault/01-Server-side/SSRF.md",
     "BSCP-Vault/01-Server-side/Authentification/Autres vulnérabilité dans les mécanismes d'authentification.md",
     "BSCP-Vault/01-Server-side/Authentification/Autres vulnérabilité dans les mécanismes d'authentification.md.tmp.48412.e1f2a4b1f562",
     "BSCP-Vault/01-Server-side/Authentification/Autres vulnérabilité dans les mécanismes d'authentification.md.tmp.48412.5f8920036682",
     "BSCP-Vault/01-Server-side/Authentification/Multi-factor-authentication.md",
-    "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md.tmp.287.a58824c398c9",
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md.tmp.287.4493d49ed398",
     "BSCP-Vault/01-Server-side/Authentification/Multi-factor-authentication.md.tmp.287.30c60c66d940",
