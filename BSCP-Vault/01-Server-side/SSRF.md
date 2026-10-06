@@ -31,7 +31,13 @@ statut: à faire
 	- L'attaquant modifie le paramètre pour y mettre une URL locale au serveur: `stockApi=http://localhost/admin`
 	- Ainsi Le serveur récupère le contenu de `/admin` et le renvoie à l'attaquant.
 - **Pourquoi cela marche ?**
-	- 
+	- Normalement, `/admin` est accessible uniquement aux utilisateur qui se sont authentifiés.
+	- Quand la requête provient de la machine locale, les contrôles d'accès habituels sont contournés.
+- **Pourquoi les applications font confiance à la machine locale**
+	- Le contrôle d'accès peut être implémenté dans un composant distinct, situé en amont du serveur d'applications. Une connexion établie directement depuis le serveur contourne ce contrôle.
+	- l'application peut autoriser un accès administratif sans authentification à tout utilisateur provenant de la machine locale. Un administrateur peut ainsi restaurer le système s'il perd ses identifiants
+	- L'interface d'administration peut écouter sur un autre port que l'application principale et n'être pas accessible directement aux utilisateurs.
+	- Ces relations de confiance, où les requêtes locales sont traités différement des requêtes ordinaires, font souvent de la SSRF une faille cririque.
 ## Pièges et points d'attention BSCP
 - 
 
