@@ -14,8 +14,12 @@ statut: à faire
 
 
 ## Types et variantes
-- Attaque contre le serveur lui-même
-	- L'attaquant amène l'application à envoyer une 
+- **Attaque contre le serveur lui-même**
+	- L'attaquant amène l'application à envoyer une requête HTTP vers le serveur qui l'héberge via son interface réseau de bouclage.
+	- L'URL fournie contient généralement `127.0.0.1` ou `localhost`
+- **Exemple: Vérification de stock dans une boutique en ligne**
+	- Pour afficher ses stocks, l'application interroge des API REST.
+	- Le navigateur envoie une requête `POST /product/stock` do
 
 ## Comment détecter
 - 
