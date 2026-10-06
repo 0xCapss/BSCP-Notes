@@ -6,7 +6,7 @@ statut: à faire
 # Server-side request forgery (SSRF)
 
 ## En bref
-- 
+- SSRF est une faille qui permet à un attaquant d'amener une application côté serveur d'envoyer des requêtes vers une destination non prévue.
 
 ## Types et variantes
 - 
