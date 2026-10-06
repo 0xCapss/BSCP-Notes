@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/Authentification/Autres vulnérabilité dans les mécanismes d'authentification.md",
+                "file": "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Autres vulnérabilité dans les mécanismes d'authentification"
+              "title": "Payloads-cheatsheet"
             }
           }
         ],
@@ -176,7 +176,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/Authentification/Autres vulnérabilité dans les mécanismes d'authentification.md",
+                "file": "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -204,8 +204,8 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "canvas:Créer un nouveau canvas": false,
       "switcher:Ouvrir le sélecteur rapide": false,
-      "canvas:Créer une nouvelle toile": false,
       "daily-notes:Ouvrir la note quotidienne": false,
       "graph:Ouvrir la vue graphique": false,
       "templates:Insérer le modèle": false,
@@ -215,18 +215,17 @@
       "obsidian-excalidraw-plugin:New drawing": false,
       "obsidian-git:Open Git source control": false,
       "omnisearch:Omnisearch": false,
-      "templater-obsidian:Templater": false,
-      "periodic-notes:Open today": false,
-      "tags-routes:Open tags routes": false
+      "templater-obsidian:Templater": false
     }
   },
   "active": "2930941a1f1a4f2e",
   "lastOpenFiles": [
+    "BSCP-Vault/01-Server-side/SSRF.md",
+    "BSCP-Vault/01-Server-side/Authentification/Autres vulnérabilité dans les mécanismes d'authentification.md",
     "BSCP-Vault/01-Server-side/Authentification/Autres vulnérabilité dans les mécanismes d'authentification.md.tmp.48412.e1f2a4b1f562",
     "BSCP-Vault/01-Server-side/Authentification/Autres vulnérabilité dans les mécanismes d'authentification.md.tmp.48412.5f8920036682",
     "BSCP-Vault/01-Server-side/Authentification/Multi-factor-authentication.md",
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
-    "BSCP-Vault/01-Server-side/Authentification/Autres vulnérabilité dans les mécanismes d'authentification.md",
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md.tmp.287.a58824c398c9",
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md.tmp.287.4493d49ed398",
     "BSCP-Vault/01-Server-side/Authentification/Multi-factor-authentication.md.tmp.287.30c60c66d940",
@@ -236,7 +235,6 @@
     "BSCP-Vault/01-Server-side/Access-control.md",
     "BSCP-Vault/01-Server-side/File-upload.md",
     "BSCP-Vault/01-Server-side/Path-traversal.md",
-    "BSCP-Vault/01-Server-side/SSRF.md",
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md.tmp.277.726ad4f77bdd",
     "BSCP-Vault/01-Server-side/Authentication.md.tmp.277.6f2274e223d7",
     "BSCP-Vault/00-Suivi.md",
@@ -246,7 +244,6 @@
     "BSCP-Vault/01-Server-side/Information-disclosure.md",
     "BSCP-Vault/01-Server-side/Business-logic.md",
     "passwords.txt",
-    "usernames.txt",
     "BSCP-Vault/01-Server-side/assets/Authentication.png",
     "BSCP-Vault/01-Server-side/assets/Access-control.png",
     "BSCP-Vault/01-Server-side/assets/Pasted image 20260917222135.png",
