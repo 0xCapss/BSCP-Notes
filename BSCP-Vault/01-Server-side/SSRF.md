@@ -26,13 +26,14 @@ statut: à faire
 	- A travers le serveur lui-même
 	- Celles qui concernent d'autres systèmes back-end au sein de la même organisation.
 - Il est fréquent de rencontrer des applications présentant un comportement SSRF et intégrant des mesures de protection destinées à empêcher toute exploitation malveillante. Souvent, ces mesures de protection peuvent être contournées.
-## SSRF avec des filtres d'entrée basés sur une liste noire
+### SSRF avec des filtres d'entrée basés sur une liste noire
 - Certaines applications bloquent les noms d'hôtes comme `127.0.0.1` et `localhost`, ou des URL sensibles comme `/admin`.
 - Le filtre peut être contourné avec les techniques suivantes:
 	- Utiliser une autre représentation IP de `127.0.0.1` : `2130706433`, `017700000001` ou `127.1`.
 	- Enregistrer son propre nom de domaine qui pointe vers `127.0.0.1` (par exemple `spoofed.burpcollaborator.net`).
 	- Masquer les chaînes bloquées par encodage d'URL ou en variant la casse.
 	- Fournir une URL contrôlée par l'attaquant qui redirige vers l'URL cible, en essayant différents codes de redirection et différents protocoles. Passer d'une URL `http:` à `https:` lors de la redirection a permis de contourner certains filtres anti-SSRF.
+### SSRF avec filtres d'entrée basés sur une liste blanche
 
 ## Comment détecter
 - 
@@ -67,6 +68,7 @@ statut: à faire
 	- Une interface d'administration existe à l'URL back-end `http://192.168.0.68/admin`.
 	- L'attaquant envoie une requête `POST /product/stock` avec `stockApi=http://192.168.0.68/admin`.
 	- Le serveur d'applications relaie la requête vers ce système interne, ce qui donne accès à l'interface d'administration.
+
 ## Pièges et points d'attention BSCP
 - 
 
@@ -100,7 +102,16 @@ To solve the lab, use the stock check functionality to scan the internal `192.1
 4. Click  **Start attack**.
 5. Click on the **Status** column to sort it by status code ascending. You should see a single entry with a status of `200`, showing an admin interface.
 6. Click on this request, send it to Burp Repeater, and change the path in the `stockApi` to: `/admin/delete?username=carlos`
+### Lab: SSRF with blacklist-based input filter
+This lab has a stock check feature which fetches data from an internal system.
+To solve the lab, change the stock check URL to access the admin interface at `http://localhost/admin` and delete the user `carlos`.
+The developer has deployed two weak anti-SSRF defenses that you will need to bypass.
 
+1. Visit a product, click "Check stock", intercept the request in Burp Suite, and send it to Burp Repeater.
+2. Change the URL in the `stockApi` parameter to `http://127.0.0.1/` and observe that the request is blocked.
+3. Bypass the block by changing the URL to: `http://127.1/`
+4. Change the URL to `http://127.1/admin` and observe that the URL is blocked again.
+5. Obfuscate the "a" by double-URL encoding it to %2561 to access the admin interface and delete the target user.
 
 ## Liens
 - [[Command-injection]]
