@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/Authentification/Authentication.md",
+                "file": "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal-prefixe-et-extension.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Authentication"
+              "title": "Path-traversal-prefixe-et-extension"
             }
           }
         ],
@@ -176,7 +176,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/Authentification/Authentication.md",
+                "file": "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal-prefixe-et-extension.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -222,6 +222,13 @@
   },
   "active": "2930941a1f1a4f2e",
   "lastOpenFiles": [
+    "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal-chemin-absolu.md",
+    "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal-cas-simple.md",
+    "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal.md",
+    "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal-prefixe-et-extension.md",
+    "BSCP-Vault/01-Server-side/Authentification/Multi-factor-authentication.md",
+    "BSCP-Vault/01-Server-side/Authentification/Autres-mecanismes-authentification.md",
+    "BSCP-Vault/01-Server-side/Authentification/Authentication.md",
     "BSCP-Vault/01-Server-side/Authentification/Types/MFA-reponse-et-secours.md",
     "BSCP-Vault/01-Server-side/Authentification/Types/MFA-logique-defaillante.md",
     "BSCP-Vault/01-Server-side/Authentification/Types/MFA-brute-force-code.md",
@@ -232,14 +239,7 @@
     "BSCP-Vault/01-Server-side/Authentification/Types/Auth-http-basic.md",
     "BSCP-Vault/01-Server-side/Authentification/Types/Auth-contournement-blocage.md",
     "BSCP-Vault/01-Server-side/Authentification/Types/Auth-brute-force-identifiants.md",
-    "BSCP-Vault/01-Server-side/Authentification/Authentication.md",
-    "BSCP-Vault/01-Server-side/Authentification/Multi-factor-authentication.md",
-    "BSCP-Vault/01-Server-side/Authentification/Autres-mecanismes-authentification.md",
-    "BSCP-Vault/01-Server-side/Path-traversal.md",
     "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal-sequences-et-encodage.md",
-    "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal-prefixe-et-extension.md",
-    "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal-cas-simple.md",
-    "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal-chemin-absolu.md",
     "BSCP-Vault/01-Server-side/Path-traversal",
     "BSCP-Vault/01-Server-side/Authentification/Types",
     "BSCP-Vault/01-Server-side/Access-control/Access-control-processus-multi-etapes-et-referer.md",
