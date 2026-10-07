@@ -59,6 +59,19 @@ statut: à faire
 - Elle survient quand on peut forcer l'application à envoyer une requête HTTP vers une URL fournie, mais que la réponse n'apparaît pas dans ce que renvoie l'interface de l'application.
 - Plus difficile à exploiter qu'une SSRF classique.
 - Peut parfois conduire à l'exécution complète de code à distance sur le serveur ou sur d'autres composants du back-end.
+- Impact:
+	- Leur impact est souvent moindre que celui des SSRF « pleinement informées », à cause de leur nature unidirectionnelle.
+- Limite:
+	- Elles ne peuvent pas être exploitées facilement pour extraire des données sensibles des systèmes back-end.
+- Comment les détecter?
+	- La méthode la plus fiable repose sur les techniques hors bande (OAST).
+	- Principe : tenter de déclencher une requête HTTP vers un système externe que l'on contrôle, puis surveiller les interactions réseau avec ce système.
+- Burp Collaborator
+	- C'est l'outil le plus simple et le plus efficace pour l'OAST.
+	- Il génère des noms de domaine uniques, à envoyer comme charges utiles à l'application, puis surveille toute interaction avec ces domaines.
+	- Une requête HTTP entrante provenant de l'application indique qu'elle est vulnérable au SSRF.
+- Remarque:
+	- 
 
 ## Comment détecter
 - 
