@@ -216,8 +216,7 @@
       "obsidian-git:Open Git source control": false,
       "omnisearch:Omnisearch": false,
       "templater-obsidian:Templater": false,
-      "periodic-notes:Open today": false,
-      "tags-routes:Open tags routes": false
+      "periodic-notes:Open today": false
     }
   },
   "active": "2930941a1f1a4f2e",

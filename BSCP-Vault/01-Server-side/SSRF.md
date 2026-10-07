@@ -26,6 +26,13 @@ statut: à faire
 	- A travers le serveur lui-même
 	- Celles qui concernent d'autres systèmes back-end au sein de la même organisation.
 - Il est fréquent de rencontrer des applications présentant un comportement SSRF et intégrant des mesures de protection destinées à empêcher toute exploitation malveillante. Souvent, ces mesures de protection peuvent être contournées.
+## SSRF avec des filtres d'entrée basés sur une liste noire
+- Certaines applications bloquent les noms d'hôtes comme `127.0.0.1` et `localhost`, ou des URL sensibles comme `/admin`.
+- Le filtre peut être contourné avec les techniques suivantes:
+	- Utiliser une autre représentation IP de `127.0.0.1` : `2130706433`, `017700000001` ou `127.1`.
+	- Enregistrer son propre nom de domaine qui pointe vers `127.0.0.1` (par exemple `spoofed.burpcollaborator.net`).
+	- Masquer les chaînes bloquées par encodage d'URL ou en variant la casse.
+	- Fournir une URL contrôlée par l'attaquant qui redirige vers l'URL cible, en essayant différents codes de redirection et différents protocoles. Passer d'une URL `http:` à `https:` lors de la redirection a permis de contourner certains filtres anti-SSRF.
 
 ## Comment détecter
 - 
