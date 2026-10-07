@@ -55,6 +55,11 @@ statut: à faire
 	- Elle interroge ensuite cette URL, ce qui déclenche la redirection ouverte.
 	- Elle suit la redirection et envoie une requête vers l'URL interne choisie par l'attaquant.
 
+### SSRF Blind Vulnérabilités
+- Elle survient quand on peut forcer l'application à envoyer une requête HTTP vers une URL fournie, mais que la réponse n'apparaît pas dans ce que renvoie l'interface de l'application.
+- Plus difficile à exploiter qu'une SSRF classique.
+- Peut parfois conduire à l'exécution complète de code à distance sur le serveur ou sur d'autres composants du back-end.
+
 ## Comment détecter
 - 
 
