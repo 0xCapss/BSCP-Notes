@@ -1,43 +1,23 @@
+---
+tags: [bscp, server-side, authentication]
+niveau: practitioner
+statut: en cours
+---
+# Autres mécanismes d'authentification
 
 ## En bref
 - Au-delà de la page de connexion elle-même, les fonctionnalités annexes liées à l'authentification (rester connecté, réinitialiser le mot de passe, changer le mot de passe) manipulent les mêmes informations sensibles mais sont souvent moins auditées.
 - Elles constituent donc une surface d'attaque à part entière : un défaut sur l'une d'elles permet de contourner l'authentification principale sans jamais avoir à en casser la logique.
 
 ## Types et variantes
-- La plupart des sites web proposent des fonctionnalités supplémentaires pour gérer le compte, comme :
-	- La modification du mot de passe.
-	- La réinitialisation du mot de passe en cas d'oubli.
+- La plupart des sites proposent des fonctionnalités supplémentaires pour gérer le compte : maintien de la connexion, modification et réinitialisation du mot de passe.
 - Ces mécanismes sont une source fréquente de vulnérabilités, car on oublie facilement qu'ils doivent être rendus aussi robustes que la page de connexion principale.
 
-### Maintenir la connexion des utilisateurs
-- Fonctionnalité qui permet à un utilisateur de rester connecté après avoir fermé son navigateur, via un token stocké dans un cookie persistant.
-- Ce cookie peut être généré par le site à partir de valeurs statiques (par exemple le nom d'utilisateur suivi d'un horodatage) : un attaquant qui observe plusieurs cookies peut en déduire la structure de génération.
-- Le cookie peut être chiffré, mais un encodage réversible comme le base64 n'offre aucune protection réelle.
-- Si le mot de passe est haché sans salt, des listes de mots de passe courants (rainbow tables) permettent de le retrouver. D'où l'importance du salt.
-- Via une faille XSS, un attaquant peut dérober le cookie "Se souvenir de moi" d'un autre utilisateur et en étudier la structure pour le forger.
-
-### Réinitialisation du mot de passe
-- Fonctionnalité risquée par nature : elle doit authentifier l'utilisateur par un autre moyen que le mot de passe, ce qui ajoute une surface d'attaque.
-- Elle doit impérativement être implémentée de façon sécurisée, sous peine de permettre à un attaquant de prendre le contrôle d'un compte sans connaître le mot de passe initial.
-- Plusieurs méthodes d'implémentation existent, avec des niveaux de risque différents selon la conception retenue.
-- Un site qui gère correctement ses mots de passe ne devrait jamais être capable d'envoyer le mot de passe actuel par e-mail : cela signifierait qu'il le stocke en clair ou de façon réversible.
-- Certains sites contournent ce problème en générant un nouveau mot de passe temporaire envoyé par e-mail.
-	- Envoyer un mot de passe permanent par un canal non chiffré est à éviter : s'il n'expire pas rapidement ou si l'utilisateur ne le change pas immédiatement, l'approche devient vulnérable à une interception (man-in-the-middle).
-	- L'e-mail n'est pas un canal sécurisé : les boîtes de réception sont permanentes, mal adaptées au stockage d'informations confidentielles, et très souvent synchronisées sur plusieurs appareils.
-- Envoyer une URL unique vers une page de réinitialisation est une méthode plus sûre que l'envoi direct d'un mot de passe.
-- Exemple d'implémentation faible, car basée sur un paramètre prévisible :
-	`http://vulnerable-website.com/reset-password?user=victim-user`
-	- Si ce paramètre est modifiable, un attaquant peut le remplacer par n'importe quel nom d'utilisateur identifié et accéder à la page de réinitialisation du compte visé, sans jamais avoir reçu le lien.
-- Une meilleure implémentation utilise un token à forte entropie pour construire l'URL de réinitialisation.
-	- L'URL ne doit communiquer aucun indice sur l'identité de l'utilisateur ciblé.
-	- Le serveur doit vérifier l'existence du token côté back-end pour retrouver l'utilisateur associé, le faire expirer rapidement et le détruire une fois le mot de passe changé.
-- Certains sites ne revalident pas le token au moment de la soumission du formulaire. Un attaquant peut alors accéder au formulaire avec son propre token, le supprimer de la requête, et réinitialiser le mot de passe d'un autre utilisateur.
-- Si l'URL de l'e-mail de réinitialisation est générée dynamiquement (par exemple à partir d'un en-tête `Host` ou `X-Forwarded-Host`), elle peut être vulnérable au **password reset poisoning** : un attaquant piège le lien envoyé à la victime pour qu'il pointe vers un domaine qu'il contrôle, et récupère ainsi le token de la victime.
-
-### Modification du mot de passe utilisateur
-- Le processus classique demande le mot de passe actuel, puis le nouveau mot de passe saisi deux fois.
-- Ces pages reposent sur le même mécanisme de vérification qu'une page de connexion classique, et sont donc exposées aux mêmes techniques d'attaque (énumération, brute-force, etc.).
-- Cas typique de faille : le nom d'utilisateur est transmis dans un champ masqué du formulaire. Un attaquant peut modifier cette valeur dans la requête pour cibler un utilisateur arbitraire, sans être connecté à sa victime.
+| Type | Idée clé | Note | Niveau |
+| --- | --- | --- | --- |
+| Maintien de la connexion | cookie prévisible, hash MD5 | [[Auth-maintien-connexion]] | Practitioner |
+| Réinitialisation du mot de passe | token, `X-Forwarded-Host` | [[Auth-reinitialisation-mot-de-passe]] | Apprentice, Practitioner |
+| Modification du mot de passe | champ masqué, oracle d'erreur | [[Auth-modification-mot-de-passe]] | Practitioner |
 
 ## Comment détecter
 - Récupérer plusieurs cookies "se souvenir de moi" (y compris via XSS si possible) et chercher un motif prévisible (encodage réversible, concaténation username + timestamp, absence de signature).
@@ -95,7 +75,8 @@
 
 ## Journal des labs
 
-### Lab : Password reset poisoning via middleware
+### Lab 1 - Empoisonnement de la réinitialisation du mot de passe via un middleware
+*Password reset poisoning via middleware* - Practitioner - note : [[Auth-reinitialisation-mot-de-passe]]
 Ce lab est vulnérable au password reset poisoning. L'utilisateur `carlos` clique sans vigilance sur tout lien reçu par e-mail. Objectif : se connecter au compte de Carlos. Compte perso : `wiener:peter`. Les e-mails envoyés à ce compte sont lisibles via le client mail de l'exploit server.
 
 1. Avec Burp actif, observer la fonctionnalité de mot de passe oublié : un lien contenant un token de réinitialisation unique est envoyé par e-mail.
@@ -109,7 +90,8 @@ Ce lab est vulnérable au password reset poisoning. L'utilisateur `carlos` cliqu
 8. Charger cette URL et définir un nouveau mot de passe pour le compte de Carlos.
 9. Se connecter au compte de Carlos avec ce nouveau mot de passe pour valider le lab.
 
-### Lab : Password brute-force via password change
+### Lab 2 - Force brute du mot de passe via la modification du mot de passe
+*Password brute-force via password change* - Practitioner - note : [[Auth-modification-mot-de-passe]]
 La fonctionnalité de changement de mot de passe de ce lab est vulnérable au brute-force. Objectif : utiliser une liste de mots de passe candidats pour retrouver celui de Carlos et accéder à sa page "My account".
 
 - Compte perso : `wiener:peter`
@@ -128,9 +110,12 @@ La fonctionnalité de changement de mot de passe de ce lab est vulnérable au br
 9. Cliquer sur **My account** pour valider le lab.
 
 ## Mes notes
-- 
+- Les labs sur le cookie persistant, le craquage hors ligne et la logique de réinitialisation sont dans le journal de [[Authentication]].
 
 ## Liens
+- [[Auth-maintien-connexion]]
+- [[Auth-reinitialisation-mot-de-passe]]
+- [[Auth-modification-mot-de-passe]]
 - [[Authentication]]
 - [[Access-control]]
 - [[Multi-factor-authentication]]

@@ -9,12 +9,20 @@ statut: en cours
 # Path traversal
 
 ## En bref
-- L'attaque path traversal est une vulnérabilité web qui permet à un attaquant de lire un fichier arbitraire sur le serveur web qui héberge l'application web.
+- L'attaque path traversal (ou directory traversal) est une vulnérabilité web qui permet à un attaquant de lire des fichiers arbitraires sur le serveur qui héberge l'application, voire d'en écrire dans certains cas.
+- Ces fichiers peuvent contenir du code applicatif, des identifiants de back-end ou des fichiers système sensibles.
 
 ## Types et variantes
 - Lecture de fichier arbitraire (le cas le plus courant) contre écriture de fichier arbitraire (via upload, export ou sauvegarde de configuration), cette dernière ayant un impact potentiellement plus critique (exécution de code).
 - Convention de chemin Unix (`../`) contre Windows (`../` et `..\` valides toutes les deux).
-- Traversal non filtré (séquence simple suffisante) contre traversal filtré, nécessitant une technique de contournement (séquences imbriquées, encodage simple/double/non standard, chemin absolu, null byte).
+- Traversal non filtré (séquence simple suffisante) contre traversal filtré, nécessitant une technique de contournement.
+
+| Type | Idée clé | Note | Niveau |
+| --- | --- | --- | --- |
+| Cas simple | `../../../etc/passwd` | [[Path-traversal-cas-simple]] | Apprentice |
+| Chemin absolu | `filename=/etc/passwd` | [[Path-traversal-chemin-absolu]] | Practitioner |
+| Séquences imbriquées et encodage | `....//`, `%252e%252e%252f` | [[Path-traversal-sequences-et-encodage]] | Practitioner |
+| Préfixe et extension | préfixe imposé, `%00.png` | [[Path-traversal-prefixe-et-extension]] | Practitioner |
 
 ## Comment détecter
 - Repérer les paramètres ou fonctionnalités qui manipulent un nom de fichier ou un chemin (paramètres nommés filename, file, path, doc, template, page, image, download, include, ou valeurs contenant une extension de fichier).
@@ -24,24 +32,15 @@ statut: en cours
 - Automatiser les tests avec Burp Intruder et une liste de payloads de traversal sur les paramètres suspects.
 - Ne pas se limiter aux fonctionnalités de lecture : vérifier aussi les fonctionnalités d'upload, d'export ou de sauvegarde de configuration qui pourraient permettre une écriture de fichier arbitraire.
 
+
 ## Comment exploiter (principe)
-### Lecture de fichier arbitraire
-- Imaginons que l'on souhaite charger une image avec ce code HTML:
-`<img src="/loadImage?filename=218.png">`
-- L'URL `loadImage` prend en paramètre un `filename` et retourne le contenu exact de ce fichier. Les images sont stockées sur le disque à la localisation suivante : `/var/www/images/`. Ainsi l'application lit le fichier avec le chemin suivant : `/var/www/images/218.png`
-- Si l'application ne fait aucune validation sur ce paramètre, un attaquant peut faire la requête suivante pour retrouver le fichier `/etc/passwd` dans les fichiers du serveur :
-	- `https://insecure-website.com/loadImage?filename=../../../etc/passwd`
-- La séquence `../` est valide dans un chemin d'accès car elle permet de remonter d'un niveau dans la hiérarchie des répertoires.
-- Sur Windows `../` et `..\` sont des séquences valides. Un exemple sur Windows peut être :
-	- `https://insecure-website.com/loadImage?filename=..\..\..\windows\win.ini`
-- On peut également utiliser des séquences imbriquées telles que `....//` ou `....\/`, utiles quand le serveur supprime une seule occurrence de `../` sans répéter l'opération.
-- Dans certains cas, que ce soit dans le chemin d'URL ou dans le paramètre `filename` d'une requête `multipart/form-data`, les serveurs web peuvent supprimer cette séquence. On peut contourner ce filtrage de plusieurs façons :
-	- Simple encodage : `../` devient `%2e%2e%2f`
-	- Double encodage : `../` devient `%252e%252e%252f`
-	- Encodage non standard : `../` devient `%c0%af` ou `..%ef%bc%8f`
-- Burp Intruder est capable de définir ces différents payloads avec la liste **Fuzzing - path traversal**.
-- Également, une application peut valider que le chemin fourni commence bien par un répertoire de base attendu (par exemple `/var/www/images/`) sans empêcher la remontée ensuite : on peut alors fournir un chemin qui satisfait ce préfixe puis remonte quand même, par exemple `filename=/var/www/images/../../../etc/passwd`.
-- Enfin, une application peut exiger que le fichier fourni se termine par une extension attendue. Dans ce cas, on injecte un octet nul pour forcer la fin du chemin d'accès au fichier avant l'extension. Par exemple : `filename=../../../etc/passwd%00.png`.
+1. Identifier le paramètre qui désigne un fichier.
+2. Tester `../../../etc/passwd` (ou `..\..\..\windows\win.ini`) et lire le corps de la réponse.
+3. Si la séquence est bloquée, essayer dans l'ordre : chemin absolu, séquences imbriquées, encodage simple puis double, préfixe imposé, octet nul avant l'extension.
+4. Confirmer la lecture avec un fichier connu, puis cibler des fichiers utiles (configuration, code source, clés).
+
+Le détail de chaque technique est dans les notes de la table ci-dessus.
+
 
 ## Pièges et points d'attention BSCP
 - Bien distinguer un simple filtrage de la sous-chaîne `../` (contournable par doubled characters) d'une validation par canonicalisation robuste (résolution du chemin absolu puis vérification qu'il reste dans le répertoire autorisé), beaucoup plus difficile à contourner.
@@ -68,19 +67,87 @@ statut: en cours
   }
   ```
 
+
 ## Labs PortSwigger
 - [x] Apprentice ✅ 2026-09-14
 - [x] Practitioner ✅ 2026-09-16
 
 ## Journal des labs
-- Lab "File path traversal, simple case" resolu (cible : `0a7400fb036c87db800efd7300b4005f.web-security-academy.net`).
-- Endpoint vulnerable : `GET /image?filename=`, utilise normalement pour servir les images produit (`filename=53.jpg`).
-- Payload qui a fonctionne directement, sans aucun contournement : `../../../../etc/passwd`. Aucun filtre sur `../`, aucune canonicalisation, aucune restriction d'extension appliquee au contenu retourne (reponse en `Content-Type: image/jpeg` alors que le corps est le texte de `/etc/passwd`).
-- Oracle de comportement utile releve avant l'exploitation : fichier existant -> HTTP 200 ; fichier inexistant (`filename=doesnotexist.jpg`) -> HTTP 400 avec corps JSON `"No such file"`. Utile pour confirmer une lecture reussie meme quand le contenu n'est pas directement lisible.
-- Confirme en pratique le cas le plus simple de la theorie ci-dessus (aucune des techniques de contournement n'a ete necessaire ici).
-- Lab Practitioner resolu le 2026-09-16 : a necessite de tester plusieurs des techniques listees dans "Comment exploiter (principe)" (sequence de traversal classique, contournement de validation de prefixe/chemin absolu, contournement par null byte avant extension, et encodage) selon le filtre rencontre. Details d'endpoint/requete a completer si besoin de les rejouer.
+
+> [!warning] Étapes rédigées de mémoire
+> Les étapes ci-dessous (hors mes notes de résolution) sont reconstituées de mémoire à partir des solutions publiques de PortSwigger et n'ont pas été rejouées : à vérifier sur chaque lab.
+
+### Lab 1 - Traversée de chemin, cas simple
+*File path traversal, simple case* - Apprentice - note : [[Path-traversal-cas-simple]]
+
+Ce lab contient une vulnérabilité de traversée de chemin dans l'affichage des images de produits. Pour le résoudre, récupérez le contenu du fichier `/etc/passwd`.
+
+1. Interceptez dans Burp la requête qui charge une image de produit.
+2. Remplacez le paramètre `filename` par `../../../etc/passwd`.
+3. Constatez que la réponse contient le contenu du fichier `/etc/passwd`.
+
+**Mes notes de résolution**
+- Cible de l'époque : `0a7400fb036c87db800efd7300b4005f.web-security-academy.net`.
+- Point d'entrée vulnérable : `GET /image?filename=`, utilisé normalement pour servir les images produit (`filename=53.jpg`).
+- Le payload `../../../../etc/passwd` a fonctionné directement, sans contournement : aucun filtre sur `../`, aucune canonicalisation, aucune restriction d'extension. La réponse a un `Content-Type: image/jpeg` alors que le corps est le texte de `/etc/passwd`.
+- Oracle de comportement relevé avant l'exploitation : fichier existant, HTTP 200 ; fichier inexistant (`filename=doesnotexist.jpg`), HTTP 400 avec un corps JSON `"No such file"`. Utile pour confirmer une lecture réussie même quand le contenu n'est pas directement lisible.
+
+### Lab 2 - Séquences de traversée bloquées, contournement par chemin absolu
+*File path traversal, traversal sequences blocked with absolute path bypass* - Practitioner - note : [[Path-traversal-chemin-absolu]]
+
+L'application bloque les séquences de traversée mais traite le nom de fichier fourni comme relatif au répertoire de travail par défaut. Récupérez `/etc/passwd`.
+
+1. Interceptez la requête qui charge une image de produit.
+2. Remplacez `filename` par le chemin absolu `/etc/passwd`, sans aucune séquence de traversée.
+3. Constatez que la réponse contient le contenu du fichier.
+
+### Lab 3 - Séquences de traversée retirées de façon non récursive
+*File path traversal, traversal sequences stripped non-recursively* - Practitioner - note : [[Path-traversal-sequences-et-encodage]]
+
+L'application retire les séquences de traversée de l'entrée avant de l'utiliser. Récupérez `/etc/passwd`.
+
+1. Interceptez la requête qui charge une image de produit.
+2. Remplacez `filename` par `....//....//....//etc/passwd`.
+3. Constatez que la réponse contient le contenu du fichier : après le retrait d'une occurrence de `../`, il reste une séquence valide.
+
+### Lab 4 - Séquences de traversée retirées avec un décodage d'URL superflu
+*File path traversal, traversal sequences stripped with superfluous URL-decode* - Practitioner - note : [[Path-traversal-sequences-et-encodage]]
+
+L'application bloque les entrées qui contiennent des séquences de traversée, puis décode l'entrée une seconde fois. Récupérez `/etc/passwd`.
+
+1. Interceptez la requête qui charge une image de produit.
+2. Remplacez `filename` par `..%252f..%252f..%252fetc/passwd` (le `/` est double-encodé).
+3. Constatez que la réponse contient le contenu du fichier.
+
+### Lab 5 - Validation du début du chemin
+*File path traversal, validation of start of path* - Practitioner - note : [[Path-traversal-prefixe-et-extension]]
+
+L'application exige que le paramètre `filename` commence par le répertoire de base attendu. Récupérez `/etc/passwd`.
+
+1. Interceptez la requête qui charge une image de produit et notez la valeur de `filename` (par exemple `/var/www/images/12.jpg`).
+2. Remplacez-la par `/var/www/images/../../../etc/passwd`.
+3. Constatez que la réponse contient le contenu du fichier.
+
+### Lab 6 - Validation de l'extension avec contournement par octet nul
+*File path traversal, validation of file extension with null byte bypass* - Practitioner - note : [[Path-traversal-prefixe-et-extension]]
+
+L'application exige que le paramètre `filename` se termine par une extension de fichier attendue. Récupérez `/etc/passwd`.
+
+1. Interceptez la requête qui charge une image de produit.
+2. Remplacez `filename` par `../../../etc/passwd%00.png`.
+3. Constatez que la réponse contient le contenu du fichier.
+
+**Mes notes de résolution**
+- Labs Practitioner résolus le 2026-09-16. Il a fallu tester plusieurs techniques de « Comment exploiter » (traversée classique, chemin absolu, préfixe, octet nul, encodage) selon le filtre rencontré. Détails d'endpoint et de requête à compléter si besoin de les rejouer.
+
+## Mes notes
+- 
 
 ## Liens
+- [[Path-traversal-cas-simple]]
+- [[Path-traversal-chemin-absolu]]
+- [[Path-traversal-sequences-et-encodage]]
+- [[Path-traversal-prefixe-et-extension]]
 - [[File-upload]]
 - [[Information-disclosure]]
 - [[Command-injection]]
