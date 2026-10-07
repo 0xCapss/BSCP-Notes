@@ -63,8 +63,8 @@ Détails dans [[SSRF-serveur-local]] et [[SSRF-systemes-back-end]].
 - Bloquer les connexions sortantes inutiles depuis le serveur d'applications.
 
 ## Labs PortSwigger
-- [ ] Apprentice
-- [ ] Practitioner
+- [x] Apprentice ✅ 2026-10-07
+- [x] Practitioner ✅ 2026-10-07
 - [ ] Expert
 
 ## Journal des labs
