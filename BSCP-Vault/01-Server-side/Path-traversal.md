@@ -74,9 +74,6 @@ Le détail de chaque technique est dans les notes de la table ci-dessus.
 
 ## Journal des labs
 
-> [!warning] Étapes rédigées de mémoire
-> Les étapes ci-dessous (hors mes notes de résolution) sont reconstituées de mémoire à partir des solutions publiques de PortSwigger et n'ont pas été rejouées : à vérifier sur chaque lab.
-
 ### Lab 1 - Traversée de chemin, cas simple
 *File path traversal, simple case* - Apprentice - note : [[Path-traversal-cas-simple]]
 

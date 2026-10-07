@@ -67,9 +67,6 @@ Détails dans les notes de la table ci-dessus.
 
 ## Journal des labs
 
-> [!warning] Étapes rédigées de mémoire
-> Cette section était vide dans la page d'origine. Les étapes ci-dessous sont reconstituées de mémoire à partir des solutions publiques de PortSwigger et n'ont pas été rejouées : à vérifier sur chaque lab. Listes de candidats fournies par PortSwigger : https://portswigger.net/web-security/authentication/auth-lab-usernames et https://portswigger.net/web-security/authentication/auth-lab-passwords. Les labs sur le mot de passe oublié et le changement de mot de passe sont dans [[Autres-mecanismes-authentification]].
-
 ### Lab 1 - Énumération de noms d'utilisateur via des réponses différentes
 *Username enumeration via different responses* - Apprentice - note : [[Auth-brute-force-identifiants]]
 
