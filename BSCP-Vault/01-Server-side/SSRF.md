@@ -52,7 +52,8 @@ statut: à faire
 	- L'attaquant envoie `stockApi=http://weliketoshop.net/product/nextProduct?currentProductId=6&path=http://192.168.0.68/admin`.
 - Pourquoi ça marche?
 	- L'application vérifie d'abord que l'URL `stockApi` est sur un domaine autorisé, ce qui est le cas.
-	- 
+	- Elle interroge ensuite cette URL, ce qui déclenche la redirection ouverte.
+	- Elle suit la redirection et envoie une requête vers l'URL interne choisie par l'attaquant.
 
 ## Comment détecter
 - 
@@ -131,6 +132,10 @@ The developer has deployed two weak anti-SSRF defenses that you will need to byp
 3. Bypass the block by changing the URL to: `http://127.1/`
 4. Change the URL to `http://127.1/admin` and observe that the URL is blocked again.
 5. Obfuscate the "a" by double-URL encoding it to %2561 to access the admin interface and delete the target user.
+### Lab: SSRF with filter bypass via open redirection vulnerability
+This lab has a stock check feature which fetches data from an internal system.
+To solve the lab, change the stock check URL to access the admin interface at `http://192.168.0.12:8080/admin` and delete the user `carlos`.
+The stock checker has been restricted to only access the local application, so you will need to find an open redirect affecting the application first.
 
 ## Liens
 - [[Command-injection]]
