@@ -84,6 +84,21 @@ statut: à faire
 	- Méthode 2 : Réponses malveillantes:
 		- Amener l'application à se connecter à un système contrôlé par l'attaquant, qui renvoie des réponses malveillantes au client HTTP à l'origine de la connexion.
 		- Si une grave vulnérabilité côté client existe dans l'implémentation HTTP du serveur, elle peut permettre une exécution de code à distance au sein de l'infrastructure de l'application.
+### Identification des surfaces d'attaque cachées pour les SSRF
+- De nombreuses SSRF sont facile à détecter: le trafic normal de l'application contient des paramètres de requête avec des URL complètes.
+### URL Partielles
+- Une application peut n'intégrer dans les paramètres de requête qu'un nom d'hôte ou une partie d'un chemin d'URL.
+- Côté serveur, cette valeur est insérée dans une URL complète qui fait ensuite l'objet de la requête.
+- Surface d'attaque:
+	- Si la valeur est facilement identifiable comme un nom d'hôte ou un chemin d'URL, la surface d'attaque peut être évidente.
+## URL Dans les formats de données
+- Certaines applications transmettent des données dans des formats dont la spécification autorise l'inclusion d'URL, que l'analyseur du format peut ensuite solliciter.
+- Exemple XML:
+	- Format largement utilisé dans les applications web pour transmettre des données structurées du client au serveur.
+	- Une application qui accepte et analyse du XML peut être vulnérable à une injection XXE.
+	- Elle peut aussi être vulnérable à une SSRF via XXE.
+### SSRF via l'en-tête Referer
+
 ## Comment détecter
 - 
 
@@ -179,6 +194,11 @@ This site uses analytics software which fetches the URL specified in the Referer
 To solve the lab, use this functionality to cause an HTTP request to the public Burp Collaborator server.
 #### Note
 To prevent the Academy platform being used to attack third parties, our firewall blocks interactions between the labs and arbitrary external systems. To solve the lab, you must use Burp Collaborator's default public server.
+
+1. Visit a product, intercept the request in Burp Suite, and send it to Burp Repeater.
+2. Go to the Repeater tab. Select the Referer header, right-click and select "Insert Collaborator Payload" to replace the original domain with a Burp Collaborator generated domain. Send the request.
+3. Go to the Collaborator tab, and click "Poll now". If you don't see any interactions listed, wait a few seconds and try again, since the server-side command is executed asynchronously.
+4. You should see some DNS and HTTP interactions that were initiated by the application as the result of your payload.
 
 
 ## Liens
