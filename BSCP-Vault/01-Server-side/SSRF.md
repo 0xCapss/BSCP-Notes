@@ -74,6 +74,16 @@ statut: à faire
 	- Il est fréquent d'observer une requête DNS pour le domaine Collaborator sans requête HTTP ensuite.
 	- Cause habituelle : l'application a tenté la requête HTTP, ce qui a déclenché la requête DNS, mais un filtrage réseau a bloqué la requête HTTP elle-même.
 	- L'infrastructure autorise couramment le trafic DNS sortant, nécessaire à de nombreux usages, mais bloque les connexions HTTP vers des destinations inattendues.
+- Exploitation des SSRF Aveugles:
+	- Détecter une SSRF aveugle capable de déclencher des requêtes HTTP hors bande ne suffit pas à garantir qu'elle est exploitable.
+	- La réponse de la requête back-end étant invisible, ce comportement ne permet pas d'explorer le contenu des systèmes accessibles au serveur d'applications.
+	- Méthode 1 : Rechercher d'autres vulnérabilités
+		- La SSRF peut servir à chercher des vulnérabilités sur le serveur lui-même ou sur d'autres systèmes back-end.
+		- Il est possible de balayer à l'aveugle l'espace d'adresses IP interne avec des charges utiles conçues pour détecter des vulnérabilités bien connues.
+		- Si ces charges utiles emploient aussi des techniques hors bande, on peut découvrir une vulnérabilité critique sur un serveur interne non patché.
+	- Méthode 2 : Réponses malveillantes:
+		- Amener l'application à se connecter à un système contrôlé par l'attaquant, qui renvoie des réponses malveillantes au client HTTP à l'origine de la connexion.
+		- Si une grave vulnérabilité côté client existe dans l'implémentation HTTP du serveur, elle peut permettre une exécution de code à distance au sein de l'infrastructure de l'application.
 ## Comment détecter
 - 
 
@@ -164,6 +174,13 @@ The stock checker has been restricted to only access the local application, so y
 5. Observe that the stock checker follows the redirection and shows you the admin page.
 6. Amend the path to delete the target user:
     `/product/nextProduct?path=http://192.168.0.12:8080/admin/delete?username=carlos`
+### Lab: Blind SSRF with out-of-band detection
+This site uses analytics software which fetches the URL specified in the Referer header when a product page is loaded.
+To solve the lab, use this functionality to cause an HTTP request to the public Burp Collaborator server.
+#### Note
+To prevent the Academy platform being used to attack third parties, our firewall blocks interactions between the labs and arbitrary external systems. To solve the lab, you must use Burp Collaborator's default public server.
+
+
 ## Liens
 - [[Command-injection]]
 - [[XXE-injection]]
