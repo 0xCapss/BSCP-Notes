@@ -34,6 +34,25 @@ statut: à faire
 	- Masquer les chaînes bloquées par encodage d'URL ou en variant la casse.
 	- Fournir une URL contrôlée par l'attaquant qui redirige vers l'URL cible, en essayant différents codes de redirection et différents protocoles. Passer d'une URL `http:` à `https:` lors de la redirection a permis de contourner certains filtres anti-SSRF.
 ### SSRF avec filtres d'entrée basés sur une liste blanche
+- Certaines applications n'autorisent que les entrées correspondant à une liste blanche de valeurs.
+- Le filtre peut chercher une correspondance au début de l'entrée ou à l'intérieur.
+- Il peut être contourné en exploitant des incohérences dans l'analyse des URL, car les fonctionnalités de la spécification sont souvent négligées quand l'analyse et la validation sont faites de façon ad hoc.
+- Ce filtre peut être contourner de la manière suivante:
+	- Identifiants avant le nom d'hôte, avec le caractère `@` : `https://expected-host:fakepassword@evil-host`
+	- Fragment d'URL, avec le caractère `#` : `https://evil-host#expected-host`
+	- Hiérarchie DNS : placer la valeur attendue dans un nom DNS complet que l'on contrôle : `https://expected-host.evil-host`
+	- Encodage d'URL pour semer la confusion dans l'analyse. Utile surtout si le code du filtre traîne les caractères encodés différemment du code qui effectue la requête HTTP.
+	- Double encodage : certains serveurs décodent de manière récursive, ce qui peut créer d'autres divergences.
+### Contournement des filtres SSRF via une vulnérabilités de redirection ouverte
+- Condition: l'application dont les URL sont autorisées contient une redirection ouverte et l'API qui effectue la requête HTTP côté serveur prend en charge les redirections.
+- L'attaquant construit alors une URL qui satisfait le filtre mais aboutit à une requête redirigée vers la cible interne voulue.
+- Exemple:
+	- L'URL `/product/nextProduct?currentProductId=6&path=http://evil-user.net` renvoie une redirection vers `http://evil-user.net`.
+- Exploitation:
+	- L'attaquant envoie `stockApi=http://weliketoshop.net/product/nextProduct?currentProductId=6&path=http://192.168.0.68/admin`.
+- Pourquoi ça marche?
+	- L'application vérifie d'abord que l'URL `stockApi` est sur un domaine autorisé, ce qui est le cas.
+	- 
 
 ## Comment détecter
 - 
