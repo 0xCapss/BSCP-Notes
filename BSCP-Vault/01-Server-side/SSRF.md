@@ -70,9 +70,10 @@ statut: à faire
 	- C'est l'outil le plus simple et le plus efficace pour l'OAST.
 	- Il génère des noms de domaine uniques, à envoyer comme charges utiles à l'application, puis surveille toute interaction avec ces domaines.
 	- Une requête HTTP entrante provenant de l'application indique qu'elle est vulnérable au SSRF.
-- Remarque:
-	- 
-
+- Remarque: requête DNS sans requête HTTP:
+	- Il est fréquent d'observer une requête DNS pour le domaine Collaborator sans requête HTTP ensuite.
+	- Cause habituelle : l'application a tenté la requête HTTP, ce qui a déclenché la requête DNS, mais un filtrage réseau a bloqué la requête HTTP elle-même.
+	- L'infrastructure autorise couramment le trafic DNS sortant, nécessaire à de nombreux usages, mais bloque les connexions HTTP vers des destinations inattendues.
 ## Comment détecter
 - 
 
