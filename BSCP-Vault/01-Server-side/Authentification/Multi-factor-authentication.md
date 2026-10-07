@@ -29,60 +29,17 @@ statut: en cours
 - Vérifier que les autres flux sensibles du compte (réinitialisation de mot de passe, changement d'email, API mobile parallèle) imposent eux aussi la validation du second facteur, et n'offrent pas un chemin parallèle qui le contourne.
 
 ## Comment exploiter (principe)
-### Accès direct après la première étape (bypass simple)
-- Si l'application considère l'utilisateur comme "quasi connecté" dès la validation du mot de passe, avant la validation du second facteur, il est parfois possible d'accéder directement aux pages ou fonctions réservées aux utilisateurs pleinement authentifiés en forçant la navigation vers leur URL, sans jamais soumettre de code de vérification.
+1. Après l'étape 1, tenter d'atteindre directement une page protégée.
+2. Chercher une valeur modifiable qui désigne le compte entre les deux étapes.
+3. Évaluer l'espace de recherche du code et l'existence d'une limitation de tentatives.
+4. Tester la réponse de vérification, les codes de secours et le cookie « se souvenir de cet appareil ».
 
-### Logique défaillante de liaison entre les deux étapes
-- Le site ne vérifie pas correctement, une fois la première étape terminée, que c'est bien le même utilisateur qui effectue la seconde. Ce défaut peut reposer sur un cookie, mais aussi sur un paramètre caché, un champ de formulaire ou un état de session mal vérifié côté serveur : le point commun est l'absence de revérification de l'identité entre les deux étapes, quel que soit le support utilisé.
-- Exemple avec un cookie : l'utilisateur se connecte avec ses propres identifiants valides lors de la première étape :
-```
-POST /login-steps/first HTTP/1.1
-Host: vulnerable-website.com
-...
-username=carlos&password=qwerty
-```
-- Un cookie associé à son compte lui est alors attribué, avant qu'il ne soit redirigé vers la deuxième étape du processus de connexion :
-```
-HTTP/1.1 200 OK
-
-Set-Cookie: account=carlos
-
-
-GET /login-steps/second HTTP/1.1
-
-Cookie: account=carlos
-```
-- Lors de l'envoi du code de vérification, la requête utilise ce cookie pour déterminer à quel compte l'utilisateur tente d'accéder :
-```
-POST /login-steps/second HTTP/1.1
-Host: vulnerable-website.com
-Cookie: account=carlos
-...
-verification-code=123456
-```
-- Un attaquant disposant de ses propres identifiants valides peut se connecter normalement à l'étape 1, puis modifier la valeur du cookie `account` pour y placer le nom de la victime avant de soumettre l'étape 2 :
-```
-POST /login-steps/second HTTP/1.1
-Host: vulnerable-website.com
-Cookie: account=victim-user
-...
-verification-code=123456
-```
-- Cela reste insuffisant seul : il faut encore connaître ou deviner le code de vérification de la victime. L'attaquant a besoin de ses propres identifiants valides pour franchir l'étape 1, mais jamais du mot de passe de la victime. C'est en combinant ce défaut avec un brute force du code que l'attaque devient critique (voir ci-dessous).
-
-### Brute force du code de vérification
-- Un code de vérification est souvent un nombre à 4 ou 6 chiffres, soit un espace de recherche de 10 000 à 1 000 000 de valeurs : praticable avec Burp Intruder (attaque Sniper, position sur le code, type de payload Numbers) si rien d'autre ne limite les tentatives.
-- Condition indispensable à cette attaque : l'absence de limitation de tentatives sur la saisie du code. Sans cette faiblesse, le brute force est impraticable (voir [[Authentication]] pour la logique de rate limiting déjà vue sur les mots de passe).
-- Burp Intruder standard peut être trop lent pour couvrir tout l'espace en conditions d'examen ; Turbo Intruder est souvent nécessaire pour une attaque praticable dans le temps imparti.
-- Vérifier aussi si un code reste valide après un usage réussi (pas d'invalidation) ou au-delà d'une fenêtre de temps large (absence d'expiration) : deux faiblesses distinctes de la limitation de tentatives, qui élargissent la fenêtre d'exploitation.
-
-### Manipulation de la réponse de vérification
-- Quand la décision "code valide ou non" repose sur une valeur renvoyée au client plutôt que strictement vérifiée et appliquée côté serveur, intercepter la réponse et modifier l'indicateur de statut (par exemple un corps JSON `"verified":false` changé en `true`) peut suffire à obtenir l'accès sans connaître le bon code. Faille de confiance dans la réponse, à bien distinguer de la logique défaillante entre étapes vue plus haut.
-
-### Contournement via les mécanismes de secours ou de confiance
-- Les codes de secours (backup codes) contournent entièrement le second facteur principal ; s'ils ne sont pas soumis aux mêmes protections (limitation de tentatives, format suffisamment long), ils deviennent le maillon faible à cibler plutôt que l'OTP principal.
-- Un cookie "se souvenir de cet appareil" prévisible, non signé, ou rejouable sur un autre navigateur permet de sauter complètement la demande de second facteur sur les connexions suivantes.
-- Vérifier si d'autres flux du compte (réinitialisation de mot de passe, changement d'email, API mobile) imposent eux aussi le second facteur : un chemin parallèle qui ne le fait pas revient à contourner toute la protection (voir [[Autres vulnérabilité dans les mécanismes d'authentification]]).
+| Type | Idée clé | Note | Niveau |
+| --- | --- | --- | --- |
+| Accès direct | forcer l'URL post-connexion | [[MFA-acces-direct]] | Apprentice |
+| Logique défaillante entre étapes | `Cookie: verify=carlos` | [[MFA-logique-defaillante]] | Practitioner |
+| Brute force du code | `0000` à `9999`, macro | [[MFA-brute-force-code]] | Expert |
+| Réponse manipulable et secours | `"verified":true`, backup codes | [[MFA-reponse-et-secours]] | Practitioner |
 
 ## Pièges et points d'attention BSCP
 - Toujours distinguer les deux causes qui peuvent se combiner dans un même scénario : l'absence de limitation de tentatives sur le code, et la logique défaillante de liaison d'identité entre les deux étapes. Ce sont deux vulnérabilités séparées, même quand l'exploitation les enchaîne.
@@ -105,7 +62,7 @@ verification-code=123456
 - [ ] Expert
 
 ## Journal des labs
-- 
+- Les trois labs de 2FA (contournement simple, logique défaillante, force brute) sont décrits dans le journal de [[Authentication]] (labs 10 à 12).
 
 ## Mes notes
 - 
@@ -113,4 +70,8 @@ verification-code=123456
 ## Liens
 - [[Authentication]]
 - [[Access-control]]
-- [[Autres vulnérabilité dans les mécanismes d'authentification]]
+- [[Autres-mecanismes-authentification]]
+- [[MFA-acces-direct]]
+- [[MFA-logique-defaillante]]
+- [[MFA-brute-force-code]]
+- [[MFA-reponse-et-secours]]
