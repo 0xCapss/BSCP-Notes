@@ -98,7 +98,12 @@ statut: à faire
 	- Une application qui accepte et analyse du XML peut être vulnérable à une injection XXE.
 	- Elle peut aussi être vulnérable à une SSRF via XXE.
 ### SSRF via l'en-tête Referer
-
+- Certaines applications utilisent des logiciels d'analyse côté serveur pour suivre les visiteurs.
+- Ces logiciels enregistrent souvent l'en-tête Referer des requêtes, afin de suivre les liens entrants.
+- Surface d'attaque:
+	- Ils accèdent fréquemment aux URL tierces présentes dans l'en-tête Referer.
+	- Le but est généralement d'analyser le contenu des sites référents, y compris le texte d'ancrage des liens entrants.
+	- L'en-tête Referer est donc souvent une surface d'attaque utile pour les SSRF (et, d'après ce qui précède, plutôt de type aveugle, à tester avec Burp Collaborator).
 ## Comment détecter
 - 
 
