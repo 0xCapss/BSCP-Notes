@@ -46,7 +46,9 @@ statut: à faire
 		- Exemple: un serveur qui n'attend que des images peut n'autoriser que `image/jpeg` et `image/png`.
 	- Problème:
 		- Survient quand le serveur fait implicitement confiance à la valeur de cet en-tête.
-		- 
+		- Si aucune validation supplémentaire ne vérifie que le contenu du fichier correspond au type MIME annoncé, la protection est facilement contournable.
+	- Contournement: 
+		- Un outil comme Burp Repeater permet de modifier cet en-tête (par exemple, envoyer un script PHP avec `Content-Type: image/jpeg`).
 
 ## Exploiter les téléchargements sans restriction pour déployer un web shell
 - Pire scénario: le site permet de téléverser des scripts côté serveur (PHP, Java, Python) et est configuré pour les exécuter comme du code.
@@ -90,6 +92,11 @@ You can log in to your own account using the following credentials: `wiener:pete
     `GET /files/avatars/exploit.php HTTP/1.1`
 8. Send the request. Notice that the server has executed your script and returned its output (Carlos's secret) in the response.
 9. Submit the secret to solve the lab.
+### Lab: Web shell upload via Content-Type restriction bypass
+This lab contains a vulnerable image upload function. It attempts to prevent users from uploading unexpected file types, but relies on checking user-controllable input to verify this.
+To solve the lab, upload a basic PHP web shell and use it to exfiltrate the contents of the file `/home/carlos/secret`. Submit this secret using the button provided in the lab banner.
+You can log in to your own account using the following credentials: `wiener:peter`
+
 
 ## Mes notes
 - 
