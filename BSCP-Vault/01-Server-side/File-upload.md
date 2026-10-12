@@ -10,8 +10,6 @@ statut: à faire
 - Sans restrictions, même une simple fonction de téléversement d'images peut servir à envoyer des fichiers arbitraire et potentiellement dangereux.
 - Cela peut inclure des fichiers de script côté serveur, qui permettent l'exécution de code à distance.
 ## Impact des vulnérabilités
-
-## Types et variantes
 - L'impact dépend généralement de deux facteurs:
 	- L'aspect du fichier que le site valide mal (taille, type, contenu, etc.).
 	- Les restrictions imposées au fichier une fois téléversé avec succès.
@@ -19,6 +17,13 @@ statut: à faire
 	- Le type de fichier n'est pas validé correctement.
 	- La configuration du serveur autorise l'exécution de certains types de fichiers comme `.php` et `.jsp` en tant que code.
 	- Un attaquant peut alors téléverser un fichier de code côté serveur faisant office de web shell, ce qui lui donne de fait le contrôle total du serveur.
+- Nom de fichier mal validé
+	- Un attaquant peut remplacer des fichiers critiques en téléversant un fichier portant le même nom.
+	- Si le serveur est vulnérable au path transversal l'attaquant peut téléverser des fichiers vers des emplacements imprévus.
+- Taille non contrôlée
+	- Ne pas vérifier que la taille respecte les limites prévues peut permettre une attaque par déni de service (DoS).
+## Types et variantes
+
 
 
 ## Comment détecter
