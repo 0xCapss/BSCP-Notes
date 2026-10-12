@@ -41,6 +41,12 @@ statut: à faire
 	- `Content-Disposition` : donne les informations de base sur le champ concerné (`name`, et `filename` pour un fichier).
 	- `Content-Type` (facultatif) : indique au serveur le type MIME des données soumises via ce champ (ici `image/jpeg` pour l'image).
 	- Intérêt pour la sécurité: Le `Content-Type` de la partie fichier est fourni par le client : l'attaquant peut le modifier avec Burp Proxy ou Repeater. C'est pourquoi s'y fier pour valider le type de fichier est une faille (cela rejoint le point sur les "propriétés facilement manipulables").
+- Validation par l'en-tête `Content-Type`:
+	- Méthode: Vérifier que l'en-tête `Content-Type` propre au champ de fichier correspond au type MIME attendu.
+		- Exemple: un serveur qui n'attend que des images peut n'autoriser que `image/jpeg` et `image/png`.
+	- Problème:
+		- Survient quand le serveur fait implicitement confiance à la valeur de cet en-tête.
+		- 
 
 ## Exploiter les téléchargements sans restriction pour déployer un web shell
 - Pire scénario: le site permet de téléverser des scripts côté serveur (PHP, Java, Python) et est configuré pour les exécuter comme du code.
