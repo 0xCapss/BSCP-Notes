@@ -27,6 +27,18 @@ statut: à faire
 - Le site peut vérifier le type de fichier à partir de propriétés et l'attaquant peut facilement modifier avec l'outil Repeater.
 ### Application incohérente
 - Même une validation robuste peut être appliquée de manière incohérente à travers le réseau d'hébergeurs et de répertoires qui composent le site.
+## Exploiter les téléchargements sans restriction pour déployer un web shell
+- Pire scénario: le site permet de téléverser des scripts côté serveur (PHP, Java, Python) et est configuré pour les exécuter comme du code.
+- Il devient alors super facile de créer son propre web shell sur le serveur
+- **Web shell**
+	- Script malveillant qui permet d’exécuter des commandes arbitraires sur un serveur web distant, simplement en envoyant des requêtes HTTP vers le bon point de terminaison.
+	- Cela donne de fait un contrôle total sur le serveur
+	- Il permet de lire ou écrire des fichiers arbitraires.
+	- On peut exfiltrer des données sensibles.
+	- Utilise le serveur comme pivot pour attaquer l'infrastructure interne et d'autres serveurs extérieurs au réseau.
+- Exemple en PHP:
+	- Lecture de fichier : `<?php echo file_get_contents('/path/to/target/file'); ?>`. Une requête vers le fichier téléversé renvoie le contenu du fichier ciblé dans la réponse.
+	- 
 
 ## Pièges et points d'attention BSCP
 - 

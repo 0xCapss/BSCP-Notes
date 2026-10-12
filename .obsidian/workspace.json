@@ -176,7 +176,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal-prefixe-et-extension.md",
+                "file": "BSCP-Vault/01-Server-side/File-upload.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -196,7 +196,7 @@
             }
           }
         ],
-        "currentTab": 5
+        "currentTab": 4
       }
     ],
     "direction": "horizontal",
@@ -220,7 +220,7 @@
       "tags-routes:Open tags routes": false
     }
   },
-  "active": "2930941a1f1a4f2e",
+  "active": "e8f728f10f26163a",
   "lastOpenFiles": [
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF-aveugle.md",
