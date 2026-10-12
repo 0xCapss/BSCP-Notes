@@ -14,7 +14,12 @@ statut: à faire
 ## Types et variantes
 - L'impact dépend généralement de deux facteurs:
 	- L'aspect du fichier que le site valide mal (taille, type, contenu, etc.).
-	- Les restrictions imposées au fichier une fois téléversé
+	- Les restrictions imposées au fichier une fois téléversé avec succès.
+- Pire cas
+	- Le type de fichier n'est pas validé correctement.
+	- La configuration du serveur autorise l'exécution de certains types de fichiers comme `.php` et `.jsp` en tant que code.
+	- Un attaquant peut alors téléverser un fichier de code côté serveur faisant office de web shell, ce qui lui donne de fait le contrôle total du serveur.
+
 
 ## Comment détecter
 - 
