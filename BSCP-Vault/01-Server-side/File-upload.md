@@ -22,6 +22,8 @@ statut: à faire
 	- Si le serveur est vulnérable au path transversal l'attaquant peut téléverser des fichiers vers des emplacements imprévus.
 - Taille non contrôlée
 	- Ne pas vérifier que la taille respecte les limites prévues peut permettre une attaque par déni de service (DoS).
+## Traitement des requêtes de fichiers statiques
+- Les sites web étaient 
 ## Types et variantes
 
 
