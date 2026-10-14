@@ -23,7 +23,22 @@ statut: à faire
 - Taille non contrôlée
 	- Ne pas vérifier que la taille respecte les limites prévues peut permettre une attaque par déni de service (DoS).
 ## Traitement des requêtes de fichiers statiques
-- Les sites web étaient 
+- Autrefois:
+	- Les sites web étaient presque exclusivement constitués de fichiers statiques.
+	- Le chemin d'accès de chaque requête correspondait de manière biunivoque à la hiérarchie des répertoires et fichiers sur le système de fichiers du serveur.
+- Aujourd'hui:
+	- Les sites sont de plus en plus dynamiques : le chemin d'accès d'une requête n'a souvent plus de rapport direct avec le système de fichiers.
+	- Les serveurs web traitent néanmoins toujours des requêtes pour certains fichiers statiques, comme les feuilles de style et les images.
+- Le processus reste globalement le même : le serveur analyse le chemin de la requête pour identifier l'extension du fichier.
+- Il détermine ensuite le type du fichier, généralement en comparant l'extension à une liste préconfigurée de correspondances extension/type MIME.
+- La suite dépend du type de fichier et de la configuration du serveur.
+- Plusieurs cas possibles:
+	- Fichier non exécutable (image, page HTML statique) : le serveur peut simplement renvoyer son contenu dans la réponse HTTP.
+	- Fichier exécutable (par exemple PHP) et serveur configuré pour l'exécuter : le serveur assigne des variables à partir des en-têtes et paramètres de la requête, exécute le script, puis peut renvoyer la sortie dans la réponse HTTP.
+	- Fichier exécutable mais serveur non configuré pour l'exécuter : il répond généralement par une erreur. Parfois, le contenu du fichier est quand même servi en texte brut, ce qui peut permettre de divulguer du code source et d'autres informations sensibles (exemple dans les supports sur la divulgation d'informations).
+- Astuce;
+	- L'en-tête de réponse `Content-Type` indique quel type de fichier le serveur pense avoir servi.
+	- Si le code de l'application ne l'a pas défini explicitement, il contient normalement le résultat de la correspondance extension/type MIME.
 ## Types et variantes
 
 
