@@ -10,7 +10,6 @@ statut: à faire
 - Plus difficile à exploiter qu'une SSRF classique.
 - Leur impact est souvent moindre que celui des SSRF « pleinement informées », à cause de leur nature unidirectionnelle : elles ne permettent pas d'extraire facilement des données sensibles des systèmes back-end.
 - Elle peut parfois conduire à l'exécution de code à distance sur le serveur ou sur d'autres composants du back-end.
-- Note parente : [[SSRF]]
 
 ## Comment détecter
 - La méthode la plus fiable repose sur les techniques hors bande (OAST).

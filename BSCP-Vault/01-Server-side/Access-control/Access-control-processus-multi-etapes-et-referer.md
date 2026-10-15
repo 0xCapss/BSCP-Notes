@@ -8,7 +8,6 @@ statut: à faire
 ## En bref
 - Certains sites réalisent une opération sensible en plusieurs étapes (saisie, confirmation) et ne contrôlent l'accès que sur certaines d'entre elles.
 - D'autres se fient à l'en-tête `Referer` pour décider si une requête est légitime.
-- Note parente : [[Access-control]]
 
 ## Comment détecter
 - Décomposer chaque action sensible en ses étapes avec Burp, puis rejouer chaque étape séparément avec une session de faible privilège.

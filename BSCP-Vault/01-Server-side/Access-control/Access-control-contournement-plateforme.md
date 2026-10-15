@@ -7,7 +7,6 @@ statut: à faire
 
 ## En bref
 - Certaines applications appliquent le contrôle d'accès au niveau de la plateforme (pare-feu applicatif, proxy, framework) en restreignant l'accès à des URL et méthodes HTTP précises. Ces règles sont contournables.
-- Note parente : [[Access-control]]
 
 ## Comment détecter
 - Comparer les réponses d'une URL sensible avec différents en-têtes et méthodes.

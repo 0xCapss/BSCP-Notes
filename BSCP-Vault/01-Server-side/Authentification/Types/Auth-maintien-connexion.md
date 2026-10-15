@@ -7,7 +7,6 @@ statut: à faire
 
 ## En bref
 - Fonctionnalité qui permet à un utilisateur de rester connecté après avoir fermé son navigateur, via un token stocké dans un cookie persistant.
-- Note parente : [[Autres-mecanismes-authentification]]
 
 ## Comment détecter
 - Se connecter avec la case cochée et examiner le cookie obtenu.

@@ -8,7 +8,6 @@ statut: à faire
 ## En bref
 - Certaines applications déterminent les droits d'accès ou le rôle de l'utilisateur lors de la connexion, puis stockent ces informations dans un emplacement contrôlable par l'utilisateur : champ caché, cookie ou paramètre de requête.
 - L'utilisateur peut modifier la valeur et accéder à des fonctionnalités non autorisées.
-- Note parente : [[Access-control]]
 
 ## Comment détecter
 - Chercher dans les cookies, champs cachés et corps de requêtes/réponses des valeurs qui ressemblent à un rôle ou à un niveau de droits (`Admin=false`, `role=1`, `roleid`, `isAdmin`).

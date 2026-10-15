@@ -7,7 +7,6 @@ statut: à faire
 
 ## En bref
 - L'application bloque ou neutralise les séquences `../`, mais utilise le paramètre tel quel comme chemin quand il est absolu.
-- Note parente : [[Path-traversal]]
 
 ## Comment exploiter (principe)
 - Remplacer entièrement la valeur du paramètre par le chemin absolu du fichier visé : `filename=/etc/passwd`.

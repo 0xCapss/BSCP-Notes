@@ -7,7 +7,6 @@ statut: à faire
 
 ## En bref
 - Fonctionnalité risquée par nature : elle doit authentifier l'utilisateur par un autre moyen que le mot de passe.
-- Note parente : [[Autres-mecanismes-authentification]]
 
 ## Comment détecter
 - Observer le lien reçu par e-mail : un paramètre identifie-t-il l'utilisateur (`user=`) ? Le token est-il long et imprévisible ?

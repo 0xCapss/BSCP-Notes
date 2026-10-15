@@ -8,7 +8,6 @@ statut: à faire
 ## En bref
 - Attaque par essais automatisés de noms d'utilisateur et de mots de passe, avec Burp Intruder.
 - L'efficacité dépend de la reconnaissance : une liste ciblée vaut mieux qu'une liste générique.
-- Note parente : [[Authentication]]
 
 ## Comment détecter
 - Comparer la réponse à un couple entièrement invalide et à un username valide avec un mauvais mot de passe : code de statut, message d'erreur, longueur, temps de réponse.

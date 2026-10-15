@@ -8,7 +8,6 @@ statut: à faire
 ## En bref
 - De nombreuses SSRF sont faciles à détecter : le trafic normal de l'application contient des paramètres de requête avec des URL complètes.
 - D'autres sont plus difficiles à repérer car l'URL n'apparaît pas telle quelle dans la requête.
-- Note parente : [[SSRF]]
 
 ## URL partielles
 - Une application peut n'intégrer dans les paramètres de requête qu'un nom d'hôte ou une partie d'un chemin d'URL.

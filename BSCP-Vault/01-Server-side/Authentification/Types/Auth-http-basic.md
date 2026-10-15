@@ -8,7 +8,6 @@ statut: à faire
 ## En bref
 - Le navigateur envoie à chaque requête un jeton `base64(username:password)` dans l'en-tête `Authorization`.
 - Mécanisme simple mais fragile.
-- Note parente : [[Authentication]]
 
 ## Comment détecter
 - Chercher une réponse `401` avec l'en-tête `WWW-Authenticate: Basic`.

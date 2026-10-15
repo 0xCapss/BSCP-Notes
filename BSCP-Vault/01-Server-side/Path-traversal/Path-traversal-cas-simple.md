@@ -7,7 +7,6 @@ statut: à faire
 
 ## En bref
 - L'application passe une entrée utilisateur à une API de fichiers sans validation : la séquence `../` permet de remonter dans l'arborescence.
-- Note parente : [[Path-traversal]]
 
 ## Comment détecter
 - Repérer un paramètre qui désigne un fichier (`filename`, `file`, `path`, `doc`, `template`, `page`, `image`).

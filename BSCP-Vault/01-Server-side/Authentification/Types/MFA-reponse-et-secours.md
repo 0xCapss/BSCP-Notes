@@ -7,7 +7,6 @@ statut: à faire
 
 ## En bref
 - La décision de validation repose sur une valeur renvoyée au client, ou un mécanisme de secours est plus faible que le second facteur principal.
-- Note parente : [[Multi-factor-authentication]]
 
 ## Comment détecter
 - Intercepter la réponse de vérification et repérer un indicateur de statut (par exemple `"verified":false`).

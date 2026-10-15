@@ -8,7 +8,6 @@ statut: à faire
 ## En bref
 - Certaines applications n'autorisent que les entrées qui correspondent à une liste blanche de valeurs (domaines autorisés).
 - Le filtre peut chercher la correspondance au début de l'entrée ou à l'intérieur.
-- Note parente : [[SSRF]]
 
 ## Pourquoi c'est contournable
 - Les fonctionnalités de la spécification des URL sont souvent négligées quand l'analyse et la validation sont faites de façon ad hoc.

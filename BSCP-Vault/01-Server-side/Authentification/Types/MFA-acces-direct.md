@@ -7,7 +7,6 @@ statut: à faire
 
 ## En bref
 - L'application considère l'utilisateur comme « quasi connecté » dès la validation du mot de passe, avant la validation du second facteur.
-- Note parente : [[Multi-factor-authentication]]
 
 ## Comment détecter
 - Se connecter avec ses propres identifiants, noter l'URL de la page post-connexion (`/my-account`), puis tester d'y aller directement avant de saisir le code.

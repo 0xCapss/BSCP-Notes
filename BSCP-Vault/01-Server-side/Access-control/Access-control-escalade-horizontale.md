@@ -9,7 +9,6 @@ statut: à faire
 - Un utilisateur accède aux ressources d'un autre utilisateur de même niveau de privilège.
 - Très proche de l'IDOR (voir [[Access-control-idor]]).
 - Une escalade horizontale peut devenir verticale si la ressource atteinte appartient à un compte administrateur.
-- Note parente : [[Access-control]]
 
 ## Comment détecter
 - Repérer un identifiant de ressource dans l'URL ou le corps (`id`, `userId`, `account`) sur les pages de profil, factures, messages.

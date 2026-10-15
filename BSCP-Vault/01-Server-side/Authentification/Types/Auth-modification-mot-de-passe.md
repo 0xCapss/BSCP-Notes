@@ -8,7 +8,6 @@ statut: à faire
 ## En bref
 - Le processus classique demande le mot de passe actuel, puis le nouveau mot de passe saisi deux fois.
 - Il repose sur le même mécanisme de vérification que la page de connexion, donc sur les mêmes failles.
-- Note parente : [[Autres-mecanismes-authentification]]
 
 ## Comment détecter
 - Vérifier si le nom d'utilisateur est transmis dans un champ masqué.

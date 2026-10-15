@@ -7,7 +7,6 @@ statut: à faire
 
 ## En bref
 - L'application impose une forme au chemin fourni : il doit commencer par un répertoire de base, ou se terminer par une extension attendue.
-- Note parente : [[Path-traversal]]
 
 ## Comment exploiter (principe)
 - **Validation du préfixe** : une application peut valider que le chemin fourni commence bien par un répertoire de base attendu (par exemple `/var/www/images/`) sans empêcher la remontée ensuite. On fournit un chemin qui satisfait ce préfixe puis remonte quand même :

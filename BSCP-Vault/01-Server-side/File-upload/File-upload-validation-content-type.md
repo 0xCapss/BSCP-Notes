@@ -8,7 +8,6 @@ statut: à faire
 ## En bref
 - Le site vérifie le type d'un fichier à partir de propriétés que l'attaquant maîtrise, notamment l'en-tête `Content-Type` de la partie fichier d'une requête `multipart/form-data`.
 - Une valeur fournie par le client ne peut pas servir de preuve : elle se modifie facilement avec Burp Repeater.
-- Note parente : [[File-upload]]
 
 ## Comment détecter
 - Téléverser un script (`exploit.php`) et lire le message de refus : s'il parle de types MIME autorisés (`image/jpeg`, `image/png`), la validation s'appuie probablement sur le `Content-Type`.

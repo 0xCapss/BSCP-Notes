@@ -201,6 +201,7 @@ Le code 2FA est forçable mais une déconnexion survient après deux mauvais ess
 5. Repérez le `302` et ouvrez la réponse dans le navigateur. Le code est valable pour une session donnée : la chance peut demander plusieurs passes.
 
 ## Mes notes
+- À rejouer : étapes des labs 1 à 12 non vérifiées sur les labs.
 - Différence entre authentification et autorisation :
 	- Authentification : processus qui consiste à vérifier qu'un utilisateur est bien celui qu'il prétend être.
 	- Autorisation : consiste à vérifier si un utilisateur est autorisé à effectuer une action.

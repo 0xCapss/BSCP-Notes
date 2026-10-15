@@ -8,7 +8,6 @@ statut: à faire
 ## En bref
 - Pire scénario : le site permet de téléverser des scripts côté serveur (PHP, Java, Python) et est configuré pour les exécuter comme du code.
 - Il devient alors très simple de déposer son propre web shell sur le serveur.
-- Note parente : [[File-upload]]
 
 ## Comment détecter
 - Repérer une fonction de téléversement (avatar, document, import).

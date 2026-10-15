@@ -8,7 +8,6 @@ statut: à faire
 ## En bref
 - Une fonction ou une ressource sensible est accessible sans aucun contrôle dès qu'on en connaît (ou devine) l'URL, indépendamment du rôle de l'utilisateur.
 - C'est le cas typique d'escalade verticale : un utilisateur sans droits atteint une fonction réservée à un rôle supérieur.
-- Note parente : [[Access-control]]
 
 ## Comment détecter
 - Tester `/admin`, `/administrator`, `/administrator-panel` en tant qu'utilisateur non authentifié.

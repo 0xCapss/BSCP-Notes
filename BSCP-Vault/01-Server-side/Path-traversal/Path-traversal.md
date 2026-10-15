@@ -138,7 +138,7 @@ L'application exige que le paramètre `filename` se termine par une extension de
 - Labs Practitioner résolus le 2026-09-16. Il a fallu tester plusieurs techniques de « Comment exploiter » (traversée classique, chemin absolu, préfixe, octet nul, encodage) selon le filtre rencontré. Détails d'endpoint et de requête à compléter si besoin de les rejouer.
 
 ## Mes notes
-- 
+- À rejouer : étapes des labs 2 à 6 non vérifiées sur les labs.
 
 ## Liens
 - [[Path-traversal-cas-simple]]

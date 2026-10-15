@@ -91,9 +91,6 @@ statut: en cours
 
 ## Journal des labs
 
-> [!warning] Traduction et étapes
-> Les deux labs ci-dessous sont votre texte d'origine traduit en français. Les labs listés plus bas dépendent de techniques pas encore étudiées : ils sont seulement nommés, sans étapes.
-
 ### Lab 1 - Exécution de code à distance via le téléversement d'un web shell
 *Remote code execution via web shell upload* - Apprentice - note : [[File-upload-web-shell]]
 

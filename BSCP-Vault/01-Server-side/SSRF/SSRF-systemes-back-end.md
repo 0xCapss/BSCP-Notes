@@ -8,7 +8,6 @@ statut: à faire
 ## En bref
 - Le serveur d'applications peut communiquer avec des systèmes back-end qui ne sont pas directement accessibles aux utilisateurs.
 - Ces systèmes ont souvent des adresses IP privées non routables (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`).
-- Note parente : [[SSRF]]
 
 ## Pourquoi c'est vulnérable
 - Ils sont généralement protégés par la topologie du réseau, d'où un niveau de sécurité souvent plus faible.

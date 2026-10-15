@@ -8,7 +8,6 @@ statut: à faire
 ## En bref
 - L'attaquant amène l'application à envoyer une requête HTTP vers le serveur qui l'héberge, via son interface réseau de bouclage (loopback).
 - L'URL fournie contient généralement `127.0.0.1` ou `localhost`.
-- Note parente : [[SSRF]]
 
 ## Comment détecter
 - Repérer une fonctionnalité qui reçoit une URL complète en paramètre (exemple : `stockApi` dans une vérification de stock).

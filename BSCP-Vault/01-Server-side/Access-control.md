@@ -71,9 +71,6 @@ Détail par type dans les notes de la table ci-dessus.
 
 ## Journal des labs
 
-> [!warning] Étapes rédigées de mémoire
-> Cette section était vide dans la page d'origine. Les étapes ci-dessous sont reconstituées de mémoire à partir des solutions publiques de PortSwigger et n'ont pas été rejouées : à vérifier sur chaque lab. Compte standard des labs : `wiener:peter`. Compte administrateur (labs 11 à 13) : `administrator:admin`.
-
 ### Lab 1 - Fonctionnalité d'administration non protégée
 *Unprotected admin functionality* - Apprentice - note : [[Access-control-fonctionnalite-non-protegee]]
 
@@ -197,7 +194,7 @@ Le contrôle d'accès de certaines fonctions d'administration repose sur l'en-t�
 4. Constatez que sans cet en-tête la requête est refusée : c'est lui qui sert de contrôle.
 
 ## Mes notes
-- 
+- À rejouer : étapes des labs 1 à 13 non vérifiées sur les labs.
 
 ## Liens
 - [[Access-control-fonctionnalite-non-protegee]]

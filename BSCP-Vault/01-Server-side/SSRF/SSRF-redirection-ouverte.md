@@ -8,7 +8,6 @@ statut: à faire
 ## En bref
 - Condition : une application dont les URL sont autorisées contient une redirection ouverte, et l'API qui effectue la requête HTTP côté serveur suit les redirections.
 - L'attaquant construit une URL qui satisfait le filtre mais aboutit à une requête redirigée vers la cible interne voulue.
-- Note parente : [[SSRF]]
 
 ## Comment détecter
 - Chercher dans l'application un paramètre qui alimente un en-tête `Location` (liens « produit suivant », « retour », `redirect`, `next`, `path`, `url`).

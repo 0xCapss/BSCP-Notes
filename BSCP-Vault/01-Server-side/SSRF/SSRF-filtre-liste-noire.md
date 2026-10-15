@@ -8,7 +8,6 @@ statut: à faire
 ## En bref
 - Certaines applications bloquent des noms d'hôtes comme `127.0.0.1` et `localhost`, ou des chemins sensibles comme `/admin`.
 - Ces filtres sont presque toujours contournables, car ils comparent une chaîne et non l'adresse réelle visée.
-- Note parente : [[SSRF]]
 
 ## Comment détecter
 - Envoyer `http://127.0.0.1/` : une réponse d'erreur spécifique (blocage, `403`, message de sécurité) distingue un filtre applicatif d'une simple absence de service.

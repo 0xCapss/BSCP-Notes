@@ -7,7 +7,6 @@ statut: à faire
 
 ## En bref
 - Le serveur retire ou décode les séquences de traversal avant l'accès au fichier, mais de façon incomplète.
-- Note parente : [[Path-traversal]]
 
 ## Comment détecter
 - Si `../` simple échoue, tester les variantes ci-dessous une par une pour identifier le filtre exact.

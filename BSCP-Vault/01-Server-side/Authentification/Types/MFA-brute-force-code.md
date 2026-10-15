@@ -7,7 +7,6 @@ statut: à faire
 
 ## En bref
 - Un code de vérification a souvent 4 ou 6 chiffres : espace de recherche de 10 000 à 1 000 000.
-- Note parente : [[Multi-factor-authentication]]
 
 ## Comment détecter
 - Déterminer le nombre de chiffres et tester s'il existe une limitation de tentatives (déconnexion après plusieurs échecs, verrouillage).

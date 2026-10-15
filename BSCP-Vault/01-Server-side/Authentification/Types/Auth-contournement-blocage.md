@@ -8,7 +8,6 @@ statut: à faire
 ## En bref
 - Les protections anti brute force (verrouillage du compte, blocage de l'IP) ont des limites que l'on peut contourner.
 - Le seuil peut être scopé par IP, par compte ou par la combinaison des deux : cela change toute la stratégie.
-- Note parente : [[Authentication]]
 
 ## Comment détecter
 - Provoquer volontairement quelques échecs pour observer le déclencheur (nombre de tentatives, message affiché, durée).

@@ -7,7 +7,6 @@ statut: à faire
 
 ## En bref
 - Le site ne vérifie pas que c'est bien le même utilisateur qui effectue les deux étapes.
-- Note parente : [[Multi-factor-authentication]]
 
 ## Comment détecter
 - Repérer, entre l'étape 1 et l'étape 2, une valeur modifiable qui désigne le compte (cookie, paramètre, champ masqué).

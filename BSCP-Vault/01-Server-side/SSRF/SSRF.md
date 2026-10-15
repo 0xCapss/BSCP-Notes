@@ -133,8 +133,7 @@ Le vérificateur de stock est restreint à l'application locale : vous devez don
 Ce site utilise un logiciel d'analyse qui récupère l'URL indiquée dans l'en-tête `Referer` lors du chargement d'une page produit.
 Pour résoudre le lab, utilisez cette fonctionnalité pour provoquer une requête HTTP vers le serveur public de Burp Collaborator.
 
-> [!note] Remarque
-> Pour éviter que la plateforme Academy soit utilisée pour attaquer des tiers, notre pare-feu bloque les interactions entre les labs et des systèmes externes arbitraires. Pour résoudre le lab, vous devez utiliser le serveur public par défaut de Burp Collaborator.
+Remarque : Pour éviter que la plateforme Academy soit utilisée pour attaquer des tiers, notre pare-feu bloque les interactions entre les labs et des systèmes externes arbitraires. Pour résoudre le lab, vous devez utiliser le serveur public par défaut de Burp Collaborator.
 
 1. Ouvrez une page produit, interceptez la requête dans Burp Suite et envoyez-la dans Burp Repeater.
 2. Allez dans l'onglet Repeater. Sélectionnez l'en-tête `Referer`, faites un clic droit et choisissez « Insert Collaborator Payload » pour remplacer le domaine d'origine par un domaine généré par Burp Collaborator. Envoyez la requête.
@@ -143,9 +142,6 @@ Pour résoudre le lab, utilisez cette fonctionnalité pour provoquer une requêt
 
 ### Lab 6 - SSRF avec filtre d'entrée basé sur une liste blanche
 *SSRF with whitelist-based input filter* - Expert - note : [[SSRF-filtre-liste-blanche]]
-
-> [!warning] Étapes rédigées de mémoire
-> Cette section n'était pas dans la page d'origine. Les étapes ci-dessous sont reconstituées de mémoire à partir de la solution publique du lab et n'ont pas été rejouées : à vérifier sur le lab.
 
 Pour le résoudre, modifiez l'URL de vérification de stock afin d'accéder à l'interface d'administration à l'adresse `http://localhost/admin`, puis supprimez l'utilisateur `carlos`. Le développeur a mis en place une défense anti-SSRF qu'il faut contourner.
 
@@ -160,9 +156,6 @@ Pour le résoudre, modifiez l'URL de vérification de stock afin d'accéder à l
 ### Lab 7 - SSRF aveugle avec exploitation de Shellshock
 *Blind SSRF with Shellshock exploitation* - Expert - note : [[SSRF-aveugle]]
 
-> [!warning] Étapes rédigées de mémoire
-> Cette section n'était pas dans la page d'origine. Les étapes ci-dessous sont reconstituées de mémoire à partir de la solution publique du lab et n'ont pas été rejouées : à vérifier sur le lab. Le lab nécessite Burp Suite Professional (Collaborator).
-
 Le site utilise un logiciel d'analyse qui récupère l'URL indiquée dans l'en-tête `Referer`. Un serveur interne de la plage `192.168.0.X` sur le port `8080` est vulnérable à Shellshock. Pour résoudre le lab, utilisez la SSRF pour exécuter une commande sur ce serveur et exfiltrer le nom de l'utilisateur du système d'exploitation via une requête DNS vers Burp Collaborator.
 
 1. Ouvrez une page produit, interceptez la requête et envoyez-la dans Burp Intruder.
@@ -173,7 +166,7 @@ Le site utilise un logiciel d'analyse qui récupère l'URL indiquée dans l'en-t
 6. Soumettez ce nom d'utilisateur pour valider le lab.
 
 ## Mes notes
-- 
+- À rejouer : étapes des labs 6 et 7 non vérifiées sur les labs.
 
 ## Liens
 - [[SSRF-serveur-local]]
