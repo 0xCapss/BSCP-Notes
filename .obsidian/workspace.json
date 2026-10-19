@@ -238,7 +238,7 @@
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -262,8 +262,9 @@
       "tags-routes:Open tags routes": false
     }
   },
-  "active": "466f0e8a9eef545a",
+  "active": "fc85ef2d9b98b31b",
   "lastOpenFiles": [
+    "BSCP-Vault/01-Server-side/Command-injection.md.tmp.24296.b06d9765c0e1",
     "conflict-files-obsidian-git.md",
     "BSCP-Vault/01-Server-side/Command-injection.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF.md",
@@ -290,7 +291,6 @@
     "BSCP-Vault/01-Server-side/Authentification/Types/MFA-acces-direct.md",
     "BSCP-Vault/01-Server-side/Authentification/Types/Auth-reinitialisation-mot-de-passe.md",
     "BSCP-Vault/01-Server-side/Authentification/Types/Auth-modification-mot-de-passe.md",
-    "BSCP-Vault/01-Server-side/Authentification/Types/Auth-maintien-connexion.md",
     "BSCP-Vault/01-Server-side/Path-traversal",
     "BSCP-Vault/01-Server-side/Authentification/Types",
     "BSCP-Vault/01-Server-side/Access-control",
