@@ -69,12 +69,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/File-upload/File-upload-validation-content-type.md",
+                "file": "BSCP-Vault/01-Server-side/SQL-injection.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "File-upload-validation-content-type"
+              "title": "SQL-injection"
             }
           }
         ],
@@ -258,15 +258,16 @@
       "obsidian-git:Open Git source control": false,
       "omnisearch:Omnisearch": false,
       "templater-obsidian:Templater": false,
-      "periodic-notes:Open today": false
+      "periodic-notes:Open today": false,
+      "tags-routes:Open tags routes": false
     }
   },
   "active": "466f0e8a9eef545a",
   "lastOpenFiles": [
+    "BSCP-Vault/01-Server-side/File-upload/File-upload-validation-content-type.md",
     "BSCP-Vault/01-Server-side/File-upload/File-upload.md",
     "BSCP-Vault/01-Server-side/File-upload/File-upload-liste-noire.md",
     "BSCP-Vault/01-Server-side/File-upload/File-upload-web-shell.md",
-    "BSCP-Vault/01-Server-side/File-upload/File-upload-validation-content-type.md",
     "BSCP-Vault/01-Server-side/Command-injection.md",
     "BSCP-Vault/01-Server-side/Command-injection.md.tmp.24296.b06d9765c0e1",
     "conflict-files-obsidian-git.md",
