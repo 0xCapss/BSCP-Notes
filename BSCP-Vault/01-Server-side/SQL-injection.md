@@ -39,6 +39,15 @@ statut: à faire
 **Avertissement**
 - Attention en injectant `OR 1=1` : même si cela semble inoffensif là où on l'injecte, les applications réutilisent souvent les données d'une requête dans plusieurs autres.
 - Si la condition atteint un `UPDATE` ou un `DELETE`, elle peut provoquer une perte accidentelle de données.
+## Détournement logique d'application
+**Détourner la logique de l'application**
+- Exemple : une application authentifie les utilisateurs par nom d'utilisateur et mot de passe. Avec `wiener` et `bluecheese`, elle exécute : `SELECT * FROM users WHERE username = 'wiener' AND password = 'bluecheese'`.
+- Si la requête renvoie les détails d'un utilisateur, la connexion réussit. Sinon, elle est rejetée.
+**Attaque**
+- Un attaquant peut se connecter en tant que n'importe quel utilisateur, sans mot de passe.
+- Il utilise la séquence de commentaire SQL `--` pour retirer la vérification du mot de passe de la clause `WHERE`.
+- Exemple : le nom d'utilisateur `administrator'--` avec un mot de passe vide donne : `SELECT * FROM users WHERE username = 'administrator'--' AND password = ''`.
+- Cette requête renvoie l'utilisateur `administrator` et connecte l'attaquant sous ce compte.
 
 ## Types et variantes
 - 
@@ -71,7 +80,16 @@ statut: à faire
 This lab contains a SQL injection vulnerability in the product category filter. When the user selects a category, the application carries out a SQL query like the following:
 `SELECT * FROM products WHERE category = 'Gifts' AND released = 1`
 To solve the lab, perform a SQL injection attack that causes the application to display one or more unreleased products.
-
+####  Solution
+1. Use Burp Suite to intercept and modify the request that sets the product category filter.
+2. Modify the `category` parameter, giving it the value `'+OR+1=1--`
+3. Submit the request, and verify that the response now contains one or more unreleased products.
+### Lab: SQL injection vulnerability allowing login bypass
+This lab contains a SQL injection vulnerability in the login function.
+To solve the lab, perform a SQL injection attack that logs in to the application as the `administrator` user.
+####  Solution
+1. Use Burp Suite to intercept and modify the login request.
+2. Modify the `username` parameter, giving it the value: `administrator'--`
 ## Mes notes
 - 
 
