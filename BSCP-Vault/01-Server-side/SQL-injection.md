@@ -1,7 +1,7 @@
 ---
 tags: [bscp, server-side, sql-injection]
 niveau: apprentice
-statut: à faire
+statut: en cours
 ---
 # SQL injection
 
@@ -77,19 +77,19 @@ statut: à faire
 
 ## Journal des labs
 ### Lab: SQL injection vulnerability in WHERE clause allowing retrieval of hidden data
-This lab contains a SQL injection vulnerability in the product category filter. When the user selects a category, the application carries out a SQL query like the following:
+Ce lab contient une injection SQL dans le filtre de catégorie des produits. Quand l'utilisateur choisit une catégorie, l'application exécute une requête SQL comme celle-ci :
 `SELECT * FROM products WHERE category = 'Gifts' AND released = 1`
-To solve the lab, perform a SQL injection attack that causes the application to display one or more unreleased products.
-####  Solution
-1. Use Burp Suite to intercept and modify the request that sets the product category filter.
-2. Modify the `category` parameter, giving it the value `'+OR+1=1--`
-3. Submit the request, and verify that the response now contains one or more unreleased products.
+Pour réussir le lab, il faut réaliser une injection SQL qui fait afficher à l'application un ou plusieurs produits non publiés.
+#### Solution
+1. Utiliser Burp Suite pour intercepter et modifier la requête qui définit le filtre de catégorie.
+2. Modifier le paramètre `category` en lui donnant la valeur `'+OR+1=1--`.
+3. Envoyer la requête et vérifier que la réponse contient maintenant un ou plusieurs produits non publiés.
 ### Lab: SQL injection vulnerability allowing login bypass
-This lab contains a SQL injection vulnerability in the login function.
-To solve the lab, perform a SQL injection attack that logs in to the application as the `administrator` user.
-####  Solution
-1. Use Burp Suite to intercept and modify the login request.
-2. Modify the `username` parameter, giving it the value: `administrator'--`
+Ce lab contient une injection SQL dans la fonction de connexion.
+Pour réussir le lab, il faut réaliser une injection SQL qui connecte à l'application en tant qu'utilisateur `administrator`.
+#### Solution
+1. Utiliser Burp Suite pour intercepter et modifier la requête de connexion.
+2. Modifier le paramètre `username` en lui donnant la valeur : `administrator'--`.
 ## Mes notes
 - 
 
