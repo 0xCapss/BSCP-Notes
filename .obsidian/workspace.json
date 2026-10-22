@@ -69,12 +69,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/Command-injection.md",
+                "file": "BSCP-Vault/01-Server-side/File-upload/File-upload-validation-content-type.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Command-injection"
+              "title": "File-upload-validation-content-type"
             }
           }
         ],
@@ -218,7 +218,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/Command-injection.md",
+                "file": "BSCP-Vault/01-Server-side/File-upload/File-upload-validation-content-type.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -258,25 +258,24 @@
       "obsidian-git:Open Git source control": false,
       "omnisearch:Omnisearch": false,
       "templater-obsidian:Templater": false,
-      "periodic-notes:Open today": false,
-      "tags-routes:Open tags routes": false
+      "periodic-notes:Open today": false
     }
   },
-  "active": "fc85ef2d9b98b31b",
+  "active": "466f0e8a9eef545a",
   "lastOpenFiles": [
+    "BSCP-Vault/01-Server-side/File-upload/File-upload.md",
+    "BSCP-Vault/01-Server-side/File-upload/File-upload-liste-noire.md",
+    "BSCP-Vault/01-Server-side/File-upload/File-upload-web-shell.md",
+    "BSCP-Vault/01-Server-side/File-upload/File-upload-validation-content-type.md",
+    "BSCP-Vault/01-Server-side/Command-injection.md",
     "BSCP-Vault/01-Server-side/Command-injection.md.tmp.24296.b06d9765c0e1",
     "conflict-files-obsidian-git.md",
-    "BSCP-Vault/01-Server-side/Command-injection.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF.md",
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF-filtre-liste-noire.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF-filtre-liste-blanche.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF-aveugle.md",
     "BSCP-Vault/01-Server-side/File-upload.md",
-    "BSCP-Vault/01-Server-side/File-upload/File-upload.md",
-    "BSCP-Vault/01-Server-side/File-upload/File-upload-web-shell.md",
-    "BSCP-Vault/01-Server-side/File-upload/File-upload-validation-content-type.md",
-    "BSCP-Vault/01-Server-side/File-upload/File-upload-liste-noire.md",
     "BSCP-Vault/01-Server-side/File-upload",
     "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal-prefixe-et-extension.md",
     "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal-chemin-absolu.md",
@@ -300,7 +299,6 @@
     "BSCP-Vault/01-Server-side/Authentification/Autres vulnérabilité dans les mécanismes d'authentification.md.tmp.48412.5f8920036682",
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md.tmp.287.a58824c398c9",
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md.tmp.287.4493d49ed398",
-    "BSCP-Vault/01-Server-side/Authentification/Multi-factor-authentication.md.tmp.287.30c60c66d940",
     "BSCP-Vault/assets/learning-path.png",
     "BSCP-Vault/assets/dashboard.png",
     "BSCP-Vault/01-Server-side/assets/Authentication.png",
