@@ -19,7 +19,26 @@ statut: à faire
 - `products` : la table interrogée.
 - `category = 'Gifts'` : uniquement la catégorie Gifts.
 - `released = 1` : uniquement les produits publiés.
-- 
+**Rôle de la restriction**
+- `released = 1` sert à masquer les produits non publiés.
+- On peut supposer que les produits non publiés ont `released = 0`.
+## Exemple d'attaque
+**Attaque 1 : supprimer la restriction avec un commentaire**
+- L'application n'a aucune protection contre l'injection SQL.
+- L'attaquant envoie `https://insecure-website.com/products?category=Gifts'--`.
+- La requête devient : `SELECT * FROM products WHERE category = 'Gifts'--' AND released = 1`.
+- `--` est un indicateur de commentaire en SQL : le reste de la requête est ignoré, donc `AND released = 1` disparaît.
+- Résultat : tous les produits de la catégorie sont affichés, y compris ceux qui ne sont pas encore sortis.
+
+**Attaque 2 : afficher toutes les catégories**
+- Une attaque similaire force l'application à afficher les produits de n'importe quelle catégorie, même inconnue : `category=Gifts'+OR+1=1--`.
+- La requête devient : `SELECT * FROM products WHERE category = 'Gifts' OR 1=1--' AND released = 1`.
+- Elle renvoie tous les articles dont la catégorie est `Gifts` ou pour lesquels 1 est égal à 1.
+- Comme `1=1` est toujours vrai, tous les articles sont renvoyés.
+
+**Avertissement**
+- Attention en injectant `OR 1=1` : même si cela semble inoffensif là où on l'injecte, les applications réutilisent souvent les données d'une requête dans plusieurs autres.
+- Si la condition atteint un `UPDATE` ou un `DELETE`, elle peut provoquer une perte accidentelle de données.
 
 ## Types et variantes
 - 
@@ -48,7 +67,10 @@ statut: à faire
 - [ ] Expert
 
 ## Journal des labs
-- 
+### Lab: SQL injection vulnerability in WHERE clause allowing retrieval of hidden data
+This lab contains a SQL injection vulnerability in the product category filter. When the user selects a category, the application carries out a SQL query like the following:
+`SELECT * FROM products WHERE category = 'Gifts' AND released = 1`
+To solve the lab, perform a SQL injection attack that causes the application to display one or more unreleased products.
 
 ## Mes notes
 - 
