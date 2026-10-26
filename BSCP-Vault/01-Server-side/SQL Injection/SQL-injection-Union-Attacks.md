@@ -61,6 +61,23 @@ statut: à faire
 		- Cas favorable : du contenu supplémentaire apparaît, par exemple une ligne en plus dans un tableau HTML.
 		- Autre cas : les valeurs nulles déclenchent une autre erreur, comme une `NullPointerException`.
 		- Pire cas : la réponse ressemble à celle d’un mauvais nombre de `NULL`, ce qui rend la méthode inefficace.
+## Syntaxe propre à chaque base de données
+**Oracle**
+- Toute requête `SELECT` doit utiliser le mot-clé `FROM` et préciser une table valide.
+- Oracle fournit une table intégrée, `dual`, utilisable à cet effet.
+- Les requêtes injectées doivent donc ressembler à : `' UNION SELECT NULL FROM DUAL--`
+
+**MySQL**
+- Les charges utiles décrites utilisent la séquence de commentaire `--` pour neutraliser la fin de la requête d’origine après le point d’injection.
+- Sur MySQL, `--` doit être suivi d’un espace.
+- Alternative : le caractère `#` permet aussi d’indiquer un commentaire.
+
+**Référence**: https://portswigger.net/web-security/sql-injection/cheat-sheet
+
+**Astuce pratique**
+- Dans une URL, l’espace après `--` s’écrit `+` ou `%20`, et `#` doit être encodé en `%23` (information de ma connaissance générale, non issue de votre texte).
+## Trouver les colonnes avec un type de données utile
+
 
 ## Pièges et points d'attention BSCP
 - 
@@ -86,8 +103,7 @@ Pour résoudre cet exercice, déterminez le nombre de colonnes renvoyées par la
     `'+UNION+SELECT+NULL,NULL--`
 4. Continue adding null values until the error disappears and the response includes additional content containing the null values.
 
-## Mes notes
-- 
+
 
 ## Liens
 - [[Access-control]]
