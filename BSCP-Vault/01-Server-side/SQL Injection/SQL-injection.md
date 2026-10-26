@@ -71,7 +71,7 @@ statut: en cours
 - 
 
 ## Labs PortSwigger
-- [ ] Apprentice
+- [x] Apprentice ✅ 2026-10-26
 - [ ] Practitioner
 - [ ] Expert
 

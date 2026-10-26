@@ -91,6 +91,19 @@ statut: à faire
 **Lecture du résultat**
 - Colonne incompatible avec une chaîne : la requête injectée provoque une erreur de base de données (exemple : échec de conversion de la valeur varchar ‘a’ vers le type de données int).
 - Aucune erreur et réponse contenant du contenu supplémentaire avec la chaîne injectée : la colonne convient pour récupérer des données de type chaîne.
+## Récupérer des données intéressantes avec une injection SQL UNION**
+- Une fois le nombre de colonnes déterminé et les colonnes de type chaîne identifiées, on peut récupérer des données intéressantes.
+- Exemples:
+	- La requête d’origine renvoie deux colonnes, toutes deux compatibles avec des chaînes.
+	- Le point d’injection est une chaîne entre guillemets dans la clause `WHERE`.
+	- La base contient une table `users` avec les colonnes `username` et `password`.
+**Charge utile**
+- Le contenu de la table `users` s’obtient avec : `' UNION SELECT username, password FROM users--`
+**Prérequis**
+- Il faut connaître le nom de la table (`users`) et de ses colonnes (`username`, `password`).
+- Sans cette information, il faut deviner les noms des tables et des colonnes.
+- Toutes les bases modernes offrent des moyens d’examiner leur structure et de savoir quelles tables et colonnes elles contiennent
+
 ## Pièges et points d'attention BSCP
 - 
 
@@ -98,7 +111,7 @@ statut: à faire
 - 
 
 ## Labs PortSwigger
-- [ ] Apprentice
+- [x] Apprentice ✅ 2026-10-26
 - [ ] Practitioner
 - [ ] Expert
 
@@ -126,6 +139,8 @@ Le laboratoire vous fournira une valeur aléatoire que vous devrez faire appara�
     
     `'+UNION+SELECT+NULL,'abcdef',NULL--`
 1. If an error occurs, move on to the next null and try that instead.
+## Lab: SQL injection UNION attack, retrieving data from other tables
+
 
 
 ## Liens
