@@ -46,7 +46,21 @@ statut: à faire
 ### Détermination du nombre de colonnes requises (Méthode union select null)
 - Seconde méthode: envoyer une série de charges utiles `UNION SELECT` avec un nombre croissant de valeur `NULL`
 - Charges utiles:
-	- 
+	- `' UNION SELECT NULL--`
+	- `' UNION SELECT NULL,NULL--`
+	- `' UNION SELECT NULL,NULL,NULL--`
+	- et ainsi de suite
+- Lecture des erreurs
+	- Si le nombre de `NULL` ne correspond pas au nombre de colonnes, la base renvoie une erreur (exemple : toutes les requêtes combinées par `UNION`, `INTERSECT` ou `EXCEPT` doivent avoir le même nombre d’expressions dans leur liste cible).
+	- Comme pour le `ORDER BY`, l’application peut renvoyer l’erreur de la base, une erreur générique, ou simplement aucun résultat.
+- Pourquoi utiliser `NULL` ?
+	- `NULL` est convertible vers tous les types de données courants, ce qui maximise les chances de réussite quand le nombre de colonnes est correct.
+- Quand le nombre de `NULL` est correct
+	- La base renvoie une ligne supplémentaire dans le jeu de résultats, avec des valeurs nulles dans chaque colonne.
+	- L’effet sur la réponse HTTP dépend du code de l’application.
+		- Cas favorable : du contenu supplémentaire apparaît, par exemple une ligne en plus dans un tableau HTML.
+		- Autre cas : les valeurs nulles déclenchent une autre erreur, comme une `NullPointerException`.
+		- Pire cas : la réponse ressemble à celle d’un mauvais nombre de `NULL`, ce qui rend la méthode inefficace.
 
 ## Pièges et points d'attention BSCP
 - 
@@ -60,7 +74,17 @@ statut: à faire
 - [ ] Expert
 
 ## Journal des labs
-- 
+### Lab: SQL injection UNION attack, determining the number of columns returned by the query
+Ce laboratoire présente une vulnérabilité de type injection SQL dans le filtre de catégorie de produits. Les résultats de la requête sont renvoyés dans la réponse de l'application ; vous pouvez donc utiliser une attaque de type UNION pour extraire des données d'autres tables. La première étape d'une telle attaque consiste à déterminer le nombre de colonnes renvoyées par la requête. Vous utiliserez ensuite cette technique dans les laboratoires suivants pour mettre au point l'attaque complète.
+
+Pour résoudre cet exercice, déterminez le nombre de colonnes renvoyées par la requête en effectuant une attaque par injection SQL de type UNION qui renvoie une ligne supplémentaire contenant des valeurs nulles.
+#### Solution
+1. Use Burp Suite to intercept and modify the request that sets the product category filter.
+2. Modify the `category` parameter, giving it the value `'+UNION+SELECT+NULL--`. Observe that an error occurs.
+3. Modify the `category` parameter to add an additional column containing a null value:
+    
+    `'+UNION+SELECT+NULL,NULL--`
+4. Continue adding null values until the error disappears and the response includes additional content containing the null values.
 
 ## Mes notes
 - 
