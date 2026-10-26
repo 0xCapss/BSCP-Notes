@@ -140,7 +140,21 @@ Le laboratoire vous fournira une valeur aléatoire que vous devrez faire appara�
     `'+UNION+SELECT+NULL,'abcdef',NULL--`
 1. If an error occurs, move on to the next null and try that instead.
 ## Lab: SQL injection UNION attack, retrieving data from other tables
+Ce laboratoire présente une vulnérabilité de type injection SQL dans le filtre de catégorie de produits. Les résultats de la requête sont renvoyés dans la réponse de l'application ; vous pouvez donc utiliser une attaque UNION pour extraire des données d'autres tables. Pour mettre en place une telle attaque, vous devez combiner certaines des techniques apprises lors des laboratoires précédents.
 
+La base de données contient une autre table nommée « users », comportant des colonnes intitulées « username » et « password ».
+
+Pour résoudre cet exercice, lancez une attaque par injection SQL de type UNION permettant de récupérer tous les noms d'utilisateur et mots de passe, puis utilisez ces informations pour vous connecter en tant qu'administrateur.
+#### Solution
+
+1. Use Burp Suite to intercept and modify the request that sets the product category filter.
+2. Determine the number of columns that are being returned by the query and which columns contain text data. Verify that the query is returning two columns, both of which contain text, using a payload like the following in the category parameter:
+    
+    `'+UNION+SELECT+'abc','def'--`
+3. Use the following payload to retrieve the contents of the `users` table:
+    
+    `'+UNION+SELECT+username,+password+FROM+users--`
+4. Verify that the application's response contains usernames and passwords.
 
 
 ## Liens
