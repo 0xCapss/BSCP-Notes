@@ -77,8 +77,20 @@ statut: à faire
 **Astuce pratique**
 - Dans une URL, l’espace après `--` s’écrit `+` ou `%20`, et `#` doit être encodé en `%23` (information de ma connaissance générale, non issue de votre texte).
 ## Trouver les colonnes avec un type de données utile
+- Une attaque UNION permet de récupérer les résultats d’une requête injectée.
+- Les données intéressantes sont normalement sous forme de chaîne : il faut donc trouver une ou plusieurs colonnes dont le type est, ou est compatible avec, des données de type chaîne.
 
-
+**Méthode**
+- Une fois le nombre de colonnes déterminé, on teste chaque colonne pour savoir si elle accepte une chaîne.
+- On envoie une série de charges utiles `UNION SELECT` qui placent une chaîne dans chaque colonne tour à tour.
+- Exemple avec quatre colonnes :
+	- `' UNION SELECT 'a',NULL,NULL,NULL--`
+	- `' UNION SELECT NULL,'a',NULL,NULL--`
+	- `' UNION SELECT NULL,NULL,'a',NULL--`
+	- `' UNION SELECT NULL,NULL,NULL,'a'--`
+**Lecture du résultat**
+- Colonne incompatible avec une chaîne : la requête injectée provoque une erreur de base de données (exemple : échec de conversion de la valeur varchar ‘a’ vers le type de données int).
+- Aucune erreur et réponse contenant du contenu supplémentaire avec la chaîne injectée : la colonne convient pour récupérer des données de type chaîne.
 ## Pièges et points d'attention BSCP
 - 
 
@@ -102,7 +114,18 @@ Pour résoudre cet exercice, déterminez le nombre de colonnes renvoyées par la
     
     `'+UNION+SELECT+NULL,NULL--`
 4. Continue adding null values until the error disappears and the response includes additional content containing the null values.
+### Lab: SQL injection UNION attack, finding a column containing text
+Ce laboratoire présente une vulnérabilité de type injection SQL dans le filtre de catégorie de produits. Les résultats de la requête sont renvoyés dans la réponse de l'application ; vous pouvez donc utiliser une attaque UNION pour extraire des données d'autres tables. Pour mettre en place une telle attaque, vous devez d'abord déterminer le nombre de colonnes renvoyées par la requête. Vous pouvez y parvenir à l'aide d'une technique que vous avez apprise lors d'un laboratoire précédent. L'étape suivante consiste à identifier une colonne compatible avec les données de type chaîne de caractères.
 
+Le laboratoire vous fournira une valeur aléatoire que vous devrez faire apparaître dans les résultats de la requête. Pour résoudre cet exercice, effectuez une attaque par injection SQL de type UNION qui renvoie une ligne supplémentaire contenant la valeur fournie. Cette technique vous aide à déterminer quelles colonnes acceptent les données de type chaîne de caractères.
+#### Solution
+1. Use Burp Suite to intercept and modify the request that sets the product category filter.
+2. Determine the number of columns that are being returned by the query. Verify that the query is returning three columns, using the following payload in the `category` parameter:
+    `'+UNION+SELECT+NULL,NULL,NULL--`
+3. Try replacing each null with the random value provided by the lab, for example:
+    
+    `'+UNION+SELECT+NULL,'abcdef',NULL--`
+1. If an error occurs, move on to the next null and try that instead.
 
 
 ## Liens
