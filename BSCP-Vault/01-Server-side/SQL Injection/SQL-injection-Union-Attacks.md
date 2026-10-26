@@ -170,7 +170,6 @@ La base de données contient une autre table nommée « users », comportant des
 
 Pour réussir ce laboratoire, effectuez une attaque de type injection SQL UNION permettant d'extraire tous les noms d'utilisateur et mots de passe, puis utilisez ces informations pour vous connecter en tant qu'administrateur.
 #### Solution
-
 1. Use Burp Suite to intercept and modify the request that sets the product category filter.
 2. Determine the number of columns that are being returned by the query and which columns contain text data. Verify that the query is returning two columns, both of which contain text, using a payload like the following in the category parameter:
     
