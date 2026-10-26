@@ -69,12 +69,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/XXE-injection 1.md",
+                "file": "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "XXE-injection 1"
+              "title": "SQL-injection-Union-Attacks"
             }
           }
         ],
@@ -218,7 +218,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/XXE-injection 1.md",
+                "file": "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -262,16 +262,16 @@
       "tags-routes:Open tags routes": false
     }
   },
-  "active": "8358b9c67e7a52f7",
+  "active": "466f0e8a9eef545a",
   "lastOpenFiles": [
+    "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection.md",
+    "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md",
     "BSCP-Vault/01-Server-side/XXE-injection.md",
-    "BSCP-Vault/01-Server-side/XXE-injection 1.md",
     "BSCP-Vault/01-Server-side/Information-disclosure.md",
     "BSCP-Vault/01-Server-side/Command-injection.md",
     "BSCP-Vault/01-Server-side/Access-control.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF.md",
     "BSCP-Vault/01-Server-side/Business-logic.md",
-    "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection.md",
     "BSCP-Vault/01-Server-side/SQL Injection",
     "BSCP-Vault/01-Server-side/SQL-injection.md.tmp.24615.c68e0583ef8b",
     "BSCP-Vault/01-Server-side/File-upload/File-upload-validation-content-type.md",
