@@ -72,8 +72,6 @@ statut: à faire
 - Sur MySQL, `--` doit être suivi d’un espace.
 - Alternative : le caractère `#` permet aussi d’indiquer un commentaire.
 
-**Référence**: https://portswigger.net/web-security/sql-injection/cheat-sheet
-
 **Astuce pratique**
 - Dans une URL, l’espace après `--` s’écrit `+` ou `%20`, et `#` doit être encodé en `%23` (information de ma connaissance générale, non issue de votre texte).
 ## Trouver les colonnes avec un type de données utile
@@ -103,7 +101,27 @@ statut: à faire
 - Il faut connaître le nom de la table (`users`) et de ses colonnes (`username`, `password`).
 - Sans cette information, il faut deviner les noms des tables et des colonnes.
 - Toutes les bases modernes offrent des moyens d’examiner leur structure et de savoir quelles tables et colonnes elles contiennent
+## Récupérer plusieurs valeurs dans une seule colonne
+- Dans certains cas, la requête d’origine ne renvoie qu’une seule colonne.
+- On peut alors récupérer plusieurs valeurs ensemble dans cette colonne en les concaténant.
+- On peut inclure un séparateur pour distinguer les valeurs combinées.
 
+**Exemple sur Oracle**
+- Charge utile : `' UNION SELECT username || '~' || password FROM users--`
+- `||` (double barre verticale) est l’opérateur de concaténation de chaînes sur Oracle.
+- La requête injectée concatène `username` et `password`, séparés par le caractère `~`.
+
+**Résultat obtenu**
+- La réponse contient tous les identifiants sous la forme `utilisateur~mot_de_passe`, par exemple :
+    - `administrator~s3cure`
+    - `wiener~peter`
+    - `carlos~montoya`
+
+ **Point clé**
+- Chaque base de données utilise une syntaxe différente pour la concaténation.
+- Pour les détails, consulter le cheat sheet de l’injection SQL de PortSwigger.
+
+**Référence**: 
 ## Pièges et points d'attention BSCP
 - 
 
@@ -145,6 +163,12 @@ Ce laboratoire présente une vulnérabilité de type injection SQL dans le filtr
 La base de données contient une autre table nommée « users », comportant des colonnes intitulées « username » et « password ».
 
 Pour résoudre cet exercice, lancez une attaque par injection SQL de type UNION permettant de récupérer tous les noms d'utilisateur et mots de passe, puis utilisez ces informations pour vous connecter en tant qu'administrateur.
+## Lab: SQL injection UNION attack, retrieving multiple values in a single column
+Ce laboratoire présente une vulnérabilité de type injection SQL dans le filtre de catégorie de produits. Les résultats de la requête sont renvoyés dans la réponse de l'application ; vous pouvez donc utiliser une attaque de type UNION pour extraire des données d'autres tables.
+
+La base de données contient une autre table nommée « users », comportant des colonnes intitulées « username » et « password ».
+
+Pour réussir ce laboratoire, effectuez une attaque de type injection SQL UNION permettant d'extraire tous les noms d'utilisateur et mots de passe, puis utilisez ces informations pour vous connecter en tant qu'administrateur.
 #### Solution
 
 1. Use Burp Suite to intercept and modify the request that sets the product category filter.
@@ -161,3 +185,4 @@ Pour résoudre cet exercice, lancez une attaque par injection SQL de type UNION 
 - [[Access-control]]
 - [[Authentication]]
 - [[Using-Burp-Suite]]
+- https://portswigger.net/web-security/sql-injection/cheat-sheet
