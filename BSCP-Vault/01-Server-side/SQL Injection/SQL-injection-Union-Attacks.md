@@ -32,7 +32,21 @@ statut: à faire
 - Lors d’une injection SQL UNION, il existe deux méthodes efficaces pour trouver le nombre de colonnes de la requête d’origine. Ce texte détaille la première.
 - Principe : injecter une série de clauses `ORDER BY` en incrémentant l’index de colonne jusqu’à ce qu’une erreur se produise.
 **Charges utiles**
-- Si le point d'injection est une chîine entre guillemets dans la claus
+- Si le point d'injection est une chaîne entre guillemets dans la clause `WHERE` on envoie donc:
+	- `' ORDER BY 1--`
+	- `' ORDER BY 2--`
+	- ' `ORDER BY 3--`
+	- et ainsi de suite
+- Chaque charge utile trie les résultats selon une colonne différente du jeu de résultats.
+- La colonne peut être désignée par son index : il n’est pas nécessaire de connaître les noms des colonnes.
+- Quand l’index dépasse le nombre réel de colonnes, la base renvoie une erreur (exemple : la position n° 3 de la clause `ORDER BY` est hors de la plage de la liste de sélection.
+### Lecture de la réponse
+- L'application peut renvouer l'erreur de la base dans la réponse HTTP, une erreur générique, ou simplement aucun résultat.
+- Tant qu’une différence dans la réponse est détectable, on peut en déduire le nombre de colonnes (la dernière valeur d’index qui n’a pas provoqué d’erreur).
+### Détermination du nombre de colonnes requises (Méthode union select null)
+- Seconde méthode: envoyer une série de charges utiles `UNION SELECT` avec un nombre croissant de valeur `NULL`
+- Charges utiles:
+	- 
 
 ## Pièges et points d'attention BSCP
 - 
