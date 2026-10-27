@@ -144,6 +144,18 @@ statut: à faire
 - Cette requête doit respecter les contraintes vues plus haut : bon nombre de colonnes et colonne compatible avec une chaîne (par exemple `' UNION SELECT @@version,NULL--` si la requête d’origine a deux colonnes).
 - Sur Oracle, il faut ajouter `FROM DUAL` quand la requête ne cible pas de table, mais `SELECT * FROM v$version` cible déjà une table. On cherchera plutôt à récupérer la colonne `banner` : `' UNION SELECT banner,NULL FROM v$version--`
 ## Afficher le contenu de la base de données
+- La plupart des types de bases de données, sauf Oracle, disposent d’un ensemble de vues appelé schéma d’information, qui fournit des informations sur la base.
+### Lister les tables
+- Requête : `SELECT * FROM information_schema.tables`
+- Colonnes renvoyées : `TABLE_CATALOG`, `TABLE_SCHEMA`, `TABLE_NAME`, `TABLE_TYPE`.
+- Dans l’exemple, la sortie révèle trois tables : `Products`, `Users` et `Feedback`.
+### Lister les colonnes d'une table
+- Requête : `SELECT * FROM information_schema.columns WHERE table_name = 'Users'`
+- Colonnes renvoyées : `TABLE_CATALOG`, `TABLE_SCHEMA`, `TABLE_NAME`, `COLUMN_NAME`, `DATA_TYPE`.
+- Dans l’exemple, la table `Users` contient `UserId` (int), `Username` (varchar) et `Password` (varchar).
+### Lien avec l'attaque UNION
+- Cela répond au prérequis vu plus haut : connaître les noms de tables et de colonnes avant de lancer `' UNION SELECT username, password FROM users--`.
+- En pratique, via une injection UNION, on cible les colonnes utiles plutôt que `*` pour respecter le nombre de colonnes, par exemple `' UNION SELECT table_name,NULL FROM information_schema.tables--` (information de ma connaissance générale, non issue de votre texte).
 
 
 **Référence**: 
@@ -206,9 +218,8 @@ Pour réussir ce laboratoire, effectuez une attaque de type injection SQL UNION 
 
 ### Lab: SQL injection attack, querying the database type and version on MySQL and Microsoft
 This lab contains a SQL injection vulnerability in the product category filter. You can use a UNION attack to retrieve the results from an injected query.
-
 To solve the lab, display the database version string.
- #### **Solution**
+#### **Solution**
 1. Use Burp Suite to intercept and modify the request that sets the product category filter.
 2. Determine the number of columns that are being returned by the query and which columns contain text data. Verify that the query is returning two columns, both of which contain text, using a payload like the following in the `category` parameter:
     
@@ -216,6 +227,14 @@ To solve the lab, display the database version string.
 3. Use the following payload to display the database version:
     
     `'+UNION+SELECT+@@version,+NULL#`
+
+## Lab: SQL injection attack, listing the database contents on non-Oracle databases
+This lab contains a SQL injection vulnerability in the product category filter. The results from the query are returned in the application's response so you can use a UNION attack to retrieve data from other tables.
+
+The application has a login function, and the database contains a table that holds usernames and passwords. You need to determine the name of this table and the columns it contains, then retrieve the contents of the table to obtain the username and password of all users.
+
+To solve the lab, log in as the `administrator` user.
+
 
 ## Liens
 - [[Access-control]]
