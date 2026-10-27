@@ -143,6 +143,8 @@ statut: à faire
 **Rappel pratique**
 - Cette requête doit respecter les contraintes vues plus haut : bon nombre de colonnes et colonne compatible avec une chaîne (par exemple `' UNION SELECT @@version,NULL--` si la requête d’origine a deux colonnes).
 - Sur Oracle, il faut ajouter `FROM DUAL` quand la requête ne cible pas de table, mais `SELECT * FROM v$version` cible déjà une table. On cherchera plutôt à récupérer la colonne `banner` : `' UNION SELECT banner,NULL FROM v$version--`
+## Afficher le contenu de la base de données
+
 
 **Référence**: 
 ## Pièges et points d'attention BSCP
@@ -206,7 +208,14 @@ Pour réussir ce laboratoire, effectuez une attaque de type injection SQL UNION 
 This lab contains a SQL injection vulnerability in the product category filter. You can use a UNION attack to retrieve the results from an injected query.
 
 To solve the lab, display the database version string.
-
+ #### **Solution**
+1. Use Burp Suite to intercept and modify the request that sets the product category filter.
+2. Determine the number of columns that are being returned by the query and which columns contain text data. Verify that the query is returning two columns, both of which contain text, using a payload like the following in the `category` parameter:
+    
+    `'+UNION+SELECT+'abc','def'#`
+3. Use the following payload to display the database version:
+    
+    `'+UNION+SELECT+@@version,+NULL#`
 
 ## Liens
 - [[Access-control]]
