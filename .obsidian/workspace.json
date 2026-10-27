@@ -257,11 +257,14 @@
       "obsidian-excalidraw-plugin:New drawing": false,
       "obsidian-git:Open Git source control": false,
       "omnisearch:Omnisearch": false,
-      "templater-obsidian:Templater": false
+      "templater-obsidian:Templater": false,
+      "periodic-notes:Open today": false,
+      "tags-routes:Open tags routes": false
     }
   },
   "active": "466f0e8a9eef545a",
   "lastOpenFiles": [
+    "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md.tmp.88749.8182dbc16d09",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection.md",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md",
     "BSCP-Vault/01-Server-side/XXE-injection.md",
@@ -291,7 +294,6 @@
     "BSCP-Vault/01-Server-side/Authentification/Multi-factor-authentication.md",
     "BSCP-Vault/01-Server-side/Authentification/Autres-mecanismes-authentification.md",
     "BSCP-Vault/01-Server-side/Authentification/Authentication.md",
-    "BSCP-Vault/01-Server-side/Authentification/Types/MFA-reponse-et-secours.md",
     "BSCP-Vault/01-Server-side/Path-traversal",
     "BSCP-Vault/01-Server-side/Authentification/Types",
     "BSCP-Vault/01-Server-side/Access-control",

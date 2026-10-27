@@ -120,6 +120,29 @@ statut: à faire
  **Point clé**
 - Chaque base de données utilise une syntaxe différente pour la concaténation.
 - Pour les détails, consulter le cheat sheet de l’injection SQL de PortSwigger.
+## Analyse de la base de données
+- Il est souvent nécessaire de recueillir des informations sur la base de données. Cela peut comprendre:
+	- Le type et la version de la base de données.
+	- Les tables et le contenues dans les base de données.
+### Interroger le type et la version de la base de données
+- On peut identifier le type et la version de la base en injectant des requetes propres à chaque fournisseur, puis en vérifiant laquelle fonctionne.
+
+**Requêtes selon la base**
+
+| Type de base de données | Requête                  |
+| ----------------------- | ------------------------ |
+| Microsoft, MySQL        | `SELECT @@version`       |
+| Oracle                  | `SELECT * FROM v$version` |
+| PostgreSQL              | `SELECT version()`       |
+
+**Exemple**
+- Charge utile UNION : `' UNION SELECT @@version--`
+- Le résultat peut afficher la version complète, par exemple : `Microsoft SQL Server 2016 (SP2) (KB4052908) - 13.0.5026.0 (X64)`.
+- Dans ce cas, on confirme que la base est Microsoft SQL Server et on connaît sa version.
+
+**Rappel pratique**
+- Cette requête doit respecter les contraintes vues plus haut : bon nombre de colonnes et colonne compatible avec une chaîne (par exemple `' UNION SELECT @@version,NULL--` si la requête d’origine a deux colonnes).
+- Sur Oracle, il faut ajouter `FROM DUAL` quand la requête ne cible pas de table, mais `SELECT * FROM v$version` cible déjà une table. On cherchera plutôt à récupérer la colonne `banner` : `' UNION SELECT banner,NULL FROM v$version--`
 
 **Référence**: 
 ## Pièges et points d'attention BSCP
@@ -163,7 +186,7 @@ Ce laboratoire présente une vulnérabilité de type injection SQL dans le filtr
 La base de données contient une autre table nommée « users », comportant des colonnes intitulées « username » et « password ».
 
 Pour résoudre cet exercice, lancez une attaque par injection SQL de type UNION permettant de récupérer tous les noms d'utilisateur et mots de passe, puis utilisez ces informations pour vous connecter en tant qu'administrateur.
-## Lab: SQL injection UNION attack, retrieving multiple values in a single column
+### Lab: SQL injection UNION attack, retrieving multiple values in a single column
 Ce laboratoire présente une vulnérabilité de type injection SQL dans le filtre de catégorie de produits. Les résultats de la requête sont renvoyés dans la réponse de l'application ; vous pouvez donc utiliser une attaque de type UNION pour extraire des données d'autres tables.
 
 La base de données contient une autre table nommée « users », comportant des colonnes intitulées « username » et « password ».
@@ -178,6 +201,11 @@ Pour réussir ce laboratoire, effectuez une attaque de type injection SQL UNION 
     
     `'+UNION+SELECT+username,+password+FROM+users--`
 4. Verify that the application's response contains usernames and passwords.
+
+### Lab: SQL injection attack, querying the database type and version on MySQL and Microsoft
+This lab contains a SQL injection vulnerability in the product category filter. You can use a UNION attack to retrieve the results from an injected query.
+
+To solve the lab, display the database version string.
 
 
 ## Liens
