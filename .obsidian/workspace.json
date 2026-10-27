@@ -258,11 +258,13 @@
       "obsidian-git:Open Git source control": false,
       "omnisearch:Omnisearch": false,
       "templater-obsidian:Templater": false,
-      "periodic-notes:Open today": false
+      "periodic-notes:Open today": false,
+      "tags-routes:Open tags routes": false
     }
   },
   "active": "466f0e8a9eef545a",
   "lastOpenFiles": [
+    "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md.tmp.13817.3f3ae52e4b7b",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md.tmp.88749.27f6169cc021",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md.tmp.88749.8182dbc16d09",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection.md",
@@ -299,7 +301,6 @@
     "BSCP-Vault/01-Server-side/Access-control",
     "BSCP-Vault/01-Server-side/SSRF",
     "BSCP-Vault/01-Server-side/assets/SSRF.png",
-    "BSCP-Vault/01-Server-side/Authentification/Autres vulnérabilité dans les mécanismes d'authentification.md.tmp.48412.e1f2a4b1f562",
     "BSCP-Vault/assets/learning-path.png",
     "BSCP-Vault/assets/dashboard.png",
     "BSCP-Vault/01-Server-side/assets/Authentication.png",
