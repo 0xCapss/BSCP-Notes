@@ -50,25 +50,40 @@ statut: en cours
 - Cette requête renvoie l'utilisateur `administrator` et connecte l'attaquant sous ce compte.
 
 ## Types et variantes
-- 
+- Vus jusqu'ici :
+	- Récupération de données cachées (suppression d'une restriction de la clause `WHERE`).
+	- Détournement de la logique de l'application (contournement de connexion).
+	- Attaque `UNION` : voir [[SQL-injection-Union-Attacks]].
+- À venir (pas encore étudiés) : injection aveugle booléenne, basée sur les erreurs, basée sur le temps, hors bande (OAST), de second ordre.
 
 ## Comment détecter
-- 
+- Il faut effectuer une série de tests systématiques sur chaque point d'entrée de l'application :
+	- L'apostrophe simple `'`, en recherchant des erreurs ou d'autres anomalies.
+	- Une syntaxe SQL qui renvoie la valeur de base du point d'entrée, puis une valeur différente, en recherchant des différences systématiques dans les réponses.
+	- Des conditions booléennes comme `OR 1=1` et `OR 1=2`, en recherchant des différences dans les réponses.
+	- Des charges utiles provoquant des retards d'exécution dans une requête SQL, en recherchant des différences de temps de réponse.
+	- Des charges utiles OAST déclenchant une interaction réseau hors bande, en surveillant les interactions qui en résultent (par exemple avec Burp Collaborator).
+- **Burp Scanner** permet de détecter rapidement et de manière fiable la majorité des injections SQL.
+- Les points d'entrée ne se limitent pas aux paramètres d'URL : corps de la requête, cookies et en-têtes sont aussi à tester.
 
 ## Comment exploiter (principe)
-- Il faut effectuer une série de tests systématiques sur chaque point d'entrée de l'application.
-- L'apostrophe simple `'`, en recherchant des erreurs ou d'autres anomalies.
-- Une syntaxe SQL qui renvoie la valeur de base du point d'entrée, puis une valeur différente, en recherchant des différences systématiques dans les réponses.
-- Des conditions booléennes comme `OR 1=1` et `OR 1=2`, en recherchant des différences dans les réponses.
-- Des charges utiles provoquant des retards d'exécution dans une requête SQL, en recherchant des différences de temps de réponse.
-- Des charges utiles OAST déclenchant une interaction réseau hors bande, en surveillant les interactions qui en résultent (par exemple avec Burp Collaborator).
-- **Burp Scanner** permet de détecter rapidement et de manière fiable la majorité des injections SQL.
+- Comprendre la requête SQL probable côté serveur (ici une clause `WHERE` avec une chaîne entre guillemets) pour savoir où fermer le guillemet et quoi neutraliser.
+- Détournement de logique :
+	- Commenter la fin de la requête avec `--` pour supprimer une restriction (`AND released = 1`) ou une vérification (`AND password = ...`).
+	- Ajouter une condition toujours vraie (`OR 1=1`) pour élargir les résultats.
+- Extraction de données : `UNION` pour lire d'autres tables quand les résultats sont affichés, voir [[SQL-injection-Union-Attacks]].
+- Payloads regroupés dans [[Payloads-cheatsheet]].
 
 ## Pièges et points d'attention BSCP
-- 
+- MySQL : `--` doit être suivi d'un espace (`--+` dans une URL), ou utiliser `#` encodé en `%23`.
+- Encodage URL : `+` est lu comme un espace, `#` non encodé n'est jamais envoyé au serveur.
+- Le point d'injection n'est pas toujours dans l'URL (corps, cookie, en-tête).
+- `OR 1=1` sur une fonctionnalité qui modifie des données (`UPDATE`, `DELETE`) peut causer une perte de données : le réserver à des lectures.
 
 ## Prévention
-- 
+- Utiliser des requêtes paramétrées (requêtes préparées) pour toute donnée fournie par l'utilisateur, jamais de concaténation de chaînes dans la requête.
+- Appliquer le principe du moindre privilège au compte de la base de données.
+- Ne pas renvoyer les erreurs détaillées de la base à l'utilisateur.
 
 ## Labs PortSwigger
 - [x] Apprentice ✅ 2026-10-26
@@ -89,7 +104,7 @@ Ce lab contient une injection SQL dans la fonction de connexion.
 Pour réussir le lab, il faut réaliser une injection SQL qui connecte à l'application en tant qu'utilisateur `administrator`.
 #### Solution
 1. Utiliser Burp Suite pour intercepter et modifier la requête de connexion.
-2. Modifier le paramètre `username` en lui donnant la valeur : `administrator'--`.
+2. Modifier le paramètre `username` en lui donnant la valeur : `administrator'--`, avec un mot de passe quelconque (le champ est obligatoire dans le formulaire, mais la vérification est commentée).
 ## Mes notes
 - 
 
@@ -97,3 +112,5 @@ Pour réussir le lab, il faut réaliser une injection SQL qui connecte à l'appl
 - [[Access-control]]
 - [[Authentication]]
 - [[Using-Burp-Suite]]
+- [[SQL-injection-Union-Attacks]]
+- [[Payloads-cheatsheet]]

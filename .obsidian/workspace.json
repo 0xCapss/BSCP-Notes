@@ -69,12 +69,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md",
+                "file": "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "SQL-injection-Union-Attacks"
+              "title": "SQL-injection"
             }
           }
         ],
@@ -218,7 +218,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md",
+                "file": "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -238,7 +238,7 @@
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -262,19 +262,24 @@
       "tags-routes:Open tags routes": false
     }
   },
-  "active": "466f0e8a9eef545a",
+  "active": "fc85ef2d9b98b31b",
   "lastOpenFiles": [
+    "BSCP-Vault/01-Server-side/SQL Injection/Blind-SQL-injection.md",
+    "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection.md",
+    "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md",
+    "BSCP-Vault/01-Server-side/Business-logic.md",
+    "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
+    "BSCP-Vault/01-Server-side/SSRF/SSRF-serveur-local.md",
+    "BSCP-Vault/01-Server-side/SSRF/SSRF-surfaces-cachees.md",
+    "BSCP-Vault/01-Server-side/SSRF/SSRF-systemes-back-end.md",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md.tmp.13817.3f3ae52e4b7b",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md.tmp.88749.27f6169cc021",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md.tmp.88749.8182dbc16d09",
-    "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection.md",
-    "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md",
     "BSCP-Vault/01-Server-side/XXE-injection.md",
     "BSCP-Vault/01-Server-side/Information-disclosure.md",
     "BSCP-Vault/01-Server-side/Command-injection.md",
     "BSCP-Vault/01-Server-side/Access-control.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF.md",
-    "BSCP-Vault/01-Server-side/Business-logic.md",
     "BSCP-Vault/01-Server-side/SQL Injection",
     "BSCP-Vault/01-Server-side/SQL-injection.md.tmp.24615.c68e0583ef8b",
     "BSCP-Vault/01-Server-side/File-upload/File-upload-validation-content-type.md",
@@ -283,7 +288,6 @@
     "BSCP-Vault/01-Server-side/File-upload/File-upload-web-shell.md",
     "BSCP-Vault/01-Server-side/Command-injection.md.tmp.24296.b06d9765c0e1",
     "conflict-files-obsidian-git.md",
-    "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF-filtre-liste-noire.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF-filtre-liste-blanche.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF-aveugle.md",
@@ -293,13 +297,9 @@
     "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal-chemin-absolu.md",
     "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal-cas-simple.md",
     "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal.md",
-    "BSCP-Vault/01-Server-side/Authentification/Multi-factor-authentication.md",
-    "BSCP-Vault/01-Server-side/Authentification/Autres-mecanismes-authentification.md",
-    "BSCP-Vault/01-Server-side/Authentification/Authentication.md",
     "BSCP-Vault/01-Server-side/Path-traversal",
     "BSCP-Vault/01-Server-side/Authentification/Types",
     "BSCP-Vault/01-Server-side/Access-control",
-    "BSCP-Vault/01-Server-side/SSRF",
     "BSCP-Vault/01-Server-side/assets/SSRF.png",
     "BSCP-Vault/assets/learning-path.png",
     "BSCP-Vault/assets/dashboard.png",
