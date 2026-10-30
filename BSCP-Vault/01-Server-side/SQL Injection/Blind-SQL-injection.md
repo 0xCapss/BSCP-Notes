@@ -25,7 +25,19 @@ statut: à faire
 
 
 ## Comment exploiter (principe)
-
+### Blind SQLi - Réponses conditionnelles
+- Cette différence de comportement suffit pour exploiter une blind SQLi.
+- On récupère des informations en déclenchant des réponses différentes de manières conditionnelles, selon une condition injectée.
+- Concrètement, on injecte une condition vraie ou fausse dans le cookie et on observe la présence ou l’absence du message « Welcome back ».
+- Deux requêtes sont envoyées tour à tour, avec ces valeurs pour le cookie `TrackingId` :
+	- `…xyz' AND '1'='1`
+	- `…xyz' AND '1'='2`
+- **Résultat**:
+	- Première valeur : la condition injectée `AND '1'='1` est vraie, la requête renvoie des résultats, donc le message « Welcome back » s’affiche.
+	- Seconde valeur : la condition injectée est fausse, la requête ne renvoie aucun résultat, donc le message « Welcome back » n’apparaît pas.
+- **Conséquence**:
+	- On peut déterminer la réponse (vrai ou faux) à n’importe quelle condition injectée.
+	- 
 
 
 
