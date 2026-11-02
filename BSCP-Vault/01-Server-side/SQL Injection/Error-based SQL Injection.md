@@ -60,7 +60,20 @@ statut: en cours
 - [ ] Expert
 
 ## Journal des labs
+### Blind SQL injection avec erreurs conditionnelles
+Cet exercice pratique comporte une vulnérabilité d’injection SQL aveugle. L’application utilise un cookie de suivi à des fins d’analyse et exécute une requête SQL contenant la valeur du cookie soumis.
 
+Les résultats de la requête SQL ne sont pas renvoyés, et l’application ne réagit pas différemment selon que la requête renvoie ou non des lignes. Si la requête SQL provoque une erreur, l’application renvoie alors un message d’erreur personnalisé.
+
+La base de données contient une table appelée « users », comportant des colonnes intitulées « username » et « password ». Vous devez exploiter la vulnérabilité d’injection SQL aveugle pour découvrir le mot de passe de l’utilisateur administrateur.
+
+Pour résoudre cet exercice, connectez-vous en tant qu’utilisateur administrateur.
+#### Solution
+
+
+  
+
+_Traduit avec [DeepL.com](https://www.deepl.com/?utm_campaign=product&utm_source=web_translator&utm_medium=web&utm_content=copy_free_translation) (version gratuite)_
 
 ## Liens
 - [[Access-control]]
