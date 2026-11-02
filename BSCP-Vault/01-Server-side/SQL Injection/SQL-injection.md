@@ -106,8 +106,7 @@ Pour réussir le lab, il faut réaliser une injection SQL qui connecte à l'appl
 #### Solution
 1. Utiliser Burp Suite pour intercepter et modifier la requête de connexion.
 2. Modifier le paramètre `username` en lui donnant la valeur : `administrator'--`, avec un mot de passe quelconque (le champ est obligatoire dans le formulaire, mais la vérification est commentée).
-## Mes notes
-- 
+
 
 ## Liens
 - [[Access-control]]

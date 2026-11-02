@@ -323,8 +323,6 @@ Pour résoudre cet exercice, connectez-vous en tant qu'utilisateur `administrato
     `'+UNION+SELECT+username_abcdef,+password_abcdef+FROM+users_abcdef--`
 8. Repérer le mot de passe de l'utilisateur `administrator`, puis l'utiliser pour se connecter.
 
-## Mes notes
-- 
 
 ## Liens
 - [[Access-control]]
