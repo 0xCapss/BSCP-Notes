@@ -258,14 +258,17 @@
       "obsidian-git:Open Git source control": false,
       "omnisearch:Omnisearch": false,
       "templater-obsidian:Templater": false,
-      "periodic-notes:Open today": false
+      "periodic-notes:Open today": false,
+      "tags-routes:Open tags routes": false
     }
   },
-  "active": "e8f728f10f26163a",
+  "active": "466f0e8a9eef545a",
   "lastOpenFiles": [
+    "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection.md.tmp.171112.8eb5af230481",
+    "BSCP-Vault/01-Server-side/SQL Injection/Blind-SQL-injection.md.tmp.171112.1dda6c3fc484",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md",
-    "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection.md",
     "BSCP-Vault/01-Server-side/SQL Injection/Blind-SQL-injection.md",
+    "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection.md",
     "BSCP-Vault/01-Server-side/Business-logic.md",
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF-serveur-local.md",
@@ -295,10 +298,8 @@
     "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal-prefixe-et-extension.md",
     "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal-chemin-absolu.md",
     "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal-cas-simple.md",
-    "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal.md",
     "BSCP-Vault/01-Server-side/Path-traversal",
     "BSCP-Vault/01-Server-side/Authentification/Types",
-    "BSCP-Vault/01-Server-side/Access-control",
     "BSCP-Vault/01-Server-side/assets/SSRF.png",
     "BSCP-Vault/assets/learning-path.png",
     "BSCP-Vault/assets/dashboard.png",

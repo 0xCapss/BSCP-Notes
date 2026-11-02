@@ -54,7 +54,8 @@ statut: en cours
 	- Récupération de données cachées (suppression d'une restriction de la clause `WHERE`).
 	- Détournement de la logique de l'application (contournement de connexion).
 	- Attaque `UNION` : voir [[SQL-injection-Union-Attacks]].
-- À venir (pas encore étudiés) : injection aveugle booléenne, basée sur les erreurs, basée sur le temps, hors bande (OAST), de second ordre.
+- Injection aveugle (conditionnelle, erreurs, temps, hors bande) : voir [[Blind-SQL-injection]].
+- À venir (pas encore étudié) : injection de second ordre.
 
 ## Comment détecter
 - Il faut effectuer une série de tests systématiques sur chaque point d'entrée de l'application :
