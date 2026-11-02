@@ -73,9 +73,6 @@ Ordre de test conseillé : conditionnelle, puis erreurs, puis délais, puis hors
 - Dans un cookie ou une URL, encoder `%`, `?`, `:`, `;`, le signe égal et les espaces.
 - Preuve attendue : une interaction DNS ou HTTP reçue dans Collaborator, avec la valeur extraite dans le sous-domaine.
 
-> [!warning] Payloads non rejoués
-> Les payloads des variantes erreurs, délais et hors bande, ainsi que le tableau des syntaxes par moteur, viennent de la cheat sheet PortSwigger et d'une revue technique, sans exécution sur une base. Les rejouer sur chaque lab correspondant avant de les considérer fiables.
-
 ## Comment détecter
 Les tests génériques (apostrophe, `OR 1=1`, délais, OAST) sont dans [[SQL-injection]]. Ici, uniquement ce qui est propre à l'aveugle.
 - **Condition booléenne** : envoyer deux requêtes qui ne diffèrent que par la condition.
@@ -180,8 +177,7 @@ Tous les labs de la catégorie sont de niveau Practitioner, d'après l'agent (li
 	6. Envoyer la requête dans Intruder, position sur le dernier `a` : `xyz' AND (SELECT SUBSTRING(password,1,1) FROM users WHERE username='administrator')='§a§`. Jeu de charges : a-z puis 0-9 (le mot de passe est supposé alphanumérique minuscule). Grep - Match : « Welcome back ».
 	7. Relancer en changeant l'offset de 1 à 20, noter le caractère trouvé à chaque position.
 	8. Se connecter via « My account » avec le mot de passe obtenu.
-- **Pièges rencontrés** : à compléter.
-- **Statut et date** : à compléter.
+
 
 ### Modèle pour les autres labs
 ```markdown
