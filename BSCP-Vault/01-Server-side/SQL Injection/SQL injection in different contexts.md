@@ -36,10 +36,36 @@ Un message du type « attack detected » ou un blocage immédiat signale un filt
 - Un point d’injection peut se cacher dans un champ qu’on ne pense pas à tester : cookie, en-tête, valeur d’un champ JSON imbriqué.
 
 ## Prévention
+Les requêtes paramétrées règlent le problème quel que soit le format d’entrée, car la donnée n’est jamais interprétée comme du SQL. Un filtre ou un WAF ne remplace pas cette mesure : il ne peut que compléter. S’il y en a un, il doit décoder et normaliser l’entrée de la même façon que l’application avant de l’inspecter, sinon l’encodage le contourne. Une liste blanche de valeurs attendues (un identifiant de produit numérique, par exemple) réduit encore la surface.
 
 ## Journal des labs
+### SQL injection with filter bypass via XML encoding
+This lab contains a SQL injection vulnerability in its stock check feature. The results from the query are returned in the application's response, so you can use a UNION attack to retrieve data from other tables.
 
+The database contains a `users` table, which contains the usernames and passwords of registered users. To solve the lab, perform a SQL injection attack to retrieve the admin user's credentials, then log in to their account.
+**Identify the vulnerability**
 
+1. Observe that the stock check feature sends the `productId` and `storeId` to the application in XML format.
+2. Send the `POST /product/stock` request to Burp Repeater.
+3. In Burp Repeater, probe the `storeId` to see whether your input is evaluated. For example, try replacing the ID with mathematical expressions that evaluate to other potential IDs, for example:
+    `<storeId>1+1</storeId>`
+4. Observe that your input appears to be evaluated by the application, returning the stock for different stores
+5. Try determining the number of columns returned by the original query by appending a `UNION SELECT` statement to the original store ID:
+    `<storeId>1 UNION SELECT NULL</storeId>`
+6. Observe that your request has been blocked due to being flagged as a potential attack.
+    
+
+**Bypass the WAF**
+1. As you're injecting into XML, try obfuscating your payload using XML entities. One way to do this is using the [Hackvertor](https://portswigger.net/bappstore/65033cbd2c344fbabe57ac060b5dd100) extension. Just highlight your input, right-click, then select **Extensions > Hackvertor > Encode > dec_entities/hex_entities**.
+2. Resend the request and notice that you now receive a normal response from the application. This suggests that you have successfully bypassed the WAF.
+
+**Craft an exploit**
+
+1. Pick up where you left off, and deduce that the query returns a single column. When you try to return more than one column, the application returns `0 units`, implying an error.
+2. As you can only return one column, you need to concatenate the returned usernames and passwords, for example:
+    `<storeId><@hex_entities>1 UNION SELECT username || '~' || password FROM users</@hex_entities></storeId>`
+3. Send this query and observe that you've successfully fetched the usernames and passwords from the database, separated by a `~` character.
+4. Use the administrator's credentials to log in and solve the lab.
 ## Liens
 - [[SQL-injection]]
 - [[Payloads-cheatsheet]]
