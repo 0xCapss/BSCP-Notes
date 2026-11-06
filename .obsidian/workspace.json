@@ -238,7 +238,7 @@
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -262,8 +262,11 @@
       "tags-routes:Open tags routes": false
     }
   },
-  "active": "466f0e8a9eef545a",
+  "active": "fc85ef2d9b98b31b",
   "lastOpenFiles": [
+    "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md.tmp.63654.7eb2b04d63c0",
+    "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md.tmp.63654.c16f389a5edc",
+    "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md.tmp.63654.bbac669c05e8",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md.tmp.63654.50086f75b6b8",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md.tmp.63654.ee1226ad1340",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md.tmp.63654.7e327761bce2",
@@ -272,9 +275,6 @@
     "BSCP-Vault/01-Server-side/SSRF/SSRF.md.tmp.63654.0be8391bcb15",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md.tmp.63654.372412355866",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md.tmp.63654.c9a850cddf34",
-    "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md.tmp.63654.2617e4c41fd8",
-    "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md.tmp.63654.14c3f89a2f97",
-    "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md.tmp.63654.04ed87e4301d",
     "BSCP-Vault/01-Server-side/SSRF/SSRF-surfaces-cachees.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF-serveur-local.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF-redirection-ouverte.md",
