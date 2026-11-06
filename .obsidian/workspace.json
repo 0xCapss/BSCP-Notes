@@ -69,12 +69,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/SQL Injection/Error-based SQL Injection.md",
+                "file": "BSCP-Vault/01-Server-side/SQL Injection/Blind-SQL-injection.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Error-based SQL Injection"
+              "title": "Blind-SQL-injection"
             }
           }
         ],
@@ -218,7 +218,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/SQL Injection/Error-based SQL Injection.md",
+                "file": "BSCP-Vault/01-Server-side/SQL Injection/Blind-SQL-injection.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -264,9 +264,9 @@
   },
   "active": "466f0e8a9eef545a",
   "lastOpenFiles": [
+    "BSCP-Vault/01-Server-side/SQL Injection/Error-based SQL Injection.md",
     "BSCP-Vault/01-Server-side/SQL Injection/Blind-SQL-injection.md",
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
-    "BSCP-Vault/01-Server-side/SQL Injection/Error-based SQL Injection.md",
     "Using-Burp-Suite.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF-aveugle.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF-systemes-back-end.md",
