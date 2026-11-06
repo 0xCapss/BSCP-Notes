@@ -1,5 +1,8 @@
 ---
-tags: [bscp, server-side, sql-injection]
+tags:
+  - bscp
+  - server-side
+  - sql-injection
 niveau: apprentice
 statut: en cours
 ---
