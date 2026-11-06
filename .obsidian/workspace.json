@@ -69,12 +69,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/SQL Injection/Error-based SQL Injection.md",
+                "file": "BSCP-Vault/01-Server-side/Business-logic.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Error-based SQL Injection"
+              "title": "Business-logic"
             }
           }
         ],
@@ -218,7 +218,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/SQL Injection/Error-based SQL Injection.md",
+                "file": "BSCP-Vault/01-Server-side/Business-logic.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -258,18 +258,25 @@
       "obsidian-git:Open Git source control": false,
       "omnisearch:Omnisearch": false,
       "templater-obsidian:Templater": false,
-      "periodic-notes:Open today": false
+      "periodic-notes:Open today": false,
+      "tags-routes:Open tags routes": false
     }
   },
   "active": "466f0e8a9eef545a",
   "lastOpenFiles": [
-    "BSCP-Vault/01-Server-side/SQL Injection/Blind-SQL-injection.md",
+    "BSCP-Vault/01-Server-side/Command-injection.md",
+    "BSCP-Vault/01-Server-side/Access-control.md",
     "BSCP-Vault/01-Server-side/SQL Injection/Error-based SQL Injection.md",
+    "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md.tmp.63654.9a427ffa1dce",
+    "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md.tmp.63654.ad2b9268eed0",
+    "BSCP-Vault/01-Server-side/SQL Injection/Error-based SQL Injection.md.tmp.63654.b82112ddf695",
+    "evidence/20261106-101558-web-analyst-error-based-sqli-review.md",
+    "evidence/20261106-101558-web-analyst-error-based-sqli-review.md.tmp.63654.af248a3b4b36",
+    "BSCP-Vault/01-Server-side/SQL Injection/Blind-SQL-injection.md",
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection.md",
     "BSCP-Vault/01-Server-side/Business-logic.md",
     "BSCP-Vault/01-Server-side/SQL Injection/E.md",
-    "BSCP-Vault/01-Server-side/Access-control.md",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md",
     "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md.tmp.171112.d35928d45969",
     "BSCP-Vault/01-Server-side/SQL Injection/Blind-SQL-injection.md.tmp.171112.984dbab82262",
@@ -280,25 +287,18 @@
     "BSCP-Vault/01-Server-side/SSRF/SSRF-systemes-back-end.md",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md.tmp.13817.3f3ae52e4b7b",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md.tmp.88749.27f6169cc021",
-    "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection-Union-Attacks.md.tmp.88749.8182dbc16d09",
     "BSCP-Vault/01-Server-side/XXE-injection.md",
     "BSCP-Vault/01-Server-side/Information-disclosure.md",
-    "BSCP-Vault/01-Server-side/Command-injection.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF.md",
-    "BSCP-Vault/01-Server-side/SQL Injection",
-    "BSCP-Vault/01-Server-side/SQL-injection.md.tmp.24615.c68e0583ef8b",
     "BSCP-Vault/01-Server-side/File-upload/File-upload-validation-content-type.md",
     "BSCP-Vault/01-Server-side/File-upload/File-upload.md",
     "BSCP-Vault/01-Server-side/File-upload/File-upload-liste-noire.md",
     "BSCP-Vault/01-Server-side/File-upload/File-upload-web-shell.md",
-    "BSCP-Vault/01-Server-side/Command-injection.md.tmp.24296.b06d9765c0e1",
     "conflict-files-obsidian-git.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF-filtre-liste-noire.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF-filtre-liste-blanche.md",
     "BSCP-Vault/01-Server-side/SSRF/SSRF-aveugle.md",
     "BSCP-Vault/01-Server-side/File-upload.md",
-    "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal-prefixe-et-extension.md",
-    "BSCP-Vault/01-Server-side/Path-traversal/Path-traversal-chemin-absolu.md",
     "BSCP-Vault/01-Server-side/assets/SSRF.png",
     "BSCP-Vault/assets/learning-path.png",
     "BSCP-Vault/assets/dashboard.png",

