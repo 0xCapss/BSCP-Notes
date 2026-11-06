@@ -65,7 +65,19 @@ statut: en cours
 - `1/0` n'est pas universel : voir les sections par SGBD.
 ### Extraction de données via des messages d'erreur SQL
 - Une base de données mal configurée renvoie des messages détaillées qui exposent des informations exploitables.
-- Par exemple, injecter une simple quote dans un ap
+- Par exemple, injecter une simple quote dans un paramètre, ici `id` et observer l'erreur.
+`Unterminated string literal started at position 52 in SQL SELECT * FROM tracking WHERE id = '''. Expected char`
+- L'erreur révèle:
+	- La requête complète construite par l'application
+	- Le contexte d'injection: une chaîne entre simple quotes dans une clause `WHERE`
+- Intérêt pour l'exploitation: connaître le contexte facilite la construction d'une requête valide contenant le payload.
+- Technique: Commenter le reste de la requête pour neutraliser la simple quote en trop qui casserait la syntaxe.
+
+- On peut également utiliser `CAST()` pour convertir un type de données en une autre:
+```sql
+CAST((SELECT example_column FROM example_table) AS int)
+```
+- Mécanisme: la donnée ciblée est très souvent une chaîne. La convertir en un type incompatibl
 
 
 ### MySQL et MariaDB
