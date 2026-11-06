@@ -47,11 +47,27 @@ On génère un sous-domaine unique avec Burp Collaborator (bouton “Copy to cli
 
 
 ## Pièges et points d'attention BSCP
-
+- Le payload MSSQL demande des requêtes empilées : courant sur MSSQL, rare sur MySQL, variable sur PostgreSQL.
+- `xp_dirtree` et `COPY ... TO PROGRAM` exigent des privilèges élevés. `LOAD_FILE` ne fonctionne que sur un serveur Windows.
+- Un label DNS fait 63 caractères au maximum, un nom complet 253. Seuls les caractères alphanumériques et le tiret passent. Pour des données longues, découper avec `SUBSTRING` et multiplier les requêtes.
+- Le DNS est insensible à la casse et certains résolveurs modifient la casse du nom. Un mot de passe sensible à la casse peut revenir déformé. L’encodage hexadécimal règle ce problème et celui des caractères spéciaux.
+- Si le DNS sortant est bloqué, ou si le résolveur interne n’interroge pas Internet, la technique ne sert à rien.
+- Penser à encoder en URL. Un espace ou un `+` mal géré dans le cookie fait échouer l’injection sans message d’erreur, et comme tout est asynchrone, on ne voit rien.
+- En mission réelle, le Collaborator public appartient à PortSwigger : les données exfiltrées transitent par leur infrastructure. Il faut un Collaborator privé ou un `interactsh` auto-hébergé, et ne jamais faire sortir de données client vers un tier
 
 ## Prévention
+La cause racine, c’est la concaténation de l’entrée utilisateur dans la requête. Les requêtes paramétrées la suppriment, tout le reste n’est que de la défense en profondeur.
+
+Côté infrastructure, on filtre le DNS sortant des serveurs de base de données et on retire les droits inutiles (`xp_dirtree`, `COPY PROGRAM`). Une requête DNS inhabituelle émise par un serveur de base de données est un signal fort : elle mérite une règle de détection, dans Wazuh par exemple.
 
 ## Journal des labs
+### Lab: Blind SQL injection with out-of-band interaction
+This lab contains a blind SQL injection vulnerability. The application uses a tracking cookie for analytics, and performs a SQL query containing the value of the submitted cookie.
+
+The SQL query is executed asynchronously and has no effect on the application's response. However, you can trigger out-of-band interactions with an external domain.
+
+To solve the lab, exploit the SQL injection vulnerability to cause a DNS lookup to Burp Collaborator.
+
 
 ## Liens
 - [[SQL-injection]]
