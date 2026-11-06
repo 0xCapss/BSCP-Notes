@@ -69,12 +69,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/SQL Injection/SQL injection using out-of-band techniques.md",
+                "file": "BSCP-Vault/01-Server-side/SQL Injection/Second-order SQL injection.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "SQL injection using out-of-band techniques"
+              "title": "Second-order SQL injection"
             }
           }
         ],
@@ -218,7 +218,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/SQL Injection/SQL injection using out-of-band techniques.md",
+                "file": "BSCP-Vault/01-Server-side/SQL Injection/Second-order SQL injection.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -264,8 +264,11 @@
   },
   "active": "466f0e8a9eef545a",
   "lastOpenFiles": [
-    "BSCP-Vault/01-Server-side/SQL Injection/SQL injection in different contexts.md",
+    "BSCP-Vault/01-Server-side/SQL Injection/SQL injection using out-of-band techniques.md.tmp.280872.89efdfe0a50f",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL injection using out-of-band techniques.md",
+    "BSCP-Vault/01-Server-side/SQL Injection/Second-order SQL injection.md.tmp.280872.fbc5a410ce32",
+    "BSCP-Vault/01-Server-side/SQL Injection/Second-order SQL injection.md.tmp.280872.ce31f359c928",
+    "BSCP-Vault/01-Server-side/SQL Injection/SQL injection in different contexts.md",
     "BSCP-Vault/01-Server-side/SQL Injection/Second-order SQL injection.md",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL injection in different contexts.md.tmp.280872.cc29674b9858",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL injection in different contexts.md.tmp.280872.9a1565a9f501",
@@ -277,13 +280,11 @@
     "BSCP-Vault/01-Server-side/SQL Injection/SQL injection in different contexts.md.tmp.280872.0f07bc0f3a0c",
     "BSCP-Vault/01-Server-side/SQL Injection/Blind-SQL-injection.md",
     "BSCP-Vault/01-Server-side/SQL Injection/Blind SQLi - Triggering time delay.md",
-    "BSCP-Vault/01-Server-side/SQL Injection/Blind SQLi - Triggering time delay.md.tmp.280872.941f3c0262e9",
     "BSCP-Vault/01-Server-side/SQL Injection/Error-based SQL Injection.md",
     "BSCP-Vault/01-Server-side/Access-control/Access-control-escalade-horizontale.md",
     "BSCP-Vault/01-Server-side/Access-control/Access-control-contournement-plateforme.md",
     "BSCP-Vault/01-Server-side/Access-control/Access-control.md",
     "BSCP-Vault/01-Server-side/File-upload/File-upload.md",
-    "BSCP-Vault/04-Essential-skills/Payloads-cheatsheet.md.tmp.63654.312f1372fe55",
     "evidence/20261106-web-analyst-error-based-review-2.md",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL-injection.md",
     "BSCP-Vault/01-Server-side/Business-logic.md",
