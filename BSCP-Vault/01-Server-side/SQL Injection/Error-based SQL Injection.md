@@ -63,6 +63,10 @@ statut: en cours
 - Exemple de forme (SQL Server) : `xyz' AND (SELECT CASE WHEN (username = 'administrator' AND SUBSTRING(password, 1, 1) > 'm') THEN 1/0 ELSE 'a' END FROM users)='a`
 - Un exemple sur Oracle figure dans le journal des labs.
 - `1/0` n'est pas universel : voir les sections par SGBD.
+### Extraction de données via des messages d'erreur SQL
+- Une base de données mal configurée renvoie des messages détaillées qui exposent des informations exploitables.
+- Par exemple, injecter une simple quote dans un ap
+
 
 ### MySQL et MariaDB
 MySQL ne fait pas fuiter la valeur par une conversion de type classique. On passe par des fonctions XML qui échouent en citant l'argument.
