@@ -9,12 +9,12 @@ Mets à jour au fil de l'eau. Statuts : à faire / en cours / maîtrisé.
 - [ ] SQL injection
 - [ ] Authentication
 - [x] Path traversal ✅ 2026-09-16
-- [ ] Command injection
+- [x] Command injection ✅ 2026-11-06
 - [ ] Business logic
 - [ ] Information disclosure
 - [x] Access control ✅ 2026-09-19
 - [ ] File upload
-- [ ] SSRF
+- [x] SSRF ✅ 2026-11-06
 - [ ] XXE injection
 
 ## Client-side

