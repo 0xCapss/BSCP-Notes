@@ -7,7 +7,7 @@ statut: à faire
 
 ## En bref
 - Une fonction ou une ressource sensible est accessible sans aucun contrôle dès qu'on en connaît (ou devine) l'URL, indépendamment du rôle de l'utilisateur.
-- C'est le cas typique d'escalade verticale : un utilisateur sans droits atteint une fonction réservée à un rôle supérieur.
+- C'est le cas typique de la vertical privilege escalation : un utilisateur sans droits atteint une fonction réservée à un rôle supérieur.
 - Note parente : [[Access-control]]
 
 ## Comment détecter
@@ -20,9 +20,9 @@ statut: à faire
 `https://insecure-website.com/admin`
 Cette URL peut être accessible à n'importe quel utilisateur, et pas seulement aux utilisateurs administratifs.
 - Ces informations peuvent être divulguées à d'autres emplacements, comme le fichier `robots.txt`.
-- Un attaquant peut effectuer une attaque par force brute pour trouver l'emplacement de la fonctionnalité.
+- Un attaquant peut effectuer une attaque par brute force pour trouver l'emplacement de la fonctionnalité.
 	- Exemple d'URL : `https://0a08008b03d35c458287bb5f00a800ab.web-security-academy.net/robots.txt`
-- Dans certains cas, on attribue à la fonctionnalité une URL moins prévisible, ce qu'on appelle la sécurité par l'obscurité. Le fait de masquer des fonctionnalités sensibles n'assure pas un contrôle d'accès efficace, car les utilisateurs peuvent découvrir l'URL dissimulée de différentes manières. L'application pourrait tout de même divulguer cette URL, par exemple dans le code JavaScript qui construit l'interface utilisateur en fonction du rôle de l'utilisateur. Imaginons une application avec la partie administrative à cette URL : `https://insecure-website.com/administrator-panel-yb556`. Le code JS peut alors ressembler à :
+- Dans certains cas, on attribue à la fonctionnalité une URL moins prévisible, ce qu'on appelle la sécurité par l'obscurité. Le fait de masquer des fonctionnalités sensibles n'assure pas un access control efficace, car les utilisateurs peuvent découvrir l'URL dissimulée de différentes manières. L'application pourrait tout de même divulguer cette URL, par exemple dans le code JavaScript qui construit l'interface utilisateur en fonction du rôle de l'utilisateur. Imaginons une application avec la partie administrative à cette URL : `https://insecure-website.com/administrator-panel-yb556`. Le code JS peut alors ressembler à :
 ```js
 <script>
 var isAdmin = false;

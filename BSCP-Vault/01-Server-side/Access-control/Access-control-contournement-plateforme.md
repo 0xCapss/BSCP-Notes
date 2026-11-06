@@ -6,16 +6,16 @@ statut: à faire
 # Contrôle d'accès - contournement lié à la plateforme (URL et méthode HTTP)
 
 ## En bref
-- Certaines applications appliquent le contrôle d'accès au niveau de la plateforme (pare-feu applicatif, proxy, framework) en restreignant l'accès à des URL et méthodes HTTP précises. Ces règles sont contournables.
+- Certaines applications appliquent l'access control au niveau de la plateforme (pare-feu applicatif, proxy, framework) en restreignant l'accès à des URL et méthodes HTTP précises. Ces règles peuvent faire l'objet d'un bypass.
 - Note parente : [[Access-control]]
 
 ## Comment détecter
-- Comparer les réponses d'une URL sensible avec différents en-têtes et méthodes.
-- Envoyer une requête sur `/` avec `X-Original-URL: /invalid` : si la réponse est un « not found » de l'application (et non du front-end), l'en-tête est pris en compte.
+- Comparer les réponses d'une URL sensible avec différents headers et méthodes.
+- Envoyer une requête sur `/` avec `X-Original-URL: /invalid` : si la réponse est un « not found » de l'application (et non du front-end), le header est pris en compte.
 
 ## Comment exploiter (principe)
-- **Contrôle d'accès basé sur l'URL** : certains frameworks prennent en charge des en-têtes non standard qui réécrivent l'URL, comme `X-Original-URL` ou `X-Rewrite-URL`. Si le front-end bloque `/admin` mais que le back-end suit l'en-tête, une requête vers `/` avec `X-Original-URL: /admin` contourne le blocage.
-- **Contrôle d'accès basé sur la méthode HTTP** : la règle bloque `POST` mais pas `GET`, ou l'inverse. Changer la méthode (clic droit, « Change request method » dans Burp) peut contourner le contrôle.
+- **Access control basé sur l'URL** : certains frameworks prennent en charge des headers non standard qui réécrivent l'URL, comme `X-Original-URL` ou `X-Rewrite-URL`. Si le front-end bloque `/admin` mais que le back-end suit le header, une requête vers `/` avec `X-Original-URL: /admin` permet un bypass du blocage.
+- **Access control basé sur la méthode HTTP** : la règle bloque `POST` mais pas `GET`, ou l'inverse. Changer la méthode (clic droit, « Change request method » dans Burp) peut permettre un bypass du contrôle.
 - **Variantes de chemin** : casse (`/ADMIN/DELETEUSER`), barre finale (`/admin/deleteUser/`), suffixe (`/admin/deleteUser.anything`).
 
 ## Pièges et points d'attention BSCP

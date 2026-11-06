@@ -6,9 +6,9 @@ statut: en cours
 # Path traversal
 
 ## En bref
-- La traversée de chemin (path traversal, aussi appelée directory traversal) est une vulnérabilité web qui permet de lire des fichiers arbitraires sur le serveur qui héberge l'application, voire d'en écrire dans certains cas (voir [[File-upload]]).
+- Le path traversal (aussi appelé directory traversal) est une vulnérabilité web qui permet de lire des fichiers arbitraires sur le serveur qui héberge l'application, voire d'en écrire dans certains cas (voir [[File-upload]]).
 - Ces fichiers peuvent contenir du code applicatif, des identifiants de back-end ou des fichiers système sensibles.
-- Terme utilisé dans cette note : traversée de chemin. Elle diffère de l'inclusion de fichier locale (LFI) : la traversée de chemin lit le contenu d'un fichier, alors que l'inclusion locale fait interpréter le fichier par le moteur de l'application (par exemple `include` en PHP). Les deux partent du même défaut : une entrée utilisateur utilisée comme chemin.
+- Terme utilisé dans cette note : path traversal. Il diffère de l'inclusion de fichier locale (LFI) : le path traversal lit le contenu d'un fichier, alors que l'inclusion locale fait interpréter le fichier par le moteur de l'application (par exemple `include` en PHP). Les deux partent du même défaut : une entrée utilisateur utilisée comme chemin.
 
 ## Mécanisme
 - L'application construit un chemin en concaténant un répertoire de base et une valeur fournie par l'utilisateur, par exemple `/var/www/images/` et `53.jpg`.
@@ -24,7 +24,7 @@ statut: en cours
 
 ## Types et variantes
 - Lecture de fichier arbitraire (le cas le plus courant) contre écriture de fichier arbitraire (via upload, export, sauvegarde de configuration ou extraction d'archive), cette dernière ayant un impact potentiellement plus critique (exécution de code).
-- Traversée non filtrée (séquence simple suffisante) contre traversée filtrée, nécessitant une technique de contournement.
+- Path traversal non filtré (séquence simple suffisante) contre path traversal filtré, nécessitant une technique de bypass.
 - Conventions de chemin : Unix (`../`) contre Windows (`..\` et en général `../` valides toutes les deux, selon le serveur).
 
 | Type | Idée clé | Note | Niveau |
@@ -36,13 +36,13 @@ statut: en cours
 
 ## Comment détecter
 - Repérer les paramètres ou fonctionnalités qui manipulent un nom de fichier ou un chemin (paramètres nommés filename, file, path, doc, template, page, image, download, include, ou valeurs contenant une extension de fichier).
-- Établir d'abord une référence (baseline) : relever la requête normale (valeur légitime), puis une valeur inexistante, puis la valeur de traversée, et comparer code de statut, taille, type de contenu, message et temps de réponse.
+- Établir d'abord une référence (baseline) : relever la requête normale (valeur légitime), puis une valeur inexistante, puis la valeur de path traversal, et comparer code de statut, taille, type de contenu, message et temps de réponse.
 - Exemple de comportement observé sur le lab 1 : pour un fichier existant, le serveur répond HTTP 200 ; pour un fichier inexistant, HTTP 400 avec le message "No such file". Le `Content-Type` peut rester celui d'une image alors que le corps est du texte : il faut lire le corps.
 - Injecter une séquence simple visant un fichier connu et observable (`../../../etc/passwd` sur Linux, `..\..\..\windows\win.ini` sur Windows) et regarder si le contenu du fichier apparaît dans la réponse.
 - Chercher la profondeur : ajouter des `../` jusqu'à obtenir le contenu ; les séquences en trop restent sans effet, donc partir large.
 - Si le retour n'est pas directement visible, chercher des signaux indirects : différence de code de statut, de message d'erreur, de taille ou de temps de réponse entre un chemin existant et un chemin inexistant.
-- Si la séquence simple est filtrée, tester méthodiquement chaque technique de contournement (chemin absolu, séquences imbriquées, encodage simple, double encodage, préfixe, octet nul) pour identifier précisément le filtre en place.
-- Lieux d'injection à examiner, pas seulement le paramètre de requête : segment de chemin d'URL, corps de formulaire ou JSON, champ `filename` d'un envoi multipart, en-tête, cookie.
+- Si la séquence simple est filtrée, tester méthodiquement chaque technique de bypass (chemin absolu, séquences imbriquées, encodage simple, double encodage, préfixe, octet nul) pour identifier précisément le filtre en place.
+- Lieux d'injection à examiner, pas seulement le paramètre de requête : segment de chemin d'URL, corps de formulaire ou JSON, champ `filename` d'un envoi multipart, header, cookie.
 - Outillage : un navigateur ou certains clients normalisent `../` avant l'envoi. Utiliser Burp Repeater, ou curl avec `--path-as-is`, et contrôler la requête brute réellement envoyée, car la saisie peut ré-encoder `%25`.
 - Automatiser avec Burp Intruder et la liste de payloads "Fuzzing - path traversal" sur les paramètres suspects.
 - Ne pas se limiter aux fonctionnalités de lecture : examiner aussi les fonctionnalités d'upload, d'export ou de sauvegarde de configuration (principe de l'écriture : [[File-upload]]). Pour confirmer sans risque, écrire un fichier inoffensif et reconnaissable dans un emplacement autorisé par le périmètre, puis le relire.
@@ -81,7 +81,7 @@ Les exemples supposent un paramètre `filename=<valeur>` et un répertoire de ba
 ## Limites
 - L'octet nul ne fonctionne plus sur les piles récentes.
 - Les droits du compte du processus bornent ce qui est lisible ; un conteneur ou un chroot réduit les fichiers présents.
-- La traversée lit un fichier, pas un listing de répertoire ; un fichier binaire peut être illisible dans un affichage texte.
+- Le path traversal lit un fichier, pas un listing de répertoire ; un fichier binaire peut être illisible dans un affichage texte.
 - Un échec d'un payload ne prouve pas l'absence de vulnérabilité : le fichier peut être absent ou le filtre différent.
 - D'autres chemins de lecture de fichiers existent avec le schéma `file://` : voir [[SSRF]] et [[XXE-injection]].
 
@@ -95,13 +95,13 @@ Les exemples supposent un paramètre `filename=<valeur>` et un répertoire de ba
 
 ## Prévention
 - Éviter de transmettre des entrées utilisateur directement à une API de système de fichiers ; privilégier un mapping indirect (identifiant ou clé associé côté serveur à un chemin fixe, sans jamais exposer le chemin réel à l'utilisateur).
-- Si un nom de fichier doit néanmoins être accepté depuis l'utilisateur, le valider strictement par liste blanche : extension autorisée, absence de séparateurs de chemin, correspondance à un motif ancré.
-- À défaut de liste blanche stricte, n'accepter que des caractères autorisés (alphanumériques, point, tiret) ; c'est un minimum, pas un équivalent de la liste blanche.
+- Si un nom de fichier doit néanmoins être accepté depuis l'utilisateur, le valider strictement par allowlist : extension autorisée, absence de séparateurs de chemin, correspondance à un motif ancré.
+- À défaut d'allowlist stricte, n'accepter que des caractères autorisés (alphanumériques, point, tiret) ; c'est un minimum, pas un équivalent de l'allowlist.
 - Décoder une seule fois, puis valider après le dernier décodage, jamais avant.
 - Après validation, concaténer au répertoire de base, canoniser le chemin obtenu avec l'API de la plateforme, et vérifier que le résultat reste dans le répertoire de base avant tout accès au fichier. En cas d'échec du test, rejeter la requête, sans retomber sur une valeur par défaut.
 - Ne jamais se fier à un simple retrait de la sous-chaîne `../` (vulnérable aux séquences imbriquées) ni implémenter sa propre logique de canonicalisation ; utiliser les fonctions du langage ou du framework.
 - Appliquer le principe de moindre privilège sur le compte du processus serveur (accès restreint aux seuls répertoires nécessaires), en défense en profondeur.
-- Journaliser et alerter sur les tentatives contenant des séquences de traversée ou des caractères suspects dans les paramètres de fichier.
+- Journaliser et alerter sur les tentatives contenant des séquences de path traversal ou des caractères suspects dans les paramètres de fichier.
 - Exemple Java corrigé. L'ancienne forme `getCanonicalPath().startsWith(BASE_DIRECTORY)` a deux défauts : la base n'est pas canonisée, et sans séparateur final un dossier voisin au préfixe identique (par exemple `/var/www/images-privees` pour la base `/var/www/images`) est accepté.
   ```java
   Path base = Paths.get(BASE_DIRECTORY).toRealPath();

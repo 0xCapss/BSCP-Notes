@@ -32,9 +32,9 @@ repérer vite et l'enchaîner.
 - Réussir toutes les applications prime sur l'élégance : vise l'objectif.
 
 ## Checklist par surface
-- Point d'entrée utilisateur : SQLi, XSS, injection, traversal, upload ?
-- Authentification et session : logique, reset, JWT, OAuth ?
-- Contrôle d'accès : IDOR, fonctions privilégiées accessibles ?
+- Point d'entrée utilisateur : SQLi, XSS, command injection, path traversal, file upload ?
+- Authentication et session : logique, reset, JWT, OAuth ?
+- Access control : IDOR, fonctions privilégiées accessibles ?
 - Logique métier : hypothèses contournables, race conditions ?
 - Entrées portant des URL : SSRF, host header ?
 - Rendu de données : contexte d'injection, DOM ?

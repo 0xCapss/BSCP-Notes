@@ -23,16 +23,16 @@ statut: à faire
 	- Une application qui accepte et analyse du XML peut être vulnérable à une injection XXE.
 	- Elle peut aussi être vulnérable à une SSRF via XXE (voir [[XXE-injection]]).
 
-## SSRF via l'en-tête Referer
+## SSRF via le header Referer
 - Certaines applications utilisent des logiciels d'analyse côté serveur pour suivre les visiteurs.
-- Ces logiciels enregistrent souvent l'en-tête `Referer` des requêtes, afin de suivre les liens entrants.
+- Ces logiciels enregistrent souvent le header `Referer` des requêtes, afin de suivre les liens entrants.
 - Surface d'attaque :
-	- Ils accèdent fréquemment aux URL tierces présentes dans l'en-tête `Referer`.
+	- Ils accèdent fréquemment aux URL tierces présentes dans le header `Referer`.
 	- Le but est généralement d'analyser le contenu des sites référents, y compris le texte d'ancrage des liens entrants.
-	- L'en-tête `Referer` est donc souvent une surface utile pour la SSRF, généralement de type aveugle, à tester avec Burp Collaborator (voir [[SSRF-aveugle]]).
+	- Le header `Referer` est donc souvent une surface utile pour la SSRF, généralement de type blind, à tester avec Burp Collaborator (voir [[SSRF-aveugle]]).
 
 ## Pièges et points d'attention BSCP
-- Penser aussi aux autres en-têtes que le serveur peut résoudre : `Host`, `X-Forwarded-Host` (voir [[HTTP-Host-header]]).
+- Penser aussi aux autres headers que le serveur peut résoudre : `Host`, `X-Forwarded-Host` (voir [[HTTP-Host-header]]).
 - Penser aux fonctionnalités qui « importent » ou « prévisualisent » une adresse : import par URL, webhooks, génération de PDF, aperçu de lien, avatar distant.
 
 ## Labs PortSwigger

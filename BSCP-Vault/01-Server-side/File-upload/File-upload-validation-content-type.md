@@ -6,13 +6,13 @@ statut: à faire
 # File upload - validation par propriétés manipulables et en-tête Content-Type
 
 ## En bref
-- Le site vérifie le type d'un fichier à partir de propriétés que l'attaquant maîtrise, notamment l'en-tête `Content-Type` de la partie fichier d'une requête `multipart/form-data`.
+- Le site vérifie le type d'un fichier à partir de propriétés que l'attaquant maîtrise, notamment le header `Content-Type` de la partie fichier d'une requête `multipart/form-data`.
 - Une valeur fournie par le client ne peut pas servir de preuve : elle se modifie facilement avec Burp Repeater.
 - Note parente : [[File-upload]]
 
 ## Comment détecter
 - Téléverser un script (`exploit.php`) et lire le message de refus : s'il parle de types MIME autorisés (`image/jpeg`, `image/png`), la validation s'appuie probablement sur le `Content-Type`.
-- Retrouver la requête `POST` de téléversement dans l'historique Burp et l'envoyer dans Repeater.
+- Retrouver la requête `POST` de file upload dans l'historique Burp et l'envoyer dans Repeater.
 
 ## Comment exploiter (principe)
 - **Requête multipart**
@@ -22,13 +22,13 @@ statut: à faire
 	- Le corps est divisé en parties distinctes, une par champ. Chaque partie est délimitée par la chaîne `boundary`, et la dernière se termine par la même chaîne suivie de `--`.
 	- `Content-Disposition` donne les informations de base sur le champ (`name`, et `filename` pour un fichier).
 	- `Content-Type` (facultatif) indique au serveur le type MIME des données soumises via ce champ (ici `image/jpeg`).
-- **Validation par l'en-tête Content-Type**
+- **Validation par le header Content-Type**
 	- Méthode : vérifier que le `Content-Type` propre au champ de fichier correspond au type MIME attendu (par exemple n'autoriser que `image/jpeg` et `image/png`).
 	- Problème : le serveur fait implicitement confiance à cette valeur. Si aucune vérification ne confirme que le contenu correspond au type annoncé, la protection est facilement contournable.
-	- Contournement : dans Burp Repeater, envoyer le script PHP avec `Content-Type: image/jpeg` dans la partie du fichier.
+	- Bypass : dans Burp Repeater, envoyer le script PHP avec `Content-Type: image/jpeg` dans la partie du fichier.
 
 ## Pièges et points d'attention BSCP
-- Modifier le `Content-Type` de la **partie fichier** (sous `Content-Disposition`), pas celui de l'en-tête principal de la requête qui porte le `boundary`.
+- Modifier le `Content-Type` de la **partie fichier** (sous `Content-Disposition`), pas celui du header principal de la requête qui porte le `boundary`.
 - Ne pas confondre avec une validation du contenu ou de l'extension : ces techniques ne sont pas encore étudiées dans le cours.
 
 ## Labs PortSwigger

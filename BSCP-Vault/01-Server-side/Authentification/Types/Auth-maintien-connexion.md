@@ -20,7 +20,7 @@ statut: à faire
 - Le cookie peut être chiffré, mais un encodage réversible comme le base64 n'offre aucune protection réelle.
 - Si le mot de passe est haché sans salt, des listes de mots de passe courants (rainbow tables) permettent de le retrouver. D'où l'importance du salt.
 - Via une faille XSS, un attaquant peut dérober le cookie "Se souvenir de moi" d'un autre utilisateur et en étudier la structure pour le forger.
-- **Forme typique** : `base64(username:md5(mot de passe))`. Un attaquant qui connaît le username peut forger le cookie de chaque mot de passe candidat et le tester sans passer par le formulaire de connexion (donc sans verrouillage de compte).
+- **Forme typique** : `base64(username:md5(mot de passe))`. Un attaquant qui connaît le username peut forger le cookie de chaque mot de passe candidat et le tester sans passer par le formulaire de connexion (donc sans account lockout).
 - **Craquage hors ligne** : le cookie de la victime volé (via XSS stocké), une fois décodé, contient le hash du mot de passe, que l'on casse hors ligne avec une base de hashs ou un outil de craquage.
 
 ## Pièges et points d'attention BSCP

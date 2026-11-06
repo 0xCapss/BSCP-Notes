@@ -15,28 +15,28 @@ statut: en cours
 
 ## Types et variantes
 - Authentification par mot de passe (formulaire de connexion) : l'utilisateur prouve son identité par la connaissance d'un secret.
-- Authentification HTTP (Basic Auth) : le navigateur envoie un token `base64(username:password)` dans l'en-tête `Authorization` à chaque requête.
-- Authentification multi-facteurs (voir [[Multi-factor-authentication]]) : combine plusieurs des facteurs ci-dessous.
+- Authentification HTTP (Basic Auth) : le navigateur envoie un token `base64(username:password)` dans le header `Authorization` à chaque requête.
+- Multi-factor authentication (MFA, voir [[Multi-factor-authentication]]) : combine plusieurs des facteurs ci-dessous.
 - Les 3 facteurs d'authentification possibles :
 	- Facteur de connaissance : quelque chose que l'on connaît (mot de passe, réponse à une question de sécurité).
 	- Facteur de possession : quelque chose que l'on possède (objet physique, token, téléphone).
 	- Facteur inhérent : quelque chose qui nous est propre (données biométriques).
-- Deux origines de vulnérabilité à distinguer : faiblesse inhérente au mécanisme lui-même (par exemple pas de protection contre le brute force, mot de passe faible ou par défaut) contre faille logique ou erreur d'implémentation qui permet de contourner totalement le mécanisme (par exemple une deuxième étape non revérifiée par le serveur).
+- Deux origines de vulnérabilité à distinguer : faiblesse inhérente au mécanisme lui-même (par exemple pas de protection contre le brute force, mot de passe faible ou par défaut) contre faille logique ou erreur d'implémentation qui permet un bypass complet du mécanisme (par exemple une deuxième étape non revérifiée par le serveur).
 - Trois façons de deviner un mot de passe, à ne pas confondre :
-	- Brute force classique : beaucoup de mots de passe essayés sur un seul compte. Gêné par le verrouillage par compte.
-	- Password spraying : un seul mot de passe courant (ou quelques-uns) essayé sur beaucoup de comptes, pour rester sous le seuil de verrouillage de chaque compte. Il est gêné par un verrouillage par IP ou global.
+	- Brute force classique : beaucoup de mots de passe essayés sur un seul compte. Gêné par un account lockout par compte.
+	- Password spraying : un seul mot de passe courant (ou quelques-uns) essayé sur beaucoup de comptes, pour rester sous le seuil d'account lockout de chaque compte. Il est gêné par un account lockout par IP ou global.
 	- Credential stuffing : couples nom d'utilisateur/mot de passe issus de fuites de données, utilisés tels quels en comptant sur la réutilisation des mots de passe. À réserver à un périmètre autorisé.
 - Points de départ fréquents : identifiants par défaut, mots de passe faibles autorisés par la politique de mot de passe, noms de comptes devinables.
 
 | Type | Idée clé | Signal attendu | Limite | Note | Niveau |
 | --- | --- | --- | --- | --- | --- |
-| Brute force et énumération des identifiants | réponses, longueur, temps différents | une réponse isolée par la longueur, le texte ou le temps ; `302` pour le bon mot de passe | bruit de mesure du temps, verrouillage de vrais comptes sur une cible réelle | [[Auth-brute-force-identifiants]] | Apprentice |
-| Contournement du verrouillage et du blocage IP | `X-Forwarded-For`, alternance avec un login valide, tableau JSON | plus de blocage en changeant l'en-tête ; aucun blocage quand un login valide est intercalé | l'en-tête n'est pas lu partout ; l'alternance exige un compte valide | [[Auth-contournement-blocage]] | Practitioner, Expert |
+| Brute force et énumération des identifiants | réponses, longueur, temps différents | une réponse isolée par la longueur, le texte ou le temps ; `302` pour le bon mot de passe | bruit de mesure du temps, account lockout de vrais comptes sur une cible réelle | [[Auth-brute-force-identifiants]] | Apprentice |
+| Bypass de l'account lockout et du blocage IP | `X-Forwarded-For`, alternance avec un login valide, tableau JSON | plus de blocage en changeant le header ; aucun blocage quand un login valide est intercalé | le header n'est pas lu partout ; l'alternance exige un compte valide | [[Auth-contournement-blocage]] | Practitioner, Expert |
 | HTTP Basic | `Authorization: Basic` | `nom:mot de passe` lisible après décodage base64 ; `200` au lieu de `401` | aucun lab dédié ; sans HTTPS ni HSTS, interception possible | [[Auth-http-basic]] | Apprentice |
 | Maintien de la connexion | cookie `base64(user:md5)` | structure lisible `utilisateur:haché` | cookie signé ou aléatoire, haché salé, attribut `HttpOnly` contre le vol par script | [[Auth-maintien-connexion]] | Practitioner |
 | Réinitialisation du mot de passe | token, `X-Forwarded-Host` | requête de la victime avec le token dans le journal d'accès de l'exploit server | victime qui clique, domaine d'envoi parfois fixé par configuration | [[Auth-reinitialisation-mot-de-passe]] | Apprentice, Practitioner |
-| Modification du mot de passe | champ masqué, oracle d'erreur | un seul message différent parmi les réponses | verrouillage si les deux nouveaux mots de passe sont identiques | [[Auth-modification-mot-de-passe]] | Practitioner |
-| Authentification multifacteur | accès direct, logique, brute force | page protégée accessible, ou `302` après le bon code | limitation de tentatives, expiration du code | [[Multi-factor-authentication]] | Apprentice à Expert |
+| Modification du mot de passe | champ masqué, oracle d'erreur | un seul message différent parmi les réponses | account lockout si les deux nouveaux mots de passe sont identiques | [[Auth-modification-mot-de-passe]] | Practitioner |
+| Multi-factor authentication (MFA) | accès direct, logique, brute force | page protégée accessible, ou `302` après le bon code | rate limiting, expiration du code | [[Multi-factor-authentication]] | Apprentice à Expert |
 
 ## Comment détecter
 - Vérifier si l'application divulgue des noms d'utilisateur valides : pages de profil publiques, adresses e-mail visibles dans les réponses HTTP, schéma prévisible type `prenom.nom@entreprise.com`, comptes à privilèges élevés avec des noms devinables (`admin`, `administrator`).
@@ -44,38 +44,38 @@ statut: en cours
 	- le code de statut et la redirection (`Location`) ;
 	- le texte exact du message d'erreur (une différence d'un seul caractère, comme un point final, compte) ;
 	- la longueur de la réponse ;
-	- les en-têtes, notamment `Set-Cookie` ;
+	- les headers, notamment `Set-Cookie` ;
 	- le temps de réponse.
 	Dans Burp Intruder, trier les résultats par colonne, ajouter une règle Grep - Extract sur le message, ou comparer deux réponses avec Comparer. Toute différence signale une énumération de username possible.
 - Mesure du temps de réponse : répéter chaque essai plusieurs fois et comparer les médianes plutôt qu'une valeur isolée, pour limiter le bruit réseau. Un mot de passe très long accentue l'écart quand le hachage n'est exécuté que pour un username valide.
 - Autres sources d'énumération à tester : le formulaire d'inscription (nom déjà utilisé), le formulaire de mot de passe oublié (message différent selon l'existence du compte).
-- Mesurer le verrouillage : compter le nombre d'essais avant coupure, déterminer s'il est par compte, par IP ou par la combinaison des deux, et vérifier si un login réussi ou une nouvelle session remet le compteur à zéro. Sur une cible réelle, un verrouillage provoqué volontairement prive l'utilisateur légitime de son compte.
+- Mesurer l'account lockout : compter le nombre d'essais avant coupure, déterminer s'il est par compte, par IP ou par la combinaison des deux, et vérifier si un login réussi ou une nouvelle session remet le compteur à zéro. Sur une cible réelle, un account lockout provoqué volontairement prive l'utilisateur légitime de son compte.
 - Repérer les mécanismes d'authentification en plusieurs étapes (2FA) pour vérifier si l'état de session est déjà "connecté" avant la validation complète de la deuxième étape (voir [[Multi-factor-authentication]]).
-- Vérifier le format des en-têtes de la requête si le site utilise l'authentification HTTP Basic (`Authorization: Basic ...`) et si le protocole HSTS est en place.
+- Vérifier le format des headers de la requête si le site utilise l'authentification HTTP Basic (`Authorization: Basic ...`) et si le protocole HSTS est en place.
 
 ## Comment exploiter (principe)
-1. Énumérer les noms d'utilisateur valides (différences de réponse, de longueur, de temps, verrouillage).
-2. Forcer le mot de passe du compte identifié, en contournant les protections si besoin.
+1. Énumérer les noms d'utilisateur valides (différences de réponse, de longueur, de temps, account lockout).
+2. Lancer un brute force sur le mot de passe du compte identifié, avec un bypass des protections si besoin.
 3. Si la page de connexion est solide, attaquer les fonctions annexes : cookie persistant, réinitialisation, modification du mot de passe.
-4. Si un second facteur existe, chercher le contournement (voir [[Multi-factor-authentication]]).
+4. Si un second facteur existe, chercher un bypass (voir [[Multi-factor-authentication]]).
 
 ## Pièges et points d'attention BSCP
 - Le temps est limité à l'examen : commencer par les signaux peu coûteux (différence de statut, de texte ou de longueur) avant de passer au temps de réponse, plus lent et plus bruité.
-- Le verrouillage de compte ou d'IP n'est pas une protection absolue : inclure ses propres identifiants valides à intervalles réguliers dans la liste testée suffit souvent à passer sous le radar, ou révèle que le compteur se réinitialise après un login réussi.
+- L'account lockout ou le blocage d'IP n'est pas une protection absolue : inclure ses propres identifiants valides à intervalles réguliers dans la liste testée suffit souvent à passer sous le radar, ou révèle que le compteur se réinitialise après un login réussi.
 - Le seuil de blocage peut être scopé par IP, par compte, ou par la combinaison des deux : ça change la stratégie (rotation d'IP contre répartition sur plusieurs comptes, donc password spraying).
-- Les labs 3 et 4 reposent sur `X-Forwarded-For`, mais ce n'est pas universel : un proxy peut réécrire l'en-tête. Si celui-ci est ignoré, on peut essayer : `X-Real-IP`, `X-Client-IP`, `True-Client-IP`, `Forwarded: for=<ip>`.
+- Les labs 3 et 4 reposent sur `X-Forwarded-For`, mais ce n'est pas universel : un proxy peut réécrire le header. Si celui-ci est ignoré, on peut essayer : `X-Real-IP`, `X-Client-IP`, `True-Client-IP`, `Forwarded: for=<ip>`.
 - Une différence de temps de réponse peut être un signal d'énumération même quand les codes de statut et les messages sont identiques : ne pas se fier à un seul type de signal.
-- Choix du mode Intruder (rappel de méthode) : Sniper pour une seule position ; Pitchfork pour deux listes alignées (par exemple en-tête de substitution d'IP et candidat, ou alternance d'un login valide et d'un essai, avec une seule requête simultanée dans ce cas) ; Cluster bomb pour toutes les combinaisons (par exemple le verrouillage comme oracle d'énumération).
+- Choix du mode Intruder (rappel de méthode) : Sniper pour une seule position ; Pitchfork pour deux listes alignées (par exemple header de substitution d'IP et candidat, ou alternance d'un login valide et d'un essai, avec une seule requête simultanée dans ce cas) ; Cluster bomb pour toutes les combinaisons (par exemple l'account lockout comme oracle d'énumération).
 - La variante HTTP Basic n'a pas de lab PortSwigger dédié.
 
 ## Prévention
 - Toujours renvoyer le même code de statut et le même message d'erreur générique, que le username ou le password soit invalide.
 - Uniformiser le temps de réponse entre les cas valides et invalides (éviter qu'un traitement conditionnel, comme le hachage du mot de passe, ne s'exécute que si le username existe).
-- Limiter strictement le nombre de tentatives par compte, sans se baser uniquement sur l'adresse IP, et bloquer l'IP distante en cas de fréquence de connexion anormale. Un délai croissant entre les essais limite aussi le password spraying.
-- Ne pas se reposer uniquement sur le blocage par IP : il est contournable par manipulation d'en-têtes si l'IP du client n'est pas déterminée de façon fiable côté serveur. Un compteur qui se remet à zéro après une connexion réussie est aussi contournable.
-- Un CAPTCHA une fois la limite atteinte ajoute un frein, mais il est contournable et ne remplace pas la limitation.
+- Appliquer un rate limiting strict par compte, sans se baser uniquement sur l'adresse IP, et bloquer l'IP distante en cas de fréquence de connexion anormale. Un délai croissant entre les essais limite aussi le password spraying.
+- Ne pas se reposer uniquement sur le blocage par IP : un bypass est possible par manipulation de headers si l'IP du client n'est pas déterminée de façon fiable côté serveur. Un compteur qui se remet à zéro après une connexion réussie permet aussi un bypass.
+- Un CAPTCHA une fois la limite atteinte ajoute un frein, mais il peut lui-même faire l'objet d'un bypass et ne remplace pas le rate limiting.
 - Interdire les mots de passe faibles, par défaut ou déjà connus de fuites publiques, pour limiter le credential stuffing.
-- Ne jamais utiliser l'authentification HTTP Basic seule pour protéger des ressources sensibles ; si utilisée, l'associer systématiquement à HSTS et à une protection anti-brute-force dédiée.
+- Ne jamais utiliser l'authentification HTTP Basic seule pour protéger des ressources sensibles ; si utilisée, l'associer systématiquement à HSTS et à une protection anti brute force dédiée.
 - La prévention propre aux fonctionnalités annexes est dans [[Autres-mecanismes-authentification]], celle du second facteur dans [[Multi-factor-authentication]].
 
 ## Labs PortSwigger
@@ -227,9 +227,9 @@ Le code 2FA est forçable mais une déconnexion survient après deux mauvais ess
 - [[Auth-modification-mot-de-passe]]
 - [[Autres-mecanismes-authentification]]
 - [[Access-control]] - la différence entre authentification et autorisation
-- [[JWT-attacks]] - jetons de session signés, autre mécanisme d'authentification
+- [[JWT-attacks]] - tokens de session signés, autre mécanisme d'authentification
 - [[OAuth]] - authentification déléguée à un tiers
 - [[Business-logic]] - les failles logiques entre étapes relèvent de la même famille
-- [[HTTP-Host-header]] - empoisonnement du lien de réinitialisation par l'en-tête d'hôte
+- [[HTTP-Host-header]] - empoisonnement du lien de réinitialisation par le header Host
 - [[Multi-factor-authentication]]
 - [[Payloads-cheatsheet]]

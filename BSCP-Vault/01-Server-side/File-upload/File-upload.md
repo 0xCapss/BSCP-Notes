@@ -6,30 +6,30 @@ statut: en cours
 # File upload vulnerabilities
 
 ## En bref
-- Elles apparaissent quand un serveur web accepte des fichiers téléversés sans contrôler correctement leur nom, leur type, leur contenu ou leur taille.
-- Sans restrictions, même une simple fonction de téléversement d'images peut servir à envoyer des fichiers arbitraires et potentiellement dangereux.
+- Elles apparaissent quand un serveur web accepte des fichiers uploadés sans contrôler correctement leur nom, leur type, leur contenu ou leur taille.
+- Sans restrictions, même une simple fonction d'upload d'images peut servir à envoyer des fichiers arbitraires et potentiellement dangereux.
 - Cela peut inclure des fichiers de script côté serveur, qui permettent l'exécution de code à distance.
 
 ## Impact des vulnérabilités
 - L'impact dépend généralement de deux facteurs :
 	- L'aspect du fichier que le site valide mal (taille, type, contenu, etc.).
-	- Les restrictions imposées au fichier une fois téléversé avec succès.
+	- Les restrictions imposées au fichier une fois uploadé avec succès.
 - Pire cas
 	- Le type de fichier n'est pas validé correctement.
 	- La configuration du serveur autorise l'exécution de certains types de fichiers comme `.php`, `.jsp` ou `.aspx` en tant que code.
-	- Un attaquant peut alors téléverser un fichier de code côté serveur faisant office de web shell, ce qui lui donne de fait le contrôle total du serveur.
-	- Définition : un web shell est un script malveillant téléversé sur un serveur, qui permet d'exécuter des commandes ou de lire des fichiers à distance par de simples requêtes HTTP vers ce script. Un fichier stocké n'est pas forcément exécuté : tout dépend de la configuration du répertoire de destination (voir la section sur la configuration par répertoire).
+	- Un attaquant peut alors uploader un fichier de code côté serveur faisant office de web shell, ce qui lui donne de fait le contrôle total du serveur.
+	- Définition : un web shell est un script malveillant uploadé sur un serveur, qui permet d'exécuter des commandes ou de lire des fichiers à distance par de simples requêtes HTTP vers ce script. Un fichier stocké n'est pas forcément exécuté : tout dépend de la configuration du répertoire de destination (voir la section sur la configuration par répertoire).
 - Nom de fichier mal validé
-	- Un attaquant peut remplacer des fichiers critiques en téléversant un fichier portant le même nom.
-	- Si le serveur est vulnérable au path traversal, l'attaquant peut téléverser des fichiers vers des emplacements imprévus (voir [[Path-traversal]]).
+	- Un attaquant peut remplacer des fichiers critiques en uploadant un fichier portant le même nom.
+	- Si le serveur est vulnérable au path traversal, l'attaquant peut uploader des fichiers vers des emplacements imprévus (voir [[Path-traversal]]).
 - Taille non contrôlée
 	- Ne pas vérifier que la taille respecte les limites prévues peut permettre une attaque par déni de service. Ce test ne se fait pas sur une cible réelle sans accord explicite.
 - Effets autres que l'exécution de code côté serveur
 	- Un fichier HTML ou SVG contenant un script, servi depuis la même origine avec un type affichable par le navigateur, donne une XSS stockée (voir [[XSS]]).
-	- Un fichier XML ou un format qui en contient (SVG, documents Office) peut déclencher une injection d'entité externe selon l'analyseur (voir [[XXE-injection]]).
-	- Un traitement d'image côté serveur, ou un téléversement par URL, peut provoquer des requêtes sortantes (voir [[SSRF]]).
-	- Un nom de fichier transmis à un shell peut mener à une injection de commande (voir [[Command-injection]]).
-	- Écraser le fichier d'un autre utilisateur est un défaut de contrôle d'accès (voir [[Access-control]]).
+	- Un fichier XML ou un format qui en contient (SVG, documents Office) peut déclencher une XXE selon l'analyseur (voir [[XXE-injection]]).
+	- Un traitement d'image côté serveur, ou un upload par URL, peut provoquer des requêtes sortantes (voir [[SSRF]]).
+	- Un nom de fichier transmis à un shell peut mener à une command injection (voir [[Command-injection]]).
+	- Écraser le fichier d'un autre utilisateur est un cas de broken access control (voir [[Access-control]]).
 
 ## Traitement des requêtes de fichiers statiques
 - Autrefois, les sites web étaient constitués presque exclusivement de fichiers statiques servis à la demande. Le chemin de chaque requête correspondait donc directement à la hiérarchie de répertoires et de fichiers du serveur.
@@ -37,35 +37,35 @@ statut: en cours
 - Le serveur analyse le chemin de la requête pour identifier l'extension du fichier. Il s'en sert pour déterminer le type de fichier demandé, en le comparant à une liste préconfigurée de correspondances entre extensions et types MIME.
 - La suite dépend du type de fichier et de la configuration du serveur :
 	- Fichier non exécutable (image, page HTML statique) : le serveur renvoie en général le contenu du fichier dans la réponse HTTP.
-	- Fichier exécutable (par exemple PHP) et serveur configuré pour l'exécuter : le serveur renseigne des variables à partir des en-têtes et paramètres de la requête, exécute le script, puis renvoie sa sortie au client.
+	- Fichier exécutable (par exemple PHP) et serveur configuré pour l'exécuter : le serveur renseigne des variables à partir des headers et paramètres de la requête, exécute le script, puis renvoie sa sortie au client.
 	- Fichier exécutable mais serveur non configuré pour l'exécuter : le serveur répond en général par une erreur. Parfois, il renvoie quand même le contenu du fichier en texte brut, ce qui peut révéler du code source ou d'autres informations sensibles.
-- L'en-tête de réponse `Content-Type` donne un indice sur le type de fichier que le serveur pense servir.
+- Le header de réponse `Content-Type` donne un indice sur le type de fichier que le serveur pense servir.
 
 ### Configuration par répertoire et gestionnaires d'extension
 - Le serveur associe une extension à un gestionnaire (interpréteur PHP, conteneur de servlets pour `.jsp`, moteur ASP.NET sous IIS). Cette association peut être définie globalement ou répertoire par répertoire.
 - Un même fichier `.php` peut donc être exécuté dans un dossier et renvoyé en texte brut dans le dossier d'upload, si l'exécution y est désactivée. C'est le facteur qui sépare « stocké » de « exécuté ».
 - Certains serveurs acceptent des fichiers de configuration déposés dans le répertoire (Apache avec `.htaccess`, IIS avec `web.config`). Nginx n'a pas de configuration par répertoire.
-- Les en-têtes de réponse `Server` et `X-Powered-By` aident à deviner la pile, donc l'extension à viser. La méthode `OPTIONS` liste parfois les méthodes autorisées.
+- Les headers de réponse `Server` et `X-Powered-By` aident à deviner la pile, donc l'extension à viser. La méthode `OPTIONS` liste parfois les méthodes autorisées.
 
 ## Ordre des opérations de l'application
 - Un traitement typique enchaîne : réception de la requête, écriture dans un emplacement temporaire, validation (extension, `Content-Type` déclaré, signature, dimensions, retraitement de l'image), puis déplacement vers le dossier définitif.
-- Si le fichier est écrit à un emplacement accessible avant la fin de la validation, il existe une fenêtre de temps pendant laquelle il peut être appelé : c'est la base des conditions de concurrence (voir [[Race-conditions]]).
-- Autre méthode de transfert : si le serveur autorise la méthode `PUT`, un fichier peut être déposé sans passer par le formulaire de téléversement (voir `OPTIONS` ci-dessus).
+- Si le fichier est écrit à un emplacement accessible avant la fin de la validation, il existe une fenêtre de temps pendant laquelle il peut être appelé : c'est la base des race conditions (voir [[Race-conditions]]).
+- Autre méthode de transfert : si le serveur autorise la méthode `PUT`, un fichier peut être déposé sans passer par le formulaire d'upload (voir `OPTIONS` ci-dessus).
 
 ## Types et variantes
 | Type | Idée clé | Note | Niveau |
 | --- | --- | --- | --- |
-| Téléversement sans restriction et web shell | `exploit.php` exécuté tel quel | [[File-upload-web-shell]] | Apprentice |
-| Validation par `Content-Type` | en-tête de la partie fichier modifiable | [[File-upload-validation-content-type]] | Apprentice |
-| Liste noire de types de fichiers | une liste omet forcément des cas | [[File-upload-liste-noire]] | Practitioner |
+| Upload sans restriction et web shell | `exploit.php` exécuté tel quel | [[File-upload-web-shell]] | Apprentice |
+| Validation par `Content-Type` | header de la partie fichier modifiable | [[File-upload-validation-content-type]] | Apprentice |
+| Blocklist de types de fichiers | une blocklist omet forcément des cas | [[File-upload-liste-noire]] | Practitioner |
 | Application incohérente | validation robuste ici, absente là | voir ci-dessous | Practitioner |
 | Fichier de configuration serveur | associer une extension choisie à l'interpréteur | voir le catalogue ci-dessous | Practitioner |
-| Traversée de chemin dans le nom de fichier | sortir d'un dossier où l'exécution est désactivée | [[Path-traversal]] | Practitioner |
+| Path traversal dans le nom de fichier | sortir d'un dossier où l'exécution est désactivée | [[Path-traversal]] | Practitioner |
 | Validation du contenu et polyglottes | fichier valide à la fois comme image et comme script | voir le catalogue ci-dessous | Practitioner |
-| Condition de concurrence | fichier appelé avant la fin de la validation | [[Race-conditions]] | Expert |
-| Effets sans exécution de code | XSS stockée, XXE, SSRF, injection de commande | voir la section Impact | Variable |
+| Race condition | fichier appelé avant la fin de la validation | [[Race-conditions]] | Expert |
+| Effets sans exécution de code | XSS stockée, XXE, SSRF, command injection | voir la section Impact | Variable |
 
-### Origine des vulnérabilités de téléversement de fichiers
+### Origine des vulnérabilités de file upload
 - Les sites sans aucune restriction sont rares, vu les dangers évidents. Le plus souvent, les développeurs mettent en place une validation supposée robuste, mais elle est défaillante ou facilement contournable : c'est elle qu'il faut tester.
 - Le site peut vérifier le type de fichier à partir de propriétés que l'attaquant modifie facilement avec Burp Repeater (voir [[File-upload-validation-content-type]]).
 
@@ -84,10 +84,10 @@ Les noms d'extension, de répertoire et de directive sont donnés à titre d'exe
 
 #### Validation du Content-Type de la partie fichier
 - Contexte : message de refus qui cite des types MIME autorisés.
-- Signal attendu : succès du téléversement puis exécution à l'appel.
+- Signal attendu : succès de l'upload puis exécution à l'appel.
 - Limites : échoue si l'extension ou la signature est aussi contrôlée. Ne pas modifier le `Content-Type` de la requête principale, qui porte le `boundary`.
 
-#### Liste noire d'extensions
+#### Blocklist d'extensions
 - Contexte : une extension précise est refusée alors que d'autres passent.
 - Pistes à tester :
 	- Extensions alternatives gérées par le même interpréteur, et variantes de casse.
@@ -96,7 +96,7 @@ Les noms d'extension, de répertoire et de directive sont donnés à titre d'exe
 	- Extension imbriquée pour contourner un nettoyage non récursif : suppose que le filtre retire la sous-chaîne une seule fois.
 	- Encodage du point ou des lettres (URL, double encodage, Unicode) : dépend de l'ordre entre décodage et validation.
 - Signal attendu : fichier accepté et sortie du script dans la réponse à l'appel.
-- Limites : liste blanche stricte, renommage serveur, extension forcée après validation.
+- Limites : allowlist stricte, renommage serveur, extension forcée après validation.
 
 #### Fichier de configuration serveur
 - Contexte : les extensions de script sont interdites mais une extension inhabituelle passe, et le serveur honore la configuration par répertoire.
@@ -104,11 +104,11 @@ Les noms d'extension, de répertoire et de directive sont donnés à titre d'exe
 - Signal attendu : un second fichier portant l'extension associée est exécuté.
 - Limites : surcharge désactivée, ou nom du fichier de configuration lui aussi bloqué.
 
-#### Traversée de chemin dans le nom de fichier
+#### Path traversal dans le nom de fichier
 - Contexte : le nom du champ `filename` sert à construire le chemin de destination, et le dossier d'upload n'exécute pas les scripts alors que son parent le fait.
 - Idée : utiliser un nom contenant `../`, éventuellement encodé en URL ou doublement encodé (voir [[Path-traversal]]).
 - Signal attendu : le fichier apparaît à l'emplacement remonté et s'exécute.
-- Limites : nettoyage de la barre oblique, nom non décodé, téléversement réussi mais fichier introuvable (chercher l'emplacement ailleurs).
+- Limites : nettoyage de la barre oblique, nom non décodé, upload réussi mais fichier introuvable (chercher l'emplacement ailleurs).
 
 #### Validation du contenu et polyglottes
 - Contexte : le serveur lit la signature (premiers octets), les dimensions, ou recharge l'image avec une bibliothèque.
@@ -116,24 +116,24 @@ Les noms d'extension, de répertoire et de directive sont donnés à titre d'exe
 - Signal attendu : acceptation par le contrôle de contenu, puis sortie du script au milieu des données binaires de l'image si l'extension est exécutée.
 - Limites : le réencodage de l'image détruit les métadonnées ; la signature seule ne suffit pas si l'extension est contrôlée.
 
-#### Conditions de concurrence
+#### Race conditions
 - Contexte : le fichier est écrit dans un emplacement accessible puis validé ou supprimé après coup.
-- Idée : envoyer en parallèle le téléversement et des appels du fichier, avec les groupes de requêtes de Burp Repeater (voir [[Race-conditions]]). Variante : téléversement par URL avec nom temporaire prévisible.
-- Signal attendu : au moins un appel exécute le script alors que la réponse du téléversement est un refus.
+- Idée : envoyer en parallèle l'upload et des appels du fichier, avec les groupes de requêtes de Burp Repeater (voir [[Race-conditions]]). Variante : upload par URL avec nom temporaire prévisible.
+- Signal attendu : au moins un appel exécute le script alors que la réponse de l'upload est un refus.
 - Limites : dépend de la latence, instable, plusieurs essais nécessaires. Ne pas envoyer de volume important de requêtes hors périmètre.
 
 #### Effets sans exécution de code
 - Signal attendu : effet observable (alerte dans le navigateur, requête sortante, sortie de commande). Voir la section Impact pour les notes associées.
 
-#### Limites générales des contournements
-- Retraitement ou réencodage de l'image par une bibliothèque, qui détruit les charges utiles.
+#### Limites générales des bypass
+- Retraitement ou réencodage de l'image par une bibliothèque, qui détruit les payloads.
 - Renommage aléatoire des fichiers, ou stockage hors de la racine web, ou sur un autre domaine.
 - Exécution désactivée dans le dossier de destination.
 - Pare-feu applicatif.
 
 ## Comment détecter
-- Repérer les fonctions de téléversement : avatar, document, pièce jointe, import de fichier.
-- Téléverser un fichier légitime et noter : le message de confirmation, l'URL à laquelle le fichier est servi (filtre **Images** de **Proxy > HTTP history**), le `Content-Type` de la réponse.
+- Repérer les fonctions d'upload : avatar, document, pièce jointe, import de fichier.
+- Uploader un fichier légitime et noter : le message de confirmation, l'URL à laquelle le fichier est servi (filtre **Images** de **Proxy > HTTP history**), le `Content-Type` de la réponse.
 - Tester un fichier de script (`exploit.php`) et lire le message de refus pour savoir ce qui est contrôlé : extension, `Content-Type`, contenu.
 - Isoler les contrôles : ne changer qu'un seul élément à la fois, avec un nom neuf à chaque essai.
 
@@ -143,29 +143,29 @@ Les noms d'extension, de répertoire et de directive sont donnés à titre d'exe
 | Seul le `Content-Type` de la partie fichier | refus ou succès | le type déclaré est contrôlé, ou non |
 | Seul le contenu (signature d'image présente ou absente) | refus ou succès | le contenu est inspecté, ou non |
 | Un fichier plus gros | refus ou succès | une limite de taille existe, ou non |
-| Même nom téléversé deux fois | nom conservé, suffixe ou nom aléatoire | écrasement possible, ou renommage |
+| Même nom uploadé deux fois | nom conservé, suffixe ou nom aléatoire | écrasement possible, ou renommage |
 | Appel de l'URL du fichier | sortie du script, texte brut ou téléchargement | exécution active, ou non, dans le dossier |
 
-- Si l'URL n'est pas renvoyée, chercher l'emplacement dans l'historique Proxy, dans le code source de la page, ou dans les en-têtes de réponse.
+- Si l'URL n'est pas renvoyée, chercher l'emplacement dans l'historique Proxy, dans le code source de la page, ou dans les headers de réponse.
 
 ## Comment exploiter (principe)
-1. Identifier la fonction de téléversement et l'URL de service des fichiers.
-2. Téléverser un web shell minimal (voir [[File-upload-web-shell]]).
-3. Si le téléversement est refusé, identifier ce qui est contrôlé et contourner : pour le `Content-Type`, voir [[File-upload-validation-content-type]] ; pour une extension refusée, voir [[File-upload-liste-noire]] et le catalogue ci-dessus.
-4. Appeler le fichier téléversé avec Repeater pour obtenir son exécution et lire le résultat.
+1. Identifier la fonction d'upload et l'URL de service des fichiers.
+2. Uploader un web shell minimal (voir [[File-upload-web-shell]]).
+3. Si l'upload est refusé, identifier ce qui est contrôlé et contourner : pour le `Content-Type`, voir [[File-upload-validation-content-type]] ; pour une extension refusée, voir [[File-upload-liste-noire]] et le catalogue ci-dessus.
+4. Appeler le fichier uploadé avec Repeater pour obtenir son exécution et lire le résultat.
 
 ## Pièges et points d'attention BSCP
-- Un message « téléversé avec succès » ne prouve pas l'exécution : toujours rappeler le fichier. Une réponse en texte brut indique un fichier non exécuté. Détails dans les fiches [[File-upload-web-shell]] et [[File-upload-validation-content-type]].
+- Un message « uploadé avec succès » ne prouve pas l'exécution : toujours rappeler le fichier. Une réponse en texte brut indique un fichier non exécuté. Détails dans les fiches [[File-upload-web-shell]] et [[File-upload-validation-content-type]].
 - Les labs de ce thème utilisent souvent le compte `wiener:peter` et demandent de lire `/home/carlos/secret`. A l'examen, l'objectif est la lecture d'un fichier précis sous contrainte de temps : tester d'abord le cas sans restriction, puis isoler les contrôles un par un.
 - Utiliser un nom de fichier neuf à chaque essai (cache, nom déjà pris, écrasement).
 - Si le corps multipart est édité à la main, vérifier le `Content-Length` : Repeater le recalcule, d'autres outils non.
 - Les caractères spéciaux (octet nul, point-virgule, barre oblique encodée) demandent de l'attention dans Repeater : contrôler l'encodage réellement envoyé.
-- Certains labs invalident le fichier ou la session après une déconnexion : se reconnecter et retéléverser si l'appel échoue.
+- Certains labs invalident le fichier ou la session après une déconnexion : se reconnecter et ré-uploader si l'appel échoue.
 
 ## Prévention
-- Valider l'extension par liste blanche plutôt que par liste noire : il est plus facile de lister ce qui est autorisé que ce qui est dangereux.
-- Vérifier que le nom de fichier ne contient aucune sous-chaîne interprétable comme une traversée de répertoire (voir [[Path-traversal]]).
-- Renommer les fichiers téléversés pour éviter que l'un ne remplace un fichier existant.
+- Valider l'extension par allowlist plutôt que par blocklist : il est plus facile de lister ce qui est autorisé que ce qui est dangereux.
+- Vérifier que le nom de fichier ne contient aucune sous-chaîne interprétable comme un path traversal (voir [[Path-traversal]]).
+- Renommer les fichiers uploadés pour éviter que l'un ne remplace un fichier existant.
 - Ne pas placer le fichier sur le système de fichiers permanent avant qu'il soit entièrement validé.
 - Stocker les fichiers dans un répertoire où l'exécution de scripts est désactivée (par exemple, pour Apache, désactiver le moteur PHP dans ce dossier) ou hors de la racine web.
 - Ne pas se fier à des valeurs fournies par le client (`Content-Type` de la partie fichier) pour décider du type ; renvoyer un `Content-Type` calculé par le serveur.
@@ -233,12 +233,12 @@ Vous pouvez vous connecter à votre compte avec : `wiener:peter`
 ## Liens
 - [[File-upload-web-shell]] : fiche sur le web shell sans restriction
 - [[File-upload-validation-content-type]] : fiche sur la validation par `Content-Type`
-- [[File-upload-liste-noire]] : fiche sur les listes noires d'extensions
+- [[File-upload-liste-noire]] : fiche sur les blocklists d'extensions
 - [[Path-traversal]] : nom de fichier utilisé pour construire un chemin
 - [[Race-conditions]] : fenêtre de temps entre écriture et validation
 - [[Command-injection]] : nom de fichier transmis à un shell
 - [[Access-control]] : écrasement du fichier d'un autre utilisateur
 - [[XSS]] : script dans un fichier servi au navigateur
 - [[XXE-injection]] : XML dans SVG ou formats Office
-- [[SSRF]] : requêtes sortantes déclenchées par un traitement d'image ou un téléversement par URL
-- [[Payloads-cheatsheet]] : web shells et en-têtes de base déjà listés pour le téléversement
+- [[SSRF]] : requêtes sortantes déclenchées par un traitement d'image ou un upload par URL
+- [[Payloads-cheatsheet]] : web shells et headers de base déjà listés pour l'upload

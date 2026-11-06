@@ -25,9 +25,9 @@ statut: à faire
 	- Le serveur récupère le contenu de `/admin` et le renvoie à l'attaquant.
 - **Pourquoi cela marche ?**
 	- Normalement, `/admin` n'est accessible qu'aux utilisateurs authentifiés.
-	- Quand la requête provient de la machine locale, les contrôles d'accès habituels sont contournés.
+	- Quand la requête provient de la machine locale, les mécanismes d'access control habituels sont contournés.
 - **Pourquoi les applications font confiance à la machine locale**
-	- Le contrôle d'accès peut être implémenté dans un composant distinct, situé en amont du serveur d'applications. Une connexion établie directement depuis le serveur contourne ce contrôle.
+	- L'access control peut être implémenté dans un composant distinct, situé en amont du serveur d'applications. Une connexion établie directement depuis le serveur contourne ce contrôle.
 	- L'application peut autoriser un accès administratif sans authentification à tout utilisateur provenant de la machine locale. Un administrateur peut ainsi restaurer le système s'il perd ses identifiants.
 	- L'interface d'administration peut écouter sur un autre port que l'application principale et ne pas être accessible directement aux utilisateurs.
 	- Ces relations de confiance, où les requêtes locales sont traitées différemment des requêtes ordinaires, font souvent de la SSRF une faille critique.

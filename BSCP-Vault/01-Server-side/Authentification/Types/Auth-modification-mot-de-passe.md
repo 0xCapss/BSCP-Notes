@@ -16,12 +16,12 @@ statut: à faire
 
 ## Comment exploiter (principe)
 - Le processus classique demande le mot de passe actuel, puis le nouveau mot de passe saisi deux fois.
-- Ces pages reposent sur le même mécanisme de vérification qu'une page de connexion classique, et sont donc exposées aux mêmes techniques d'attaque (énumération, brute-force, etc.).
+- Ces pages reposent sur le même mécanisme de vérification qu'une page de connexion classique, et sont donc exposées aux mêmes techniques d'attaque (énumération, brute force, etc.).
 - Cas typique de faille : le nom d'utilisateur est transmis dans un champ masqué du formulaire. Un attaquant peut modifier cette valeur dans la requête pour cibler un utilisateur arbitraire, sans être connecté à sa victime.
-- **Oracle par message d'erreur** : si le mot de passe actuel est faux, le message est `Current password is incorrect` ; s'il est correct mais que les deux nouveaux mots de passe diffèrent, le message est `New passwords do not match`. Cette différence permet de forcer le mot de passe actuel avec Intruder.
+- **Oracle par message d'erreur** : si le mot de passe actuel est faux, le message est `Current password is incorrect` ; s'il est correct mais que les deux nouveaux mots de passe diffèrent, le message est `New passwords do not match`. Cette différence permet de faire un brute force du mot de passe actuel avec Intruder.
 
 ## Pièges et points d'attention BSCP
-- Garder les deux nouveaux mots de passe différents entre eux : c'est cette différence qui évite le verrouillage et produit le message exploitable.
+- Garder les deux nouveaux mots de passe différents entre eux : c'est cette différence qui évite l'account lockout et produit le message exploitable.
 - Vérifier le champ masqué du nom d'utilisateur : simple à manquer.
 
 ## Labs PortSwigger

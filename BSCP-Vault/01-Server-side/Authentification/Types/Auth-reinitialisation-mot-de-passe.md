@@ -30,7 +30,7 @@ statut: à faire
 	- L'URL ne doit communiquer aucun indice sur l'identité de l'utilisateur ciblé.
 	- Le serveur doit vérifier l'existence du token côté back-end pour retrouver l'utilisateur associé, le faire expirer rapidement et le détruire une fois le mot de passe changé.
 - Certains sites ne revalident pas le token au moment de la soumission du formulaire. Un attaquant peut alors accéder au formulaire avec son propre token, le supprimer de la requête, et réinitialiser le mot de passe d'un autre utilisateur.
-- Si l'URL de l'e-mail de réinitialisation est générée dynamiquement (par exemple à partir d'un en-tête `Host` ou `X-Forwarded-Host`), elle peut être vulnérable au **password reset poisoning** : un attaquant piège le lien envoyé à la victime pour qu'il pointe vers un domaine qu'il contrôle, et récupère ainsi le token de la victime.
+- Si l'URL de l'e-mail de réinitialisation est générée dynamiquement (par exemple à partir d'un header `Host` ou `X-Forwarded-Host`), elle peut être vulnérable au **password reset poisoning** : un attaquant piège le lien envoyé à la victime pour qu'il pointe vers un domaine qu'il contrôle, et récupère ainsi le token de la victime.
 
 ## Pièges et points d'attention BSCP
 - Toujours tester `X-Forwarded-Host` (et `X-Forwarded-Server`, `X-Host`) sur les endpoints qui génèrent un lien envoyé par e-mail.

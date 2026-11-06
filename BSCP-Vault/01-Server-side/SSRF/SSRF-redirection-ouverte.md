@@ -6,12 +6,12 @@ statut: à faire
 # Contournement des filtres SSRF via une redirection ouverte
 
 ## En bref
-- Condition : une application dont les URL sont autorisées contient une redirection ouverte, et l'API qui effectue la requête HTTP côté serveur suit les redirections.
+- Condition : une application dont les URL sont autorisées contient un open redirect, et l'API qui effectue la requête HTTP côté serveur suit les redirections.
 - L'attaquant construit une URL qui satisfait le filtre mais aboutit à une requête redirigée vers la cible interne voulue.
 - Note parente : [[SSRF]]
 
 ## Comment détecter
-- Chercher dans l'application un paramètre qui alimente un en-tête `Location` (liens « produit suivant », « retour », `redirect`, `next`, `path`, `url`).
+- Chercher dans l'application un paramètre qui alimente un header `Location` (liens « produit suivant », « retour », `redirect`, `next`, `path`, `url`).
 - Vérifier que la redirection mène bien vers un domaine arbitraire fourni dans le paramètre.
 - Vérifier que le filtre SSRF refuse un hôte externe direct mais accepte l'URL du domaine local.
 
@@ -22,7 +22,7 @@ statut: à faire
 	- L'attaquant envoie `stockApi=http://weliketoshop.net/product/nextProduct?currentProductId=6&path=http://192.168.0.68/admin`.
 - **Pourquoi cela marche ?**
 	- L'application vérifie d'abord que l'URL de `stockApi` est sur un domaine autorisé, ce qui est le cas.
-	- Elle interroge ensuite cette URL, ce qui déclenche la redirection ouverte.
+	- Elle interroge ensuite cette URL, ce qui déclenche l'open redirect.
 	- Elle suit la redirection et envoie une requête vers l'URL interne choisie par l'attaquant.
 
 ## Pièges et points d'attention BSCP

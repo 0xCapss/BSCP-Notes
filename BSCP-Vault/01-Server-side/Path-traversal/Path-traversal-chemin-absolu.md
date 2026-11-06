@@ -14,7 +14,7 @@ statut: à faire
 - Aucune séquence de traversal n'est nécessaire, donc le filtre sur `../` n'a rien à bloquer.
 
 ## Pièges et points d'attention BSCP
-- À tester en premier quand `../` est refusé : c'est le contournement le plus rapide.
+- À tester en premier quand `../` est refusé : c'est le bypass le plus rapide.
 - Ne pas confondre avec la validation de préfixe : voir [[Path-traversal-prefixe-et-extension]] (le chemin doit alors commencer par le répertoire attendu).
 
 ## Labs PortSwigger

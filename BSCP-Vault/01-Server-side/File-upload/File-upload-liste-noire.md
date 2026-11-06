@@ -7,7 +7,7 @@ statut: à faire
 
 ## En bref
 - Les développeurs peuvent bloquer les types de fichiers dangereux (extensions comme `.php`), mais oublier les divergences d'analyse lors de la vérification des extensions.
-- Comme toute liste noire, elle omet forcément des types de fichiers moins courants qui restent dangereux.
+- Comme toute blocklist, elle omet forcément des types de fichiers moins courants qui restent dangereux.
 - Note parente : [[File-upload]]
 
 ## Comment détecter
@@ -15,7 +15,7 @@ statut: à faire
 - Repérer si le refus porte sur l'extension, sur le `Content-Type` ou sur le contenu.
 
 ## Comment exploiter (principe)
-- Les techniques de contournement (extensions alternatives, double extension, écrasement de la configuration serveur, etc.) ne sont pas encore étudiées dans ce cours. Cette section sera complétée à ce moment.
+- Les techniques de bypass (extensions alternatives, double extension, écrasement de la configuration serveur, etc.) ne sont pas encore étudiées dans ce cours. Cette section sera complétée à ce moment.
 
 ## Pièges et points d'attention BSCP
 - Une validation peut être robuste à un endroit et absente ailleurs : voir « Application incohérente » dans [[File-upload]].

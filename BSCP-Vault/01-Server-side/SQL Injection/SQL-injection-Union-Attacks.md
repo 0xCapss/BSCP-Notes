@@ -6,7 +6,7 @@ statut: à faire
 # SQL-injection-Union-Attacks
 
 ## En bref
-- L'attaque s'applique quand l'application est vulnérable à l'injection SQL et que les résultats de la requête sont renvoyés dans ses réponses.
+- L'UNION attack (UNION-based SQLi) s'applique quand l'application est vulnérable à la SQL injection (SQLi) et que les résultats de la requête sont renvoyés dans ses réponses.
 - Le mot-clé `UNION` permet d'extraire des données d'autres tables de la base.
 - Il permet d'exécuter une ou plusieurs requêtes `SELECT` supplémentaires et d'ajouter leurs résultats à ceux de la requête d'origine.
 - Exemple : `SELECT a, b FROM table1 UNION SELECT c, d FROM table2`.
@@ -16,16 +16,16 @@ statut: à faire
 
 ## Types et variantes
 - `UNION` supprime les doublons du jeu de résultats, `UNION ALL` les conserve. Les deux fonctionnent pour l'attaque, avec les mêmes contraintes (même nombre de colonnes, types compatibles).
-- Le point d'injection peut être une chaîne entre guillemets (il faut alors fermer le guillemet avec `'`) ou une valeur numérique (pas de guillemet à fermer). Sauf mention contraire, les charges utiles de cette note supposent une chaîne entre guillemets dans la clause `WHERE`. Exemple en contexte numérique : `1 UNION SELECT NULL,NULL--`.
+- Le point d'injection peut être une chaîne entre guillemets (il faut alors fermer le guillemet avec `'`) ou une valeur numérique (pas de guillemet à fermer). Sauf mention contraire, les payloads de cette note supposent une chaîne entre guillemets dans la clause `WHERE`. Exemple en contexte numérique : `1 UNION SELECT NULL,NULL--`.
 - La syntaxe varie selon la base de données (voir plus bas) : Oracle, MySQL, Microsoft SQL Server, PostgreSQL, SQLite.
 
 ## Comment détecter
-- Les tests de détection (apostrophe, booléen, délai) sont décrits dans [[SQL-injection]].
-- La seule question propre à cette note : le résultat de la requête est-il affiché dans la réponse ? Si oui, l'attaque `UNION` convient, en suivant l'ordre : nombre de colonnes, colonnes de texte, extraction.
-- Si le résultat n'est pas affiché, ou si le mot `UNION` est filtré, passer à l'injection par erreurs ([[Error-based SQL Injection]]) ou aveugle ([[Blind-SQL-injection]]).
+- Les tests de détection (apostrophe, boolean-based, time-based) sont décrits dans [[SQL-injection]].
+- La seule question propre à cette note : le résultat de la requête est-il affiché dans la réponse ? Si oui, l'UNION attack convient, en suivant l'ordre : nombre de colonnes, colonnes de texte, extraction.
+- Si le résultat n'est pas affiché, ou si le mot `UNION` est filtré, passer à l'Error-based SQLi ([[Error-based SQL Injection]]) ou à la Blind SQLi ([[Blind-SQL-injection]]).
 
 ## Comment exploiter (principe)
-- L'attaque exige deux conditions :
+- L'UNION attack exige deux conditions :
 	- Les requêtes individuelles doivent renvoyer le même nombre de colonnes.
 	- Les types de données de chaque colonne doivent être compatibles entre les différentes requêtes.
 - Il faut donc déterminer :
@@ -33,16 +33,16 @@ statut: à faire
 	- Quelles colonnes renvoyées par la requête d'origine ont un type de données adapté pour contenir les résultats de la requête injectée.
 
 ### Détermination du nombre de colonnes requises (méthode `ORDER BY`)
-- Lors d'une injection SQL UNION, il existe deux méthodes efficaces pour trouver le nombre de colonnes de la requête d'origine. La première utilise `ORDER BY`.
+- Lors d'une UNION attack, il existe deux méthodes efficaces pour trouver le nombre de colonnes de la requête d'origine. La première utilise `ORDER BY`.
 - Principe : injecter une série de clauses `ORDER BY` en incrémentant l'index de colonne jusqu'à ce qu'une erreur se produise.
 
-**Charges utiles**
+**Payloads**
 - Si le point d'injection est une chaîne entre guillemets dans la clause `WHERE`, on envoie donc :
 	- `' ORDER BY 1--`
 	- `' ORDER BY 2--`
 	- `' ORDER BY 3--`
 	- et ainsi de suite
-- Chaque charge utile trie les résultats selon une colonne différente du jeu de résultats.
+- Chaque payload trie les résultats selon une colonne différente du jeu de résultats.
 - La colonne peut être désignée par son index : il n'est pas nécessaire de connaître les noms des colonnes.
 - Quand l'index dépasse le nombre réel de colonnes, la base renvoie une erreur (exemple sur Microsoft SQL Server : la position de la clause `ORDER BY` est hors de la plage du nombre d'éléments de la liste de sélection).
 
@@ -51,8 +51,8 @@ statut: à faire
 - Tant qu'une différence dans la réponse est détectable, on peut en déduire le nombre de colonnes (la dernière valeur d'index qui n'a pas provoqué d'erreur).
 
 ### Détermination du nombre de colonnes requises (méthode `UNION SELECT NULL`)
-- Seconde méthode : envoyer une série de charges utiles `UNION SELECT` avec un nombre croissant de valeurs `NULL`.
-- Charges utiles :
+- Seconde méthode : envoyer une série de payloads `UNION SELECT` avec un nombre croissant de valeurs `NULL`.
+- Payloads :
 	- `' UNION SELECT NULL--`
 	- `' UNION SELECT NULL,NULL--`
 	- `' UNION SELECT NULL,NULL,NULL--`
@@ -79,12 +79,12 @@ statut: à faire
 - Le commentaire `--` exige un espace final, ou `#` : voir les pièges communs dans [[SQL-injection]].
 
 ### Trouver les colonnes avec un type de données utile
-- Une attaque UNION permet de récupérer les résultats d'une requête injectée.
+- Une UNION attack permet de récupérer les résultats d'une requête injectée.
 - Les données intéressantes sont normalement sous forme de chaîne : il faut donc trouver une ou plusieurs colonnes dont le type est, ou est compatible avec, des données de type chaîne.
 
 **Méthode**
 - Une fois le nombre de colonnes déterminé, on teste chaque colonne pour savoir si elle accepte une chaîne.
-- On envoie une série de charges utiles `UNION SELECT` qui placent une chaîne dans chaque colonne tour à tour.
+- On envoie une série de payloads `UNION SELECT` qui placent une chaîne dans chaque colonne tour à tour.
 - Exemple avec quatre colonnes :
 	- `' UNION SELECT 'a',NULL,NULL,NULL--`
 	- `' UNION SELECT NULL,'a',NULL,NULL--`
@@ -96,14 +96,14 @@ statut: à faire
 - Aucune erreur et réponse contenant du contenu supplémentaire avec la chaîne injectée : la colonne convient pour récupérer des données de type chaîne.
 - Dans un lab, le sujet fournit une valeur aléatoire à faire apparaître dans la réponse : on la place à la place de `'a'`.
 
-### Récupérer des données intéressantes avec une injection SQL UNION
+### Récupérer des données intéressantes avec une UNION attack
 - Une fois le nombre de colonnes déterminé et les colonnes de type chaîne identifiées, on peut récupérer des données intéressantes.
 - Exemple :
 	- La requête d'origine renvoie deux colonnes, toutes deux compatibles avec des chaînes.
 	- Le point d'injection est une chaîne entre guillemets dans la clause `WHERE`.
 	- La base contient une table `users` avec les colonnes `username` et `password`.
 
-**Charge utile**
+**Payload**
 - Le contenu de la table `users` s'obtient avec : `' UNION SELECT username, password FROM users--`
 
 **Prérequis**
@@ -117,7 +117,7 @@ statut: à faire
 - On peut inclure un séparateur pour distinguer les valeurs combinées.
 
 **Exemple sur Oracle**
-- Charge utile : `' UNION SELECT username || '~' || password FROM users--`
+- Payload : `' UNION SELECT username || '~' || password FROM users--`
 - `||` (double barre verticale) est l'opérateur de concaténation de chaînes sur Oracle.
 - La requête injectée concatène `username` et `password`, séparés par le caractère `~`.
 
@@ -149,7 +149,7 @@ statut: à faire
 | PostgreSQL              | `SELECT version()`                                            |
 
 **Exemple**
-- Charge utile UNION : `' UNION SELECT @@version--`
+- Payload UNION : `' UNION SELECT @@version--`
 - Le résultat peut afficher la version complète, par exemple : `Microsoft SQL Server 2016 (SP2) (KB4052908) - 13.0.5026.0 (X64)`.
 - Dans ce cas, on confirme que la base est Microsoft SQL Server et on connaît sa version.
 
@@ -174,9 +174,9 @@ statut: à faire
 - Dans l'exemple, la table `Users` contient `UserId` (int), `Username` (varchar) et `Password` (varchar).
 - Oracle : `SELECT * FROM all_tab_columns WHERE table_name = 'USERS'` (colonnes utiles : `OWNER`, `TABLE_NAME`, `COLUMN_NAME`, `DATA_TYPE`). Oracle stocke les noms non protégés par des guillemets en majuscules : il faut écrire `'USERS'`.
 
-#### Lien avec l'attaque UNION
+#### Lien avec l'UNION attack
 - On a besoin des noms de tables et de colonnes avant de lancer `' UNION SELECT username, password FROM users--`.
-- En pratique, via une injection UNION, on cible les colonnes utiles plutôt que `*` pour respecter le nombre de colonnes :
+- En pratique, via une UNION attack, on cible les colonnes utiles plutôt que `*` pour respecter le nombre de colonnes :
 	- Tables, base non Oracle : `' UNION SELECT table_name,NULL FROM information_schema.tables--`
 	- Colonnes, base non Oracle : `' UNION SELECT column_name,NULL FROM information_schema.columns WHERE table_name='users'--`
 	- Tables, Oracle : `' UNION SELECT table_name,NULL FROM all_tables--`
@@ -215,7 +215,7 @@ Quand la page n'affiche qu'une seule valeur, on agrège toutes les lignes dans u
 
 ## Pièges et points d'attention BSCP
 Les pièges communs (commentaire MySQL, encodage URL, cookie) sont dans [[SQL-injection]].
-- Déterminer le nombre de colonnes avant tout, puis les colonnes de type chaîne : sauter ces étapes fait échouer l'injection sans message clair.
+- Déterminer le nombre de colonnes avant tout, puis les colonnes de type chaîne : sauter ces étapes fait échouer la SQLi sans message clair.
 - Oracle : `FROM DUAL` obligatoire pour les `SELECT` sans table, noms d'objets en majuscules dans `all_tables` et `all_tab_columns`.
 - Encodage URL : `+` vaut espace, donc `%2b` pour l'opérateur de concaténation Microsoft.
 - Une seule colonne de type chaîne : concaténer plusieurs valeurs avec un séparateur.
@@ -223,9 +223,9 @@ Les pièges communs (commentaire MySQL, encodage URL, cookie) sont dans [[SQL-in
 - La requête d'origine peut renvoyer plusieurs lignes : la ligne injectée apparaît en plus, parfois en bas de la liste. Utiliser une catégorie inexistante dans le filtre peut isoler le résultat injecté.
 - Une colonne de texte n'est pas forcément affichée dans la page : tester chaque colonne et vérifier où apparaît la valeur.
 - Un `LIMIT` dans la requête d'origine peut faire disparaître la ligne injectée.
-- Le point d'injection n'est pas toujours dans l'URL (corps, cookie, en-tête), mais la page doit réafficher la donnée : l'attaque `UNION` n'aboutit que si un cookie ou un en-tête injecté est répercuté dans la réponse.
+- Le point d'injection n'est pas toujours dans l'URL (corps, cookie, header), mais la page doit réafficher la donnée : l'UNION attack n'aboutit que si un cookie ou un header injecté est répercuté dans la réponse.
 - Limites : longueur de la valeur affichée, caractères échappés par l'application, filtrage du mot `UNION`, pare-feu applicatif.
-- Hors périmètre ici : requêtes empilées, lecture de fichiers et second ordre sont décrits dans [[SQL-injection]].
+- Hors périmètre ici : stacked queries, lecture de fichiers et second-order sont décrits dans [[SQL-injection]].
 
 ## Prévention
 Voir [[SQL-injection]] (requêtes paramétrées, moindre privilège, erreurs masquées). Point propre à cette attaque : retirer au compte de la base les droits sur `information_schema` et les vues de schéma, pour limiter l'énumération.

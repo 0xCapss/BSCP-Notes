@@ -7,7 +7,7 @@ statut: à faire
 
 ## En bref
 - Les IDOR surviennent quand l'application utilise directement une entrée fournie par l'utilisateur pour accéder à un objet (fichier, enregistrement) sans vérifier que cet utilisateur en est propriétaire.
-- Cas particulier d'escalade horizontale (voir [[Access-control-escalade-horizontale]]) : l'objet est souvent un fichier statique plutôt qu'un identifiant de base de données.
+- Cas particulier de horizontal privilege escalation (voir [[Access-control-escalade-horizontale]]) : l'objet est souvent un fichier statique plutôt qu'un identifiant de base de données.
 - Note parente : [[Access-control]]
 
 ## Comment détecter
