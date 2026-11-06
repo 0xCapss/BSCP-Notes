@@ -35,6 +35,8 @@ MSSQL  : declare @p varchar(1024);set @p=(SELECT password FROM users WHERE usern
 ```
 
 Anatomie du payload MSSQL de détection : `'` ferme la chaîne, `;` empile une seconde requête, `xp_dirtree` avec un chemin UNC force la résolution DNS de l’hôte, `--` neutralise la suite de la requête d’origine.
+
+- Le payload MSSQL d'exfiltaration complet()
 ## Comment détecter
 On génère un sous-domaine unique avec Burp Collaborator (bouton “Copy to clipboard” du client), on le place dans le payload adapté au SGBD, on envoie avec Repeater, puis on clique sur “Poll now”. Une ligne DNS, parfois HTTP, prouve que la base a bien émis l’interaction. Le sous-domaine étant unique, on sait quelle requête l’a déclenchée.
 
@@ -45,7 +47,9 @@ On génère un sous-domaine unique avec Burp Collaborator (bouton “Copy to cli
 4. Remplacer le sous-domaine par `RÉSULTAT.COLLAB` pour sortir la donnée, et lire le résultat dans le nom de la requête DNS reçue.
 5. Encoder le payload en URL s’il passe dans un cookie ou un paramètre.
 
-
+- **Types et variantes** : le payload MSSQL d’exfiltration complet (`declare @p ... exec('master..xp_dirtree ...')`) à côté de celui d’Oracle, avec sa décomposition en deux lignes (`declare/set` pour stocker, `exec('...')` parce que `xp_dirtree` n’accepte pas une concaténation en argument).
+- **Comment exploiter (principe)** : une étape de plus après la confirmation de l’interaction. On remplace la détection par l’exfiltration et on adapte la sous-requête à la cible (`TOP 1`, `SUBSTRING`, hexadécimal). Ajoute aussi l’argument du cours : l’OAST sort la valeur entière en une requête, là où les techniques booléennes et temporelles coûtent un caractère par requête, d’où sa préférence même quand les autres marchent.
+- **Pièges et points d’attention BSCP** : une ligne sur l’échec silencieux quand la sous-requête renvoie plusieurs lignes (MSSQL refuse d’affecter plusieurs lignes à une variable scalaire), et une autre rappelant que le lab d’exfiltration tourne sur Oracle, donc que c’est le payload `EXTRACTVALUE` à savoir refaire pour l’examen.
 
 ## Pièges et points d'attention BSCP
 - Le payload MSSQL demande des requêtes empilées : courant sur MSSQL, rare sur MySQL, variable sur PostgreSQL.
