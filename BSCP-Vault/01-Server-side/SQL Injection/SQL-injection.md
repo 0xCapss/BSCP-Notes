@@ -75,7 +75,7 @@ Avant d'écrire un payload, identifier où la valeur se retrouve dans la requêt
 | In-band (UNION attack) | Les résultats injectés sont affichés dans la réponse | [[SQL-injection-Union-Attacks]] |
 | Error-based SQLi | Une erreur affiche une valeur, ou une conditional error sert de signal | [[Error-based SQL Injection]] |
 | Blind SQLi (boolean-based, time-based) | Signal indirect : contenu, temps de réponse | [[Blind-SQL-injection]] |
-| Out-of-band (OAST) | Interaction DNS ou HTTP vers un serveur contrôlé | [[Blind-SQL-injection]] |
+| Out-of-band (OAST) | Interaction DNS ou HTTP vers un serveur contrôlé | [[SQL injection using out-of-band techniques]], synthèse dans [[Blind-SQL-injection]] |
 | Second-order | Donnée stockée puis réutilisée dans une autre requête | Voir la section dédiée plus bas |
 
 Autres langages de requête : la NoSQL injection, la LDAP injection, la XPath injection ou l'injection dans un ORM suit la même logique (entrée non fiable interprétée comme requête) mais avec une syntaxe propre, hors périmètre de ces notes.
