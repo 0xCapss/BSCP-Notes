@@ -69,12 +69,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "BSCP-Vault/01-Server-side/SQL Injection/Second-order SQL injection.md",
+                "file": "BSCP-Vault/02-Client-side/CSRF.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Second-order SQL injection"
+              "title": "CSRF"
             }
           }
         ],
@@ -257,17 +257,19 @@
       "obsidian-excalidraw-plugin:New drawing": false,
       "obsidian-git:Open Git source control": false,
       "omnisearch:Omnisearch": false,
-      "templater-obsidian:Templater": false
+      "templater-obsidian:Templater": false,
+      "periodic-notes:Open today": false,
+      "tags-routes:Open tags routes": false
     }
   },
   "active": "466f0e8a9eef545a",
   "lastOpenFiles": [
+    "BSCP-Vault/01-Server-side/SQL Injection/Second-order SQL injection.md",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL injection using out-of-band techniques.md.tmp.280872.89efdfe0a50f",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL injection using out-of-band techniques.md",
     "BSCP-Vault/01-Server-side/SQL Injection/Second-order SQL injection.md.tmp.280872.fbc5a410ce32",
     "BSCP-Vault/01-Server-side/SQL Injection/Second-order SQL injection.md.tmp.280872.ce31f359c928",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL injection in different contexts.md",
-    "BSCP-Vault/01-Server-side/SQL Injection/Second-order SQL injection.md",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL injection in different contexts.md.tmp.280872.cc29674b9858",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL injection in different contexts.md.tmp.280872.9a1565a9f501",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL injection in different contexts.md.tmp.280872.08523ffb364f",
@@ -275,7 +277,6 @@
     "BSCP-Vault/01-Server-side/SQL Injection/SQL injection in different contexts.md.tmp.280872.3a0466d12021",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL injection in different contexts.md.tmp.280872.cd97d75ab5de",
     "BSCP-Vault/01-Server-side/SQL Injection/SQL injection in different contexts.md.tmp.280872.5527649117fa",
-    "BSCP-Vault/01-Server-side/SQL Injection/SQL injection in different contexts.md.tmp.280872.0f07bc0f3a0c",
     "BSCP-Vault/01-Server-side/SQL Injection/Blind-SQL-injection.md",
     "BSCP-Vault/01-Server-side/SQL Injection/Blind SQLi - Triggering time delay.md",
     "BSCP-Vault/01-Server-side/SQL Injection/Error-based SQL Injection.md",

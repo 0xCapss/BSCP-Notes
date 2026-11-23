@@ -6,7 +6,7 @@ statut: à faire
 # Cross-site request forgery (CSRF)
 
 ## En bref
-- 
+- L'attaque CSRF est une faille wen qio p
 
 ## Types et variantes
 - 
