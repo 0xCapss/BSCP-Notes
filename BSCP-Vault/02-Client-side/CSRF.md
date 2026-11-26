@@ -72,6 +72,8 @@ Certaines attaques CSRF simples passent par une requête GET et sont entièremen
 - 
 
 ## Prévention
+Aujourd'hui, détecter et exploiter un CSRF oblige souvent à contourner les défenses du site cible du navigateur de la victime ou les deux. Les trois plus courantes sont:
+- **Jeton CSRF.** Valeur unique, secrète et imprévisible, générée côté serveur et partagée avec le client. Pour une action sensible (envoi d'un formulaire, par exemple), le client doit renvoyer le bon jeton. L'attaquant a alors beaucoup de mal à fabriquer une requête valide à la place de la victime.
 - 
 
 ## Labs PortSwigger
