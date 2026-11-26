@@ -12,6 +12,12 @@ statut: à faire
 ## Types et variantes
 ### Erreurs courantes dans la validation des jetons CSRF
 Les failles CSRF viennent généralement d'une validation défaillante des jetons CSRF. Cette partie du cours passe en revue les erreurs les plus courantes, celles qui permettent à un attaquant de contourner la protection.
+**La validation du jeton dépend de la méthode HTTP.** Certaines applications valident correctement le jeton sur une requête POST, mais sautent la validation sur une requête GET. L'attaquant bascule alors en GET pour contourner la protection et mener son attaque :
+```http
+GET /email/change?email=pwned@evil-user.net HTTP/1.1
+Host: vulnerable-website.com
+Cookie: session=2yQIDcpia41WrATfjPqvm9tOkDvkMvLm
+```
 
 ## Comment détecter
 - 
@@ -120,6 +126,15 @@ Vous pouvez vous connecter à votre propre compte à l'aide des identifiants sui
 4. To verify that the exploit works, try it on yourself by clicking "View exploit" and then check the resulting HTTP request and response.
 5. Change the email address in your exploit so that it doesn't match your own.
 6. Click "Deliver to victim" to solve the lab.
+
+### Lab: CSRF where token validation depends on request method
+La fonctionnalité de modification d'adresse e-mail de ce laboratoire est vulnérable aux attaques CSRF. Elle tente de bloquer ces attaques, mais n'applique des mesures de protection qu'à certains types de requêtes.
+
+Pour résoudre cet exercice, utilisez votre serveur d'exploitation pour héberger une page HTML qui utilise une attaque CSRF afin de modifier l'adresse e-mail de l'utilisateur.
+
+Vous pouvez vous connecter à votre propre compte à l'aide des identifiants suivants : wiener:peter
+#### Solution
+
 
 ## Mes notes
 - 
