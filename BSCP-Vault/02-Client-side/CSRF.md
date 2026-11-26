@@ -52,6 +52,14 @@ Ainsi quand la victime se rend sur la page de l'attaquant:
 2. Si la victime est connectée au site, son navigateur ajoute son cookie de session à la requête.
 3. Le site traite la requête normalement, la croit émise par la victime et change son adresse e-mail.
 Le CSRF est surtout décrit avec une gestion de session par cookies, mais il peut aussi apparaître dès que l'application ajoute automatiquement des identifiants de l'utilisateur aux requêtes, comme avec l'authentification HTTP Basic ou l'authentification par certificat.
+### Construire l'exploit avec burp
+Écrire le HTML à la main devient pénible quand la requête contient beaucoup de paramètres ou des particularités. Le plus simple est le générateur de CSRF PoC intégré à Burp Suite Professional :
+	1. Sélectionner, n'importe où dans Burp, la requête à tester ou à exploiter.
+	2. Clic droit, puis Engagement tools / Generate CSRF PoC.
+	3. Burp génère le HTML qui déclenche la requête, sans les cookies, que le navigateur de la victime ajoute tout seul.
+	4. Ajuster les options du générateur si besoin, notamment pour gérer les requêtes atypiques.
+	5. Copier le HTML dans une page web, l'ouvrir dans un navigateur connecté au site vulnérable, et vérifier que la requête part bien et que l'action attendue a lieu.
+
 ## Pièges et points d'attention BSCP
 - 
 
@@ -64,7 +72,10 @@ Le CSRF est surtout décrit avec une gestion de session par cookies, mais il peu
 - [ ] Expert
 
 ## Journal des labs
-- 
+### Lab: Vulnérabilité CSRF sans protection
+La fonctionnalité de modification de l'adresse e-mail de cet exercice pratique est vulnérable à une attaque CSRF.
+Pour résoudre cet exercice, créez un code HTML utilisant une attaque CSRF afin de modifier l'adresse e-mail de l'utilisateur, puis téléchargez-le sur votre serveur d'exploitation.
+Vous pouvez vous connecter à votre propre compte à l'aide des identifiants suivants : wiener:peter
 
 ## Mes notes
 - 
