@@ -10,7 +10,8 @@ statut: à faire
 - Quand l'attaque réussit, la victime exécute une action à son insu: changer son adresse mail, changer son mot de passe, faire un virement bancaire... Selon l'action, l'attaquant peut prendre le contrôle total du compte. Si la victime a un rôle privilégié, il peut prendre le contrôle de toutes les données et fonctionnalités de l'application.
 
 ## Types et variantes
-- 
+### Erreurs courantes dans la validation des jetons CSRF
+Les failles CSRF viennent généralement d'une validation défaillante des jetons CSRF. Cette partie du cours passe en revue les erreurs les plus courantes, celles qui permettent à un attaquant de contourner la protection.
 
 ## Comment détecter
 - 
@@ -74,7 +75,31 @@ Certaines attaques CSRF simples passent par une requête GET et sont entièremen
 ## Prévention
 Aujourd'hui, détecter et exploiter un CSRF oblige souvent à contourner les défenses du site cible du navigateur de la victime ou les deux. Les trois plus courantes sont:
 - **Jeton CSRF.** Valeur unique, secrète et imprévisible, générée côté serveur et partagée avec le client. Pour une action sensible (envoi d'un formulaire, par exemple), le client doit renvoyer le bon jeton. L'attaquant a alors beaucoup de mal à fabriquer une requête valide à la place de la victime.
-- 
+- **Cookies SameSite.** Mécanisme du navigateur qui décide quand les cookies d'un site sont envoyés dans des requêtes venant d'autres sites. Comme les actions sensibles exigent en général un cookie de session authentifié, une bonne restriction SameSite empêche de les déclencher depuis un autre site. Chrome applique SameSite=Lax par défaut depuis 2021. C'est la norme proposée, donc les autres navigateurs majeurs devraient suivre.
+- **Validation du Referer.** Certaines applications vérifient l'en-tête HTTP Referer, en général pour s'assurer que la requête vient de leur propre domaine. C'est en règle générale moins efficace que le jeton CSRF.
+#### Jeton CSRF en détail
+Un jeton CSRF est une valeur unique, secrète et imprévisible, générée par l'application côté serveur et partagée avec le client. Pour une action sensible comme l'envoi d'un formulaire, le client doit inclure le bon jeton dans sa requête. Sinon, le serveur refuse d'exécuter l'action.
+Le moyen courant de transmettre le jeton au client est un paramètre caché dans le formulaire HTML :
+```html
+<form name="change-email-form" action="/my-account/change-email" method="POST">
+    <label>Email</label>
+    <input required type="email" name="email" value="example@normal-website.com">
+    <input required type="hidden" name="csrf" value="50FaWgdOhi9M9wyna8taR1k3ODOR8d6u">
+    <button class='button' type='submit'> Update email </button>
+</form>
+```
+L'envoi de ce formulaire produit la requête suivante :
+```http
+POST /my-account/change-email HTTP/1.1
+Host: normal-website.com
+Content-Length: 70
+Content-Type: application/x-www-form-urlencoded
+
+csrf=50FaWgdOhi9M9wyna8taR1k3ODOR8d6u&email=example@normal-website.com
+```
+Bien implémenté, le jeton rend difficile la construction d'une requête valide au nom de la victime : l'attaquant ne peut pas prédire sa valeur, donc ne peut pas l'inclure dans la requête malveillante.
+Le jeton n'est pas forcément envoyé en paramètre caché d'une requête POST. Certaines applications le placent dans un en-tête HTTP, par exemple. Le mode de transmission pèse lourd sur la sécurité de l'ensemble du mécanisme.
+
 
 ## Labs PortSwigger
 - [ ] Apprentice
