@@ -59,6 +59,14 @@ Le CSRF est surtout décrit avec une gestion de session par cookies, mais il peu
 	3. Burp génère le HTML qui déclenche la requête, sans les cookies, que le navigateur de la victime ajoute tout seul.
 	4. Ajuster les options du générateur si besoin, notamment pour gérer les requêtes atypiques.
 	5. Copier le HTML dans une page web, l'ouvrir dans un navigateur connecté au site vulnérable, et vérifier que la requête part bien et que l'action attendue a lieu.
+### Livrer l'exploit à la victime
+Le mécanisme de livraison est en gros le même qu'une reflected XSS. L'attaquant héberge le HTML malveillant sur un site qu'il contôle, puis pousse les victimes à le visiter:
+- en leur envoyant le lien par e-mail ou par message sur les réseaux sociaux.
+- ou, si l'exploit est posé sur un site très fréquenté (un commentaire d'utilisateur, par exemple), en attendant simplement que les gens passent.
+Certaines attaques CSRF simples passent par une requête GET et sont entièrement autonomes : une seule URL du site vulnérable suffit. L'attaquant n'a alors pas besoin d'un site externe, il peut proposer directement une URL malveillante sur le domaine vulnérable. Si le changement d'e-mail de l'exemple accepte GET, l'attaque tient en une ligne :
+```html
+<img src="https://vulnerable-website.com/email/change?email=pwned@evil-user.net">
+```
 
 ## Pièges et points d'attention BSCP
 - 
@@ -76,6 +84,15 @@ Le CSRF est surtout décrit avec une gestion de session par cookies, mais il peu
 La fonctionnalité de modification de l'adresse e-mail de cet exercice pratique est vulnérable à une attaque CSRF.
 Pour résoudre cet exercice, créez un code HTML utilisant une attaque CSRF afin de modifier l'adresse e-mail de l'utilisateur, puis téléchargez-le sur votre serveur d'exploitation.
 Vous pouvez vous connecter à votre propre compte à l'aide des identifiants suivants : wiener:peter
+#### Solution
+1. Open Burp's browser and log in to your account. Submit the "Update email" form, and find the resulting request in your Proxy history.
+2. If you're using Burp Suite Professional, right-click on the request and select Engagement tools / Generate CSRF PoC. Enable the option to include an auto-submit script and click "Regenerate".
+    Alternatively, if you're using Burp Suite Community Edition, use the following HTML template. You can get the request URL by right-clicking and selecting "Copy URL".
+    `<form method="POST" action="https://YOUR-LAB-ID.web-security-academy.net/my-account/change-email"> <input type="hidden" name="email" value="anything@web-security-academy.net"> </form> <script> document.forms[0].submit(); </script>`
+3. Go to the exploit server, paste your exploit HTML into the "Body" section, and click "Store".
+4. To verify that the exploit works, try it on yourself by clicking "View exploit" and then check the resulting HTTP request and response.
+5. Change the email address in your exploit so that it doesn't match your own.
+6. Click "Deliver to victim" to solve the lab.
 
 ## Mes notes
 - 
